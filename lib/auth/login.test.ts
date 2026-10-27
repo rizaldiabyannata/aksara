@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import { findSession } from "@/lib/auth/session";
 import { verifyDummyPassword } from "@/lib/auth/password";
+import { throttleKey } from "@/lib/auth/throttle";
 import {
   changeTeacherPassword,
   loginStudent,
@@ -247,6 +248,49 @@ describe("changeTeacherPassword", () => {
     expect(!same.ok && same.fieldErrors?.newPassword).toBeTruthy();
 
     expect(await changeTeacherPassword(user.id, null)).toMatchObject(INVALID);
+  });
+
+  it("missing fields and non-object input give only Indonesian messages", async () => {
+    const { user } = await makeTeacher();
+    const empty = await changeTeacherPassword(user.id, {});
+    const nul = await changeTeacherPassword(user.id, null);
+    expect(!empty.ok && empty.fieldErrors).toEqual({
+      currentPassword: "Kata sandi lama wajib diisi.",
+      newPassword: "Kata sandi baru wajib diisi.",
+      confirmPassword: "Konfirmasi kata sandi wajib diisi.",
+    });
+    expect(!nul.ok && nul.fieldErrors).toEqual({ form: "Isi semua kolom kata sandi." });
+  });
+
+  it("5 wrong current passwords then the right one → THROTTLED", async () => {
+    const { user, password } = await makeTeacher();
+    const attempt = (currentPassword: string) =>
+      changeTeacherPassword(user.id, {
+        currentPassword,
+        newPassword: NEW,
+        confirmPassword: NEW,
+      });
+    for (let i = 0; i < 5; i++) {
+      expect(await attempt("bukan-yang-lama")).toEqual({
+        ok: false,
+        error: "WRONG_PASSWORD",
+      });
+    }
+    expect(await attempt(password)).toEqual({ ok: false, error: "THROTTLED" });
+  });
+
+  it("success clears the teacher throttle key", async () => {
+    const { user, password } = await makeTeacher();
+    const body = (currentPassword: string) => ({
+      currentPassword,
+      newPassword: NEW,
+      confirmPassword: NEW,
+    });
+    await changeTeacherPassword(user.id, body("bukan-yang-lama"));
+    const key = throttleKey.teacher(user.username!).key;
+    expect(await prisma.loginThrottle.count({ where: { key } })).toBe(1);
+    expect((await changeTeacherPassword(user.id, body(password))).ok).toBe(true);
+    expect(await prisma.loginThrottle.count({ where: { key } })).toBe(0);
   });
 
   it("refuses non-teacher or inactive ids", async () => {

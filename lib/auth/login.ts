@@ -105,11 +105,18 @@ export async function loginTeacher(input: {
 }
 
 const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Kata sandi lama wajib diisi."),
-    newPassword: z.string().min(12, "Kata sandi baru minimal 12 karakter."),
-    confirmPassword: z.string(),
-  })
+  .object(
+    {
+      currentPassword: z
+        .string({ error: "Kata sandi lama wajib diisi." })
+        .min(1, "Kata sandi lama wajib diisi."),
+      newPassword: z
+        .string({ error: "Kata sandi baru wajib diisi." })
+        .min(12, "Kata sandi baru minimal 12 karakter."),
+      confirmPassword: z.string({ error: "Konfirmasi kata sandi wajib diisi." }),
+    },
+    { error: "Isi semua kolom kata sandi." },
+  )
   .refine((d) => d.newPassword !== d.currentPassword, {
     path: ["newPassword"],
     message: "Kata sandi baru harus berbeda dari kata sandi lama.",
@@ -124,7 +131,11 @@ export async function changeTeacherPassword(
   input: unknown,
 ): Promise<
   | { ok: true; token: string; expiresAt: Date }
-  | { ok: false; error: "INVALID" | "WRONG_PASSWORD"; fieldErrors?: Record<string, string> }
+  | {
+      ok: false;
+      error: "INVALID" | "WRONG_PASSWORD" | "THROTTLED";
+      fieldErrors?: Record<string, string>;
+    }
 > {
   const parsed = changePasswordSchema.safeParse(input);
   if (!parsed.success) {
@@ -139,12 +150,16 @@ export async function changeTeacherPassword(
 
   const teacher = await prisma.user.findFirst({
     where: { id: userId, role: "TEACHER", isActive: true },
-    select: { passwordHash: true },
+    select: { username: true, passwordHash: true },
   });
-  if (!teacher?.passwordHash) return INVALID;
+  if (!teacher?.passwordHash || !teacher.username) return INVALID;
+  // Same key as teacher login, so a stolen session can't brute-force the current password.
+  const idKey = throttleKey.teacher(teacher.username);
+  if (!(await reserveAttempt([idKey]))) return THROTTLED;
   if (!(await verifySafe(teacher.passwordHash, currentPassword))) {
     return { ok: false, error: "WRONG_PASSWORD" };
   }
+  await prisma.loginThrottle.deleteMany({ where: { key: idKey.key } });
 
   const passwordHash = await hashPassword(newPassword);
   const session = await prisma.$transaction(async (tx) => {
