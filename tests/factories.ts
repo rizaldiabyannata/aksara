@@ -1,3 +1,4 @@
+import { hashPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 
@@ -37,7 +38,6 @@ export function makeStudent(
   });
 }
 
-// Task 4 swaps the literal hash for hashPassword(password).
 export async function makeTeacher(
   overrides: Partial<Prisma.UserUncheckedCreateInput> = {},
 ) {
@@ -48,7 +48,7 @@ export async function makeTeacher(
       role: "TEACHER",
       username: `guru${i}`,
       displayName: `Guru ${i}`,
-      passwordHash: "$argon2id$v=19$m=19456,t=2,p=1$placeholder$placeholder",
+      passwordHash: await hashPassword(password),
       ...overrides,
     },
   });
