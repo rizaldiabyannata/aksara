@@ -1,0 +1,17 @@
+name: aksara
+services:
+  postgres:
+    image: postgres:17
+    container_name: aksara_postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: aksara
+      POSTGRES_PASSWORD: aksara
+      POSTGRES_DB: aksara_dev
+    volumes:
+      - aksara_pgdata:/var/lib/postgresql/data
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+volumes:
+  aksara_pgdata:

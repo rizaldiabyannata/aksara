@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  TEACHER
+  STUDENT
+}
+
+enum SessionRevokedReason {
+  REPLACED
+  REVOKED
+}
+
+model User {
+  id                 String     @id @default(cuid())
+  role               Role
+  username           String?    @unique
+  passwordHash       String?
+  mustChangePassword Boolean    @default(false)
+  displayName        String
+  loginName          String?
+  nis                String?    @unique
+  classId            String?
+  class              Class?     @relation(fields: [classId], references: [id])
+  isActive           Boolean    @default(true)
+  createdAt          DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime   @updatedAt @db.Timestamptz(3)
+  sessions           Session[]
+  auditLogs          AuditLog[]
+
+  @@unique([classId, loginName])
+  @@index([classId])
+}
+
+model Class {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  code          String   @unique
+  codeRotatedAt DateTime @default(now()) @db.Timestamptz(3)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+  users         User[]
+}
+
+model Session {
+  id            String                @id @default(cuid())
+  tokenHash     String                @unique
+  userId        String
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt     DateTime              @db.Timestamptz(3)
+  createdAt     DateTime              @default(now()) @db.Timestamptz(3)
+  revokedAt     DateTime?             @db.Timestamptz(3)
+  revokedReason SessionRevokedReason?
+
+  @@index([userId])
+}
+
+model LoginThrottle {
+  key             String   @id
+  failCount       Int
+  windowStartedAt DateTime @db.Timestamptz(3)
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String
+  actor       User     @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  action      String
+  entityType  String
+  entityId    String
+  metadata    Json?
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
