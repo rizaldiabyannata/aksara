@@ -62,7 +62,7 @@ export async function processUpload(
   const ext = sniff(bytes);
   if (!ext) return { ok: false, error: "UNSUPPORTED" };
   try {
-    const pipeline = sharp(bytes)
+    const pipeline = sharp(bytes, { limitInputPixels: 50_000_000 })
       .rotate()
       .resize({
         width: MAX_LONG_SIDE,

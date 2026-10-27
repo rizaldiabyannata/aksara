@@ -12,6 +12,11 @@ import type { ImageView } from "@/lib/materials";
 import { removeImageAction, updateImageMetaAction } from "./actions";
 
 const UPLOAD_FAILED = "Gagal mengunggah. Periksa koneksi lalu coba lagi.";
+const SIZE_MSG = "Ukuran gambar paling besar 4 MB.";
+const RELOAD_MSG = "Muat ulang halaman lalu coba lagi.";
+const MAX_BYTES = 4 * 1024 * 1024;
+
+type UploadResult = { ok: boolean; message?: string; fieldErrors?: Record<string, string> };
 
 function UploadForm({ materialId }: { materialId: string }) {
   const router = useRouter();
@@ -22,15 +27,21 @@ function UploadForm({ materialId }: { materialId: string }) {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    const body = new FormData(form);
+    const file = body.get("file");
+    if (file instanceof File && file.size > MAX_BYTES) {
+      setState({ message: SIZE_MSG });
+      return;
+    }
     setPending(true);
     setState(undefined);
-    let data: { ok: boolean; message?: string; fieldErrors?: Record<string, string> };
-    try {
-      const res = await fetch("/api/images", { method: "POST", body: new FormData(form) });
-      data = await res.json();
-    } catch {
-      data = { ok: false, message: UPLOAD_FAILED };
-    }
+    // Vercel's 413 and an expired-session redirect come back as HTML, not JSON.
+    const res = await fetch("/api/images", { method: "POST", body }).catch(() => null);
+    let data: UploadResult;
+    if (!res) data = { ok: false, message: UPLOAD_FAILED };
+    else if (!res.headers.get("content-type")?.includes("json")) {
+      data = { ok: false, message: res.status === 413 ? SIZE_MSG : RELOAD_MSG };
+    } else data = await res.json().catch(() => ({ ok: false, message: RELOAD_MSG }));
     setPending(false);
     if (data.ok) {
       form.reset();
@@ -76,7 +87,7 @@ function UploadForm({ materialId }: { materialId: string }) {
 function ImageCard({ image, referenced }: { image: ImageView; referenced: boolean }) {
   const [state, formAction, pending] = useActionState(updateImageMetaAction.bind(null, image.id), undefined);
   const [copyNote, setCopyNote] = useState("");
-  const code = `![${image.altText}](aksara-image:${image.id})`;
+  const code = `![${image.altText.replace(/[[\]\\]/g, "\\$&")}](aksara-image:${image.id})`;
   const v = (name: "altText" | "caption" | "sourceReference") => state?.values?.[name] ?? image[name] ?? "";
   const e = state?.fieldErrors;
 

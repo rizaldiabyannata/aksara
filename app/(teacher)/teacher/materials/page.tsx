@@ -40,14 +40,13 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
   const subjectId = one(sp.subjectId);
   const chapterId = one(sp.chapterId);
   const s = one(sp.status);
-  const status = s && s in STATUS_LABEL ? (s as MaterialStatus) : undefined;
+  const status = s && Object.hasOwn(STATUS_LABEL, s) ? (s as MaterialStatus) : undefined;
   const [{ rows, capped }, subjects, chapters] = await Promise.all([
     listMaterials({ subjectId, chapterId, status }),
     getSubjectTree(),
     listChapterOptions(),
   ]);
   // ponytail: no pagination; the list is capped at 200 rows. Add paging if the bank outgrows it.
-  const shown = capped ? rows.slice(0, 200) : rows;
   return (
     <>
       <form method="get" className="grid gap-3 sm:grid-cols-4 sm:items-end">
@@ -81,10 +80,10 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
         <Button type="submit" className="h-11 text-base">Terapkan</Button>
       </form>
 
-      {shown.length === 0 && <p className="text-muted-foreground">Belum ada materi yang cocok.</p>}
+      {rows.length === 0 && <p className="text-muted-foreground">Belum ada materi yang cocok.</p>}
       <ul className="flex flex-col gap-3">
-        {shown.map((m, i) => {
-          const sameChapter = (j: number) => shown[j]?.chapterId === m.chapterId;
+        {rows.map((m, i) => {
+          const sameChapter = (j: number) => rows[j]?.chapterId === m.chapterId;
           return (
             <li key={m.id} className="flex flex-col gap-3 rounded-lg border p-3">
               <div className="flex flex-wrap items-center gap-2">

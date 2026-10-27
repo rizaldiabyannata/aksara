@@ -5,6 +5,7 @@ import { createSession } from "@/lib/auth/session";
 import { makeChapter, makeClass, makeImage, makeMaterial, makeStudent, makeTeacher } from "../../../tests/factories";
 import { cookieJar, expectForbidden, expectRedirect, resetNextMocks } from "../../../tests/next-mocks";
 import { objects } from "../../../tests/storage-fake";
+import * as storage from "@/lib/storage";
 import { POST } from "./route";
 import { GET } from "./[id]/route";
 
@@ -97,6 +98,35 @@ describe("POST /api/images", () => {
     expect((await POST(upload({ file: good, materialId: "nope", altText: "a" }))).status).toBe(404);
     expect((await POST(upload({ materialId: material.id, altText: "a" }))).status).toBe(400);
     expect(await prisma.image.count()).toBe(0);
+  });
+
+  it("answers 400 to a non-multipart body instead of crashing", async () => {
+    const { user } = await setup();
+    await signIn(user);
+    const req = new Request("http://localhost/api/images", {
+      method: "POST",
+      headers: { origin: "http://localhost", "content-type": "text/plain" },
+      body: "x",
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ ok: false, message: "File harus gambar JPG, PNG, atau WEBP." });
+  });
+
+  it("answers 500 JSON and stores no row when storage fails", async () => {
+    const { user, material } = await setup();
+    await signIn(user);
+    const file = new File([await png()], "a.png", { type: "image/png" });
+    const putSpy = vi.spyOn(storage, "putImage").mockRejectedValueOnce(new Error("R2 down"));
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await POST(upload({ file, materialId: material.id, altText: "a" }));
+    expect(res.status).toBe(500);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(await res.json()).toEqual({ ok: false, message: "Ada masalah. Coba lagi sebentar lagi." });
+    expect(errSpy).toHaveBeenCalledWith("Gagal mengunggah gambar", material.id);
+    expect(await prisma.image.count()).toBe(0);
+    putSpy.mockRestore();
+    errSpy.mockRestore();
   });
 });
 

@@ -37,7 +37,7 @@ async function Dashboard() {
           </Link>
         </li>
         <li>
-          <Link href="/teacher/materials" className={LINK}>
+          <Link href="/teacher/subjects" className={LINK}>
             Mapel &amp; Bab: atur susunan mapel dan bab
           </Link>
         </li>

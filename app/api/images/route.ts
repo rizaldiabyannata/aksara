@@ -27,7 +27,8 @@ export async function POST(req: Request): Promise<Response> {
   if (!sameOrigin(req)) return fail("Permintaan ditolak.", 403);
   const user = await requireTeacher();
 
-  const fd = await req.formData();
+  const fd = await req.formData().catch(() => null);
+  if (!fd) return fail(MSG.type, 400);
   const file = fd.get("file");
   if (!(file instanceof File)) return fail(MSG.type, 400);
   if (file.size > MAX_BYTES) return fail(MSG.size, 413);
@@ -36,13 +37,21 @@ export async function POST(req: Request): Promise<Response> {
     return typeof v === "string" ? v : undefined;
   };
 
-  const r = await addImage(user.id, {
-    materialId: str("materialId") ?? "",
-    altText: str("altText") ?? "",
-    caption: str("caption"),
-    sourceReference: str("sourceReference"),
-    file: new Uint8Array(await file.arrayBuffer()),
-  });
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let r: Awaited<ReturnType<typeof addImage>>;
+  try {
+    r = await addImage(user.id, {
+      materialId: str("materialId") ?? "",
+      altText: str("altText") ?? "",
+      caption: str("caption"),
+      sourceReference: str("sourceReference"),
+      file: bytes,
+    });
+  } catch {
+    // Log the id only: the raw AWS error and the image bytes stay out of logs.
+    console.error("Gagal mengunggah gambar", str("materialId"));
+    return fail("Ada masalah. Coba lagi sebentar lagi.", 500);
+  }
   if (r.ok) return json({ ok: true, id: r.id });
   switch (r.error) {
     case "INVALID": return fail("Periksa isian gambar.", 400, { fieldErrors: r.fieldErrors });

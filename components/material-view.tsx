@@ -16,10 +16,10 @@ export function Markdown({ source, images }: { source: string; images: ImageView
         components={{
           h1: ({ children }) => <h2 className="mt-6 text-xl font-semibold">{children}</h2>,
           h2: ({ children }) => <h3 className="mt-5 text-lg font-semibold">{children}</h3>,
-          h3: ({ children }) => <h4 className="mt-4 font-semibold">{children}</h4>,
-          h4: ({ children }) => <h4 className="mt-4 font-semibold">{children}</h4>,
-          h5: ({ children }) => <h4 className="mt-4 font-semibold">{children}</h4>,
-          h6: ({ children }) => <h4 className="mt-4 font-semibold">{children}</h4>,
+          h3: SubHeading,
+          h4: SubHeading,
+          h5: SubHeading,
+          h6: SubHeading,
           p: ({ children }) => <p>{children}</p>,
           ul: ({ children }) => <ul className="list-disc space-y-1 pl-6">{children}</ul>,
           ol: ({ children }) => <ol className="list-decimal space-y-1 pl-6">{children}</ol>,
@@ -50,6 +50,8 @@ export function Markdown({ source, images }: { source: string; images: ImageView
     </div>
   );
 }
+
+const SubHeading = ({ children }: { children?: ReactNode }) => <h4 className="mt-4 font-semibold">{children}</h4>;
 
 function renderImage(src: string, alt: string, byId: Map<string, ImageView>): ReactNode {
   if (!src.startsWith(IMAGE_PREFIX)) return <span>[Gambar: {alt}]</span>;
