@@ -1,18 +1,9 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
-import { FormField, FormMessage } from "@/components/form-field";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { useActionState } from "react";
+import { ConfirmAction } from "@/components/confirm-action";
+import { Feedback } from "@/components/form-feedback";
+import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,7 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { FormState } from "@/lib/form-state";
 import {
   createClassAction,
   renameClassAction,
@@ -33,18 +23,6 @@ import {
 
 /** "ABCDEF" -> "ABC DEF" (login accepts the space). */
 export const groupCode = (code: string) => `${code.slice(0, 3)} ${code.slice(3)}`;
-
-/** Success is announced politely; errors are alerts. The status region stays mounted so inserted text is read out. */
-function Feedback({ state }: { state: FormState }) {
-  return (
-    <>
-      <p role="status" className="text-sm font-medium text-muted-foreground">
-        {state?.ok ? state.message : null}
-      </p>
-      {!state?.ok && <FormMessage message={state?.message} />}
-    </>
-  );
-}
 
 export function CreateClassForm() {
   const [state, formAction, pending] = useActionState(createClassAction, undefined);
@@ -110,60 +88,6 @@ export function ShowCodeDialog({ name, code }: { name: string; code: string }) {
         </p>
       </DialogContent>
     </Dialog>
-  );
-}
-
-type ConfirmProps = {
-  action: (prev: FormState) => Promise<FormState>;
-  trigger: string;
-  title: string;
-  description: string;
-  confirm: string;
-  destructive?: boolean;
-};
-
-/** Button + AlertDialog confirmation. The form lives outside the dialog so closing it never cancels the submit. */
-export function ConfirmAction({
-  action,
-  trigger,
-  title,
-  description,
-  confirm,
-  destructive,
-}: ConfirmProps) {
-  const [state, formAction, pending] = useActionState(action, undefined);
-  const [open, setOpen] = useState(false);
-  const formId = useId();
-  return (
-    <div className="flex flex-col gap-2">
-      <form id={formId} action={formAction} />
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogTrigger
-          render={<Button variant="outline" className="h-11" disabled={pending} />}
-        >
-          {trigger}
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{title}</AlertDialogTitle>
-            <AlertDialogDescription>{description}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-11">Batal</AlertDialogCancel>
-            <AlertDialogAction
-              type="submit"
-              form={formId}
-              variant={destructive ? "destructive" : "default"}
-              className="h-11"
-              onClick={() => setOpen(false)}
-            >
-              {confirm}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <Feedback state={state} />
-    </div>
   );
 }
 
