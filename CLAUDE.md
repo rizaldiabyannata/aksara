@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Aksara: a web app for one teacher and their grade VI SD/MI students. It covers learning materials, a question bank, timed online quizzes (ulangan), grading, result release, and Excel export. The full spec is `docs/PRD_Web_App_Belajar_Kelas_VI.md` (Indonesian). Read the relevant PRD section before building a feature.
 
-Current state: Tahap 1 (foundation) is built. Prisma 7 schema (User, Class, Session, LoginThrottle, AuditLog) with a seeded teacher. Custom auth in `lib/auth/`: student login by class code + NIS/name, teacher login by username/password, DB sessions, throttling, page/action guards. Teacher pages for classes (`lib/classes.ts`) and students (`lib/students.ts`) under `app/(teacher)/teacher/`; a stub student dashboard. Vitest integration tests run against Docker Postgres. Materials, question bank, quizzes, grading, and export (Tahap 2+) are not built yet.
+Current state: Tahap 1 (foundation) and Tahap 2 (content) are built. Prisma 7 schema (User, Class, Session, LoginThrottle, AuditLog) with a seeded teacher. Custom auth in `lib/auth/`: student login by class code + NIS/name, teacher login by username/password, DB sessions, throttling, page/action guards. Teacher pages for classes (`lib/classes.ts`) and students (`lib/students.ts`) under `app/(teacher)/teacher/`; a stub student dashboard. Tahap 2 adds the Subject/Chapter/Subchapter/Material/Image models (MaterialStatus DRAFT → REVIEWED → PUBLISHED) with `lib/subjects.ts`, `lib/materials.ts`, `lib/images.ts`. `lib/storage.ts` is the only module that knows R2; tests mock it with `tests/storage-fake.ts`. `components/material-view.tsx` is the shared safe Markdown renderer. Image routes: `app/api/images` (POST upload, GET `[id]` → 302 to a presigned URL). Teacher pages are `/teacher/subjects` and `/teacher/materials`; student pages are `/student/materials`. Vitest integration tests run against Docker Postgres. Question bank, quizzes, grading, and export (Tahap 3+) are not built yet.
 
 This folder is its own git repo (default branch `main`, initialized 2026-10-27). It is nested inside the parent repo at `~/Documents/Code`. Run `git` from this folder, never from the parent.
 
@@ -25,11 +25,15 @@ bunx tsc --noEmit       # typecheck; there is no script for it. A fresh checkout
 bun run db:up           # Postgres in Docker (host port 5433; DBs aksara_dev, aksara_test)
 bun run db:migrate      # prisma migrate dev
 bun run db:seed         # teacher account from .env
+bun run db:seed:content # 2 mapel + 10 bab (idempoten)
 bun run test            # vitest run; needs Docker up
 bun run test <file> -t "<name>"   # single test
+bun run test lib/storage.r2.test.ts   # smoke R2 nyata; butuh R2_* di .env.local
 bun run test:watch
 bunx shadcn add <name>  # add a UI component into components/ui
 ```
+
+`prisma migrate dev` (Prisma 7) does not regenerate the client: run `bunx prisma generate` after a migration.
 
 Tests hit the real `aksara_test` DB: global setup refuses any DB name not ending `_test`, runs `prisma migrate deploy`, and each test truncates all tables. If a migration is edited after it was applied, the human must reset `aksara_test` manually (e.g. `DIRECT_URL=<test url> bunx prisma migrate reset`); agents can't (Prisma AI guard). Playwright for e2e is planned, not added.
 

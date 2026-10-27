@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Aksara
 
-## Getting Started
+Aksara adalah aplikasi web untuk satu guru dan siswa kelas VI SD/MI. Isinya: materi belajar, bank soal, ulangan online dengan timer, penilaian, rilis hasil, dan ekspor Excel.
 
-First, run the development server:
+## Menjalankan Lokal
+
+Prasyarat: Bun dan Docker.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
+cp .env.example .env.local   # isi nilainya
+bun run db:up               # Postgres di Docker (port 5433)
+bun run db:migrate
+bunx prisma generate         # wajib setelah migrasi baru
+bun run db:seed              # akun guru dari .env
+bun run db:seed:content      # 2 mapel + 10 bab (idempoten)
+bun dev                      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Tes (butuh Docker menyala):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+bun run test
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup Cloudflare R2
 
-## Learn More
+Gambar materi disimpan di bucket R2 yang privat. Ulangi langkah ini untuk setiap environment.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Cloudflare Dashboard → R2 Object Storage → Create bucket `aksara-dev`, lokasi Automatic.
+2. Bucket → Settings → Public access: pastikan **R2.dev subdomain Disabled** dan tidak ada Custom Domain.
+3. R2 → Manage API tokens → Create API token: permission **Object Read & Write**, "Apply to specific buckets only" → `aksara-dev`.
+4. Salin Account ID, Access Key ID, dan Secret ke `.env.local` (`R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET=aksara-dev`).
+5. Bukti: `bun run test lib/storage.r2.test.ts` lulus (tidak di-skip). Ulangi untuk `aksara-preview` dan `aksara-prod` saat deploy, lalu isi env di Vercel.
