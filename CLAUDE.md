@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Aksara: a web app for one teacher and their grade VI SD/MI students. It covers learning materials, a question bank, timed online quizzes (ulangan), grading, result release, and Excel export. The full spec is `docs/PRD_Web_App_Belajar_Kelas_VI.md` (Indonesian). Read the relevant PRD section before building a feature.
 
-Current state: a fresh `create-next-app` + shadcn scaffold. Nothing from the PRD is built yet: no Prisma, no auth, no test runner.
+Current state: a fresh `create-next-app` + shadcn scaffold. Prisma schema (User, Class, Session, LoginThrottle, AuditLog) and the Vitest harness exist; auth and the rest of the PRD are not built yet.
 
 This folder is its own git repo (default branch `main`, initialized 2026-10-27). It is nested inside the parent repo at `~/Documents/Code`. Run `git` from this folder, never from the parent.
 
@@ -21,11 +21,17 @@ bun install
 bun dev                 # next dev on :3000
 bun run build
 bun run lint            # eslint (flat config, next core-web-vitals + typescript)
-bunx tsc --noEmit       # typecheck; there is no script for it
+bunx tsc --noEmit       # typecheck; there is no script for it. A fresh checkout needs `bunx next typegen` first
+bun run db:up           # Postgres in Docker (host port 5433; DBs aksara_dev, aksara_test)
+bun run db:migrate      # prisma migrate dev
+bun run db:seed         # teacher account from .env
+bun run test            # vitest run; needs Docker up
+bun run test <file> -t "<name>"   # single test
+bun run test:watch
 bunx shadcn add <name>  # add a UI component into components/ui
 ```
 
-There are no tests yet. The PRD plans Vitest or Jest for unit and integration tests and Playwright for e2e. Once a runner is added, put its full-suite and single-test commands here.
+Tests hit the real `aksara_test` DB: global setup refuses any DB name not ending `_test`, runs `prisma migrate deploy`, and each test truncates all tables. If a migration is edited after it was applied, the human must reset `aksara_test` manually (e.g. `DIRECT_URL=<test url> bunx prisma migrate reset`); agents can't (Prisma AI guard). Playwright for e2e is planned, not added.
 
 ## Stack quirks
 
