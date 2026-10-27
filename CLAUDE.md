@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Aksara: a web app for one teacher and their grade VI SD/MI students. It covers learning materials, a question bank, timed online quizzes (ulangan), grading, result release, and Excel export. The full spec is `docs/PRD_Web_App_Belajar_Kelas_VI.md` (Indonesian). Read the relevant PRD section before building a feature.
 
-Current state: a fresh `create-next-app` + shadcn scaffold. Prisma schema (User, Class, Session, LoginThrottle, AuditLog) and the Vitest harness exist; auth and the rest of the PRD are not built yet.
+Current state: Tahap 1 (foundation) is built. Prisma 7 schema (User, Class, Session, LoginThrottle, AuditLog) with a seeded teacher. Custom auth in `lib/auth/`: student login by class code + NIS/name, teacher login by username/password, DB sessions, throttling, page/action guards. Teacher pages for classes (`lib/classes.ts`) and students (`lib/students.ts`) under `app/(teacher)/teacher/`; a stub student dashboard. Vitest integration tests run against Docker Postgres. Materials, question bank, quizzes, grading, and export (Tahap 2+) are not built yet.
 
 This folder is its own git repo (default branch `main`, initialized 2026-10-27). It is nested inside the parent repo at `~/Documents/Code`. Run `git` from this folder, never from the parent.
 
