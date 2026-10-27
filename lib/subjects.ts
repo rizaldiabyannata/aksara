@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { parse, required, optional, type Invalid, type NotFound } from "@/lib/validation";
 import { uniqueViolation as sharedUniqueViolation } from "@/lib/unique-violation";
 
-type Invalid = { ok: false; error: "INVALID"; fieldErrors: Record<string, string> };
 type InUse = { ok: false; error: "IN_USE"; message: string };
-type NotFound = { ok: false; error: "NOT_FOUND" };
 
 export type SubjectTree = {
   id: string;
@@ -27,29 +26,6 @@ export type SubjectTree = {
   }[];
 }[];
 
-function parse<S extends z.ZodType>(
-  schema: S,
-  input: unknown,
-): { ok: true; data: z.infer<S> } | Invalid {
-  const r = schema.safeParse(input);
-  if (r.success) return { ok: true, data: r.data };
-  const fieldErrors: Record<string, string> = {};
-  for (const i of r.error.issues) {
-    const key = i.path.length ? String(i.path[0]) : "form";
-    fieldErrors[key] ??= i.message;
-  }
-  return { ok: false, error: "INVALID", fieldErrors };
-}
-
-const required = (max: number, msg: string) =>
-  z.string({ error: msg }).trim().min(1, { error: msg }).max(max, { error: msg });
-const optional = (max: number, msg: string) =>
-  z
-    .string({ error: msg })
-    .trim()
-    .max(max, { error: msg })
-    .optional()
-    .transform((v) => v || null);
 const FORM_MSG = "Data tidak lengkap. Coba isi lagi.";
 
 const subjectSchema = z.object(
