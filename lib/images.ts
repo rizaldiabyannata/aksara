@@ -1,4 +1,10 @@
+import { randomUUID } from "node:crypto";
 import sharp, { type Sharp } from "sharp";
+import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { writeAudit } from "@/lib/audit";
+import { deleteImage, presignGet, putImage } from "@/lib/storage";
+import type { SessionUser } from "@/lib/auth/session";
 import type { MaterialStatus } from "@/lib/generated/prisma/enums";
 
 const IMAGE_REF = /aksara-image:([A-Za-z0-9_-]+)/g;
@@ -75,4 +81,126 @@ export async function processUpload(
     // Decode failures and sharp's pixel limit both land here.
     return { ok: false, error: "UNSUPPORTED" };
   }
+}
+
+type Invalid = { ok: false; error: "INVALID"; fieldErrors: Record<string, string> };
+type NotFound = { ok: false; error: "NOT_FOUND" };
+
+const MAX_IMAGES_PER_MATERIAL = 20;
+const ALT_MSG = "Teks alternatif wajib diisi, paling banyak 200 huruf.";
+const optional = (msg: string) =>
+  z.string({ error: msg }).trim().max(200, { error: msg }).optional().transform((v) => v || null);
+const metaSchema = z.object(
+  {
+    altText: z.string({ error: ALT_MSG }).trim().min(1, { error: ALT_MSG }).max(200, { error: ALT_MSG }),
+    caption: optional("Keterangan paling banyak 200 huruf."),
+    sourceReference: optional("Sumber paling banyak 200 huruf."),
+  },
+  { error: "Data tidak lengkap. Coba isi lagi." },
+);
+
+function parseMeta(input: unknown):
+  | { ok: true; data: z.infer<typeof metaSchema> }
+  | Invalid {
+  const r = metaSchema.safeParse(input);
+  if (r.success) return { ok: true, data: r.data };
+  const fieldErrors: Record<string, string> = {};
+  for (const i of r.error.issues) fieldErrors[i.path.length ? String(i.path[0]) : "form"] ??= i.message;
+  return { ok: false, error: "INVALID", fieldErrors };
+}
+
+async function removeObject(key: string, imageId: string) {
+  try {
+    await deleteImage(key);
+  } catch {
+    console.error("Gagal menghapus objek gambar", imageId);
+  }
+}
+
+export async function addImage(
+  actorId: string,
+  input: { materialId: string; altText: string; caption?: string; sourceReference?: string; file: Uint8Array },
+): Promise<
+  | { ok: true; id: string }
+  | Invalid
+  | NotFound
+  | { ok: false; error: "LIMIT" | "UNSUPPORTED" | "TOO_LARGE" }
+> {
+  const meta = parseMeta(input);
+  if (!meta.ok) return meta;
+  const material = await prisma.material.findUnique({ where: { id: input.materialId }, select: { id: true } });
+  if (!material) return { ok: false, error: "NOT_FOUND" };
+  // ponytail: count then insert is not atomic; a double submit could pass 20. Fine with a single teacher.
+  const count = await prisma.image.count({ where: { materialId: material.id } });
+  if (count >= MAX_IMAGES_PER_MATERIAL) return { ok: false, error: "LIMIT" };
+  const p = await processUpload(input.file);
+  if (!p.ok) return p;
+  const { image } = p;
+  const storageKey = `images/${randomUUID()}.${image.ext}`;
+  await putImage(storageKey, image.data, image.mimeType);
+  try {
+    const id = await prisma.$transaction(async (tx) => {
+      const row = await tx.image.create({
+        data: {
+          materialId: material.id,
+          storageKey,
+          mimeType: image.mimeType,
+          sizeBytes: image.data.length,
+          width: image.width,
+          height: image.height,
+          ...meta.data,
+          createdById: actorId,
+        },
+        select: { id: true },
+      });
+      await writeAudit(tx, {
+        actorUserId: actorId,
+        action: "IMAGE_ADDED",
+        entityType: "Image",
+        entityId: row.id,
+        metadata: { imageId: row.id, materialId: material.id },
+      });
+      return row.id;
+    });
+    return { ok: true, id };
+  } catch (e) {
+    await removeObject(storageKey, "belum-tersimpan");
+    throw e;
+  }
+}
+
+export async function updateImageMeta(id: string, input: unknown): Promise<{ ok: true } | Invalid | NotFound> {
+  const meta = parseMeta(input);
+  if (!meta.ok) return meta;
+  const r = await prisma.image.updateMany({ where: { id }, data: meta.data });
+  return r.count ? { ok: true } : { ok: false, error: "NOT_FOUND" };
+}
+
+export async function removeImage(actorId: string, id: string): Promise<{ ok: true } | NotFound> {
+  const storageKey = await prisma.$transaction(async (tx) => {
+    const img = await tx.image.findUnique({ where: { id }, select: { storageKey: true, materialId: true } });
+    if (!img) return null;
+    await tx.image.delete({ where: { id } });
+    await writeAudit(tx, {
+      actorUserId: actorId,
+      action: "IMAGE_REMOVED",
+      entityType: "Image",
+      entityId: id,
+      metadata: { imageId: id, materialId: img.materialId },
+    });
+    return img.storageKey;
+  });
+  if (!storageKey) return { ok: false, error: "NOT_FOUND" };
+  await removeObject(storageKey, id);
+  return { ok: true };
+}
+
+/** Presigned URL for the caller, or null (unknown id or not allowed). Never expose storageKey. */
+export async function imageRedirectTarget(user: SessionUser, id: string): Promise<string | null> {
+  const img = await prisma.image.findUnique({
+    where: { id },
+    select: { storageKey: true, material: { select: { status: true } } },
+  });
+  if (!img || !canStudentViewImage({ role: user.role, materialStatus: img.material.status })) return null;
+  return presignGet(img.storageKey);
 }

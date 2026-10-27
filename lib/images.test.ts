@@ -1,10 +1,20 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 import {
   canStudentViewImage,
   extractImageIds,
   processUpload,
+  addImage,
+  imageRedirectTarget,
+  removeImage,
+  updateImageMeta,
 } from "@/lib/images";
+import { prisma } from "@/lib/db";
+import { objects } from "../tests/storage-fake";
+import { makeChapter, makeClass, makeImage, makeMaterial, makeStudent, makeTeacher } from "../tests/factories";
+
+vi.mock("@/lib/storage", () => import("../tests/storage-fake").then((m) => m.storageMock()));
+beforeEach(() => objects.clear());
 
 const PNG_HEADER = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
@@ -98,5 +108,123 @@ describe("processUpload", () => {
     bomb.writeUInt32BE(30000, 16);
     bomb.writeUInt32BE(30000, 20);
     expect(await processUpload(bomb)).toEqual({ ok: false, error: "UNSUPPORTED" });
+  });
+});
+
+async function setup(status: "DRAFT" | "PUBLISHED" = "DRAFT") {
+  const { user } = await makeTeacher();
+  const chapter = await makeChapter();
+  const material = await makeMaterial(chapter.id, user.id, { status });
+  const file = await sharp({ create: { width: 20, height: 20, channels: 3, background: "red" } })
+    .jpeg()
+    .withExif({ IFD0: { Copyright: "x" } })
+    .toBuffer();
+  return { user, material, file };
+}
+
+describe("addImage", () => {
+  it("image without alt text is rejected and nothing is stored", async () => {
+    const { user, material, file } = await setup();
+    const r = await addImage(user.id, { materialId: material.id, altText: "  ", file });
+    expect(r).toMatchObject({ ok: false, error: "INVALID" });
+    if (!r.ok && r.error === "INVALID") {
+      expect(r.fieldErrors.altText).toBe("Teks alternatif wajib diisi, paling banyak 200 huruf.");
+    }
+    expect(objects.size).toBe(0);
+    expect(await prisma.image.count()).toBe(0);
+  });
+
+  it("unknown material is NOT_FOUND and nothing is stored", async () => {
+    const { user, file } = await setup();
+    expect(await addImage(user.id, { materialId: "nope", altText: "a", file })).toEqual({
+      ok: false,
+      error: "NOT_FOUND",
+    });
+    expect(objects.size).toBe(0);
+  });
+
+  it("rejects unsupported bytes without storing", async () => {
+    const { user, material } = await setup();
+    const r = await addImage(user.id, { materialId: material.id, altText: "a", file: Buffer.from("hello world!!") });
+    expect(r).toEqual({ ok: false, error: "UNSUPPORTED" });
+    expect(objects.size).toBe(0);
+  });
+
+  it("21st image is rejected with LIMIT", async () => {
+    const { user, material, file } = await setup();
+    for (let i = 0; i < 20; i++) await makeImage(material.id, user.id);
+    expect(await addImage(user.id, { materialId: material.id, altText: "a", file })).toEqual({
+      ok: false,
+      error: "LIMIT",
+    });
+    expect(objects.size).toBe(0);
+  });
+
+  it("stores a clean object, a row and an audit without the key", async () => {
+    const { user, material, file } = await setup();
+    const r = await addImage(user.id, { materialId: material.id, altText: " Peta ", caption: "", file });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const row = await prisma.image.findUniqueOrThrow({ where: { id: r.id } });
+    expect(row).toMatchObject({ altText: "Peta", caption: null, sourceReference: null, createdById: user.id });
+    expect(row.storageKey).toMatch(/^images\/[0-9a-f-]{36}\.jpg$/);
+    const obj = objects.get(row.storageKey)!;
+    expect((await sharp(obj.body).metadata()).exif).toBeUndefined();
+    const audit = await prisma.auditLog.findFirstOrThrow({ where: { action: "IMAGE_ADDED" } });
+    expect(audit.metadata).toEqual({ imageId: r.id, materialId: material.id });
+  });
+
+  it("DB failure after put removes the object", async () => {
+    const { user, material, file } = await setup();
+    vi.spyOn(prisma, "$transaction").mockRejectedValueOnce(new Error("db"));
+    await expect(addImage(user.id, { materialId: material.id, altText: "a", file })).rejects.toThrow("db");
+    expect(objects.size).toBe(0);
+  });
+});
+
+describe("updateImageMeta", () => {
+  it("updates, validates and reports missing", async () => {
+    const { user, material } = await setup();
+    const img = await makeImage(material.id, user.id);
+    expect(await updateImageMeta(img.id, { altText: "Baru", caption: "C", sourceReference: "" })).toEqual({ ok: true });
+    expect(await prisma.image.findUniqueOrThrow({ where: { id: img.id } })).toMatchObject({
+      altText: "Baru",
+      caption: "C",
+      sourceReference: null,
+    });
+    expect(await updateImageMeta(img.id, { altText: "" })).toMatchObject({ ok: false, error: "INVALID" });
+    expect(await updateImageMeta("nope", { altText: "a" })).toEqual({ ok: false, error: "NOT_FOUND" });
+  });
+});
+
+describe("removeImage", () => {
+  it("deletes row, object, writes IMAGE_REMOVED without storageKey", async () => {
+    const { user, material } = await setup();
+    const img = await makeImage(material.id, user.id);
+    objects.set(img.storageKey, { body: Buffer.from("x"), contentType: "image/jpeg" });
+    expect(await removeImage(user.id, img.id)).toEqual({ ok: true });
+    expect(await prisma.image.count()).toBe(0);
+    expect(objects.size).toBe(0);
+    const audit = await prisma.auditLog.findFirstOrThrow({ where: { action: "IMAGE_REMOVED" } });
+    expect(audit.metadata).toEqual({ imageId: img.id, materialId: material.id });
+    expect(JSON.stringify(audit)).not.toContain(img.storageKey);
+    expect(await removeImage(user.id, img.id)).toEqual({ ok: false, error: "NOT_FOUND" });
+  });
+});
+
+describe("imageRedirectTarget", () => {
+  it("students get null for DRAFT, URL for PUBLISHED; teacher gets URL for DRAFT", async () => {
+    const { user, material } = await setup();
+    const pub = await makeMaterial((await makeChapter()).id, user.id, { status: "PUBLISHED" });
+    const draftImg = await makeImage(material.id, user.id);
+    const pubImg = await makeImage(pub.id, user.id);
+    const cls = await makeClass();
+    const stu = await makeStudent(cls.id);
+    const student = { id: stu.id, role: "STUDENT" } as never;
+    const teacher = { id: user.id, role: "TEACHER" } as never;
+    expect(await imageRedirectTarget(student, draftImg.id)).toBeNull();
+    expect(await imageRedirectTarget(student, pubImg.id)).toBe(`https://r2.test/${pubImg.storageKey}?sig=1`);
+    expect(await imageRedirectTarget(teacher, draftImg.id)).toBe(`https://r2.test/${draftImg.storageKey}?sig=1`);
+    expect(await imageRedirectTarget(teacher, "nope")).toBeNull();
   });
 });
