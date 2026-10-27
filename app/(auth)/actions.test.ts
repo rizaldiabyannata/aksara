@@ -131,4 +131,14 @@ describe("logoutAction", () => {
   it("works without a cookie", async () => {
     await expectRedirect(logoutAction(), "/login");
   });
+
+  it("clears the cookie even when the DB call fails", async () => {
+    const spy = vi.spyOn(prisma.session, "deleteMany").mockRejectedValueOnce(new Error("db down"));
+    const { user } = await makeTeacher();
+    const { token } = await createSession(prisma, user);
+    cookieJar.set("aksara_session", token);
+    await expect(logoutAction()).rejects.toThrow("db down");
+    expect(cookieJar.has("aksara_session")).toBe(false);
+    spy.mockRestore();
+  });
 });

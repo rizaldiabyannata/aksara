@@ -66,11 +66,15 @@ export async function loginTeacherAction(
 export async function logoutAction(): Promise<void> {
   const token = await readSessionToken();
   let isTeacher = false;
-  if (token) {
-    const s = await findSession(token);
-    isTeacher = s.status === "ok" && s.user.role === "TEACHER";
-    await logout(token);
+  try {
+    if (token) {
+      const s = await findSession(token);
+      isTeacher = s.status === "ok" && s.user.role === "TEACHER";
+      await logout(token);
+    }
+  } finally {
+    // Even if the DB call fails, this device must end up logged out.
+    await clearSessionCookie();
   }
-  await clearSessionCookie();
   redirect(isTeacher ? "/teacher/login" : "/login");
 }

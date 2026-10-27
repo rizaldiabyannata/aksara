@@ -16,6 +16,11 @@ export const throttleKey = {
     limit: 10,
   }),
   ip: (ip: string): ThrottleKey => ({ key: sha256(`ip:${ip}`), limit: 100 }),
+  // Separate bucket so students' typos on a shared school IP never lock out the teacher.
+  teacherIp: (ip: string): ThrottleKey => ({
+    key: sha256(`ip:teacher:${ip}`),
+    limit: 100,
+  }),
 };
 
 // ponytail: baris throttle lama tidak dibersihkan; tambah cleanup bila tabel membesar
@@ -39,6 +44,14 @@ export async function reserveAttempt(keys: ThrottleKey[]): Promise<boolean> {
     }),
   );
   return counts.every(Boolean);
+}
+
+/** Identity first; the IP key is charged only while the identity is within its limit. */
+export async function reserveLogin(
+  identity: ThrottleKey,
+  ip: ThrottleKey,
+): Promise<boolean> {
+  return (await reserveAttempt([identity])) && reserveAttempt([ip]);
 }
 
 /** After a successful login: clear the identity row, give back one IP attempt (floor 0). */

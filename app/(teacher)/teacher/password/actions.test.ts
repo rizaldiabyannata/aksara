@@ -68,6 +68,20 @@ describe("changePasswordAction", () => {
     ).toEqual({ message: "Kata sandi lama salah." });
   });
 
+  it("returns a generic message when the domain call throws", async () => {
+    const { user, password } = await makeTeacher();
+    await signIn(user);
+    const spy = vi.spyOn(prisma.user, "findFirst").mockRejectedValueOnce(new Error("db down"));
+    const newPassword = "kata-sandi-baru-123";
+    expect(
+      await changePasswordAction(
+        undefined,
+        form({ currentPassword: password, newPassword, confirmPassword: newPassword }),
+      ),
+    ).toEqual({ message: "Ada masalah. Coba lagi sebentar lagi." });
+    spy.mockRestore();
+  });
+
   it("passes field errors through", async () => {
     const { user, password } = await makeTeacher();
     await signIn(user);

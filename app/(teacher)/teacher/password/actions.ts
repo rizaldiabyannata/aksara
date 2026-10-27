@@ -10,11 +10,16 @@ export async function changePasswordAction(
   formData: FormData,
 ): Promise<FormState> {
   const user = await requireTeacher({ allowPasswordChange: true });
-  const result = await changeTeacherPassword(user.id, {
-    currentPassword: field(formData, "currentPassword"),
-    newPassword: field(formData, "newPassword"),
-    confirmPassword: field(formData, "confirmPassword"),
-  });
+  let result: Awaited<ReturnType<typeof changeTeacherPassword>>;
+  try {
+    result = await changeTeacherPassword(user.id, {
+      currentPassword: field(formData, "currentPassword"),
+      newPassword: field(formData, "newPassword"),
+      confirmPassword: field(formData, "confirmPassword"),
+    });
+  } catch {
+    return { message: "Ada masalah. Coba lagi sebentar lagi." };
+  }
   if (!result.ok) {
     if (result.error === "WRONG_PASSWORD") return { message: "Kata sandi lama salah." };
     if (result.error === "THROTTLED") {

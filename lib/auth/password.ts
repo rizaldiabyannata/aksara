@@ -15,7 +15,11 @@ export function verifyPassword(hashed: string, pw: string): Promise<boolean> {
 let dummyHash: Promise<string> | undefined;
 
 export async function verifyDummyPassword(pw: string): Promise<false> {
-  dummyHash ??= hashPassword("dummy-password-never-matches");
+  // A rejected build must not stay cached: a fast-failing branch would reveal unknown usernames.
+  dummyHash ??= hashPassword("dummy-password-never-matches").catch((e) => {
+    dummyHash = undefined;
+    throw e;
+  });
   await verify(await dummyHash, pw);
   return false;
 }

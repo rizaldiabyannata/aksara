@@ -7,7 +7,12 @@ import {
   verifyPassword,
 } from "@/lib/auth/password";
 import { createSession, deleteSession, revokeSessions } from "@/lib/auth/session";
-import { releaseOnSuccess, reserveAttempt, throttleKey } from "@/lib/auth/throttle";
+import {
+  releaseOnSuccess,
+  reserveAttempt,
+  reserveLogin,
+  throttleKey,
+} from "@/lib/auth/throttle";
 import {
   isNis,
   normalizeClassCode,
@@ -36,7 +41,7 @@ export async function loginStudent(input: {
   const identity = normalizeIdentity(input.identity);
   const idKey = throttleKey.student(code, identity);
   const ipKey = throttleKey.ip(input.ip);
-  if (!(await reserveAttempt([idKey, ipKey]))) return THROTTLED;
+  if (!(await reserveLogin(idKey, ipKey))) return THROTTLED;
 
   const student = await prisma.user.findFirst({
     where: {
@@ -50,9 +55,12 @@ export async function loginStudent(input: {
   if (!student) return INVALID;
 
   const session = await prisma.$transaction(async (tx) => {
-    // Row lock serializes parallel logins of one student: last one wins, one active session.
+    // User lock serializes parallel logins (last one wins); the class share lock waits out a
+    // concurrent class deactivation without serializing classmates' logins.
     const locked = await tx.$queryRaw<{ id: string }[]>`
-      SELECT id FROM "User" WHERE id = ${student.id} AND "isActive" FOR UPDATE`;
+      SELECT u.id FROM "User" u JOIN "Class" c ON c.id = u."classId"
+      WHERE u.id = ${student.id} AND u."isActive" AND c."isActive"
+      FOR UPDATE OF u FOR SHARE OF c`;
     if (locked.length === 0) return null;
     await tx.session.deleteMany({
       where: {
@@ -86,8 +94,8 @@ export async function loginTeacher(input: {
 }): Promise<LoginResult> {
   const username = normalizeUsername(input.username);
   const idKey = throttleKey.teacher(username);
-  const ipKey = throttleKey.ip(input.ip);
-  if (!(await reserveAttempt([idKey, ipKey]))) return THROTTLED;
+  const ipKey = throttleKey.teacherIp(input.ip);
+  if (!(await reserveLogin(idKey, ipKey))) return THROTTLED;
 
   const teacher = await prisma.user.findFirst({
     where: { role: "TEACHER", isActive: true, username },

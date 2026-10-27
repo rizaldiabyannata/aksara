@@ -1,9 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { hash } from "@node-rs/argon2";
 import {
   hashPassword,
   verifyDummyPassword,
   verifyPassword,
 } from "@/lib/auth/password";
+
+vi.mock("@node-rs/argon2", async (orig) => {
+  const m = await orig<typeof import("@node-rs/argon2")>();
+  return { ...m, hash: vi.fn(m.hash) };
+});
 
 describe("hashPassword", () => {
   it("produces an Argon2id PHC string with the agreed parameters", async () => {
@@ -27,6 +33,13 @@ describe("verifyPassword", () => {
 });
 
 describe("verifyDummyPassword", () => {
+  // Must run before any successful dummy build, which would be cached for the module's life.
+  it("does not cache a failed dummy-hash build", async () => {
+    vi.mocked(hash).mockRejectedValueOnce(new Error("boom"));
+    await expect(verifyDummyPassword("x")).rejects.toThrow("boom");
+    expect(await verifyDummyPassword("x")).toBe(false);
+  });
+
   it("always returns false, while doing a real Argon2 verify", async () => {
     expect(await verifyDummyPassword("x")).toBe(false);
   });

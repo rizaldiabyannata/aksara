@@ -28,6 +28,7 @@ export async function clearSessionCookie() {
   (await cookies()).delete({ name: SESSION_COOKIE, path: "/" });
 }
 
+// Trusts x-forwarded-for: Vercel overwrites it, but under plain `next start` clients can spoof it.
 export async function getRequestIp(): Promise<string> {
   const xff = (await headers()).get("x-forwarded-for");
   return xff?.split(",")[0].trim() || "unknown";

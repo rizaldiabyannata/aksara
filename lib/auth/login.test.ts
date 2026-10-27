@@ -146,6 +146,35 @@ describe("loginStudent", () => {
   });
 });
 
+describe("shared-IP throttling", () => {
+  const ipCount = async (key: { key: string }) =>
+    (await prisma.loginThrottle.findUnique({ where: { key: key.key } }))?.failCount;
+
+  it("a throttled student identity stops charging the IP key", async () => {
+    const c = await makeClass();
+    for (let i = 0; i < 30; i++) {
+      await loginStudent({ classCode: c.code, identity: "salah", ip });
+    }
+    expect(await ipCount(throttleKey.ip(ip))).toBe(10);
+  });
+
+  it("100 failed student attempts from one IP don't throttle the teacher", async () => {
+    const c = await makeClass();
+    const { user, password } = await makeTeacher();
+    for (let i = 0; i < 100; i++) {
+      await loginStudent({ classCode: c.code, identity: `salah ${i}`, ip });
+    }
+    expect(await loginStudent({ classCode: c.code, identity: "baru", ip })).toEqual({
+      ok: false,
+      error: "THROTTLED",
+    });
+    expect(await loginTeacher({ username: user.username!, password, ip })).toMatchObject({
+      ok: true,
+    });
+    expect(await ipCount(throttleKey.teacherIp(ip))).toBe(0);
+  });
+});
+
 describe("loginTeacher", () => {
   it("logs in and reports mustChangePassword", async () => {
     const { user, password } = await makeTeacher();
