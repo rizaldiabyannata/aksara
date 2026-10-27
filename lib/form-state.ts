@@ -1,6 +1,6 @@
 /** State shape for Server Actions used with `useActionState`. */
 export type FormState =
-  | { message?: string; fieldErrors?: Record<string, string> }
+  | { message?: string; ok?: boolean; fieldErrors?: Record<string, string> }
   | undefined;
 
 /** FormData value as a string; files and missing fields become "". */

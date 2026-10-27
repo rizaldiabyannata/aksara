@@ -34,16 +34,15 @@ import {
 /** "ABCDEF" -> "ABC DEF" (login accepts the space). */
 export const groupCode = (code: string) => `${code.slice(0, 3)} ${code.slice(3)}`;
 
-/** Form-level feedback: errors are announced as alerts, successes politely. */
+/** Success is announced politely; errors are alerts. The status region stays mounted so inserted text is read out. */
 function Feedback({ state }: { state: FormState }) {
-  if (state?.message === undefined) return null;
-  const failed = /sudah dipakai|tidak ditemukan|Ada masalah/.test(state.message);
-  return failed ? (
-    <FormMessage message={state.message} />
-  ) : (
-    <p role="status" className="text-sm font-medium text-muted-foreground">
-      {state.message}
-    </p>
+  return (
+    <>
+      <p role="status" className="text-sm font-medium text-muted-foreground">
+        {state?.ok ? state.message : null}
+      </p>
+      {!state?.ok && <FormMessage message={state?.message} />}
+    </>
   );
 }
 

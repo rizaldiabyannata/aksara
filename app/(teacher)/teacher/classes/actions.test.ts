@@ -12,6 +12,7 @@ import {
 import {
   createClassAction,
   renameClassAction,
+  revokeClassSessionsAction,
   rotateClassCodeAction,
   setClassActiveAction,
 } from "./actions";
@@ -37,23 +38,39 @@ async function signIn(user: { id: string; role: "STUDENT" | "TEACHER" }) {
   cookieJar.set("aksara_session", token);
 }
 
-describe("class actions", () => {
-  it("is forbidden for a student session", async () => {
+const calls: [string, (id: string) => Promise<unknown>][] = [
+  ["createClassAction", () => createClassAction(undefined, form({ name: "VI-X" }))],
+  ["renameClassAction", (id) => renameClassAction(id, undefined, form({ name: "VI-X" }))],
+  ["rotateClassCodeAction", (id) => rotateClassCodeAction(id)],
+  ["revokeClassSessionsAction", (id) => revokeClassSessionsAction(id)],
+  ["setClassActiveAction", (id) => setClassActiveAction(id, false)],
+];
+
+describe.each(calls)("%s authz", (_name, call) => {
+  it("is forbidden for a student session and changes nothing", async () => {
     const cls = await makeClass();
     await signIn(await makeStudent(cls.id));
-    await expectForbidden(createClassAction(undefined, form({ name: "VI-X" })));
+    await expectForbidden(call(cls.id));
     expect(await prisma.class.count()).toBe(1);
+    expect(await prisma.class.findUniqueOrThrow({ where: { id: cls.id } })).toMatchObject({
+      name: cls.name,
+      code: cls.code,
+      isActive: true,
+    });
   });
 
   it("redirects to the teacher login without a session", async () => {
-    await expectRedirect(createClassAction(undefined, form({ name: "VI-X" })), "/teacher/login");
+    await expectRedirect(call("x"), "/teacher/login");
   });
+});
+
+describe("class actions", () => {
 
   it("creates a class and revalidates the list", async () => {
     const { user } = await makeTeacher();
     await signIn(user);
     const state = await createClassAction(undefined, form({ name: "VI-A" }));
-    expect(state?.message).toBe("Kelas dibuat.");
+    expect(state).toEqual({ message: "Kelas dibuat.", ok: true });
     expect(await prisma.class.count({ where: { name: "VI-A" } })).toBe(1);
     expect(revalidatePath).toHaveBeenCalledWith("/teacher/classes");
   });

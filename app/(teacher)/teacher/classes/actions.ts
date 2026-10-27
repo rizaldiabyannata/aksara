@@ -36,7 +36,7 @@ async function run(call: () => Promise<Result>, success: string): Promise<FormSt
       : { message: ERRORS[result.error] };
   }
   revalidatePath("/teacher/classes");
-  return { message: success };
+  return { message: success, ok: true };
 }
 
 export async function createClassAction(
