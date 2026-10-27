@@ -4,9 +4,11 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { requireTeacher } from "@/lib/auth/guard";
+import { extractImageIds } from "@/lib/images";
 import { formatWita } from "@/lib/format";
 import { canTransition, getMaterialForTeacher } from "@/lib/materials";
 import { listChapterOptions } from "@/lib/subjects";
+import { ImagePanel } from "../image-panel";
 import { DeleteMaterialButton, MaterialForm, StatusButtons } from "../material-form";
 import { STATUS_LABEL } from "../status-label";
 
@@ -25,6 +27,9 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [material, chapters] = await Promise.all([getMaterialForTeacher(id), listChapterOptions()]);
   if (!material) notFound();
+  const referencedIds = extractImageIds(
+    [material.content, material.examples, material.exercises].join("\n"),
+  );
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-3">
@@ -51,7 +56,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
       <MaterialForm chapters={chapters} material={material} />
       <section aria-labelledby="gambar-heading">
         <h2 id="gambar-heading" className="text-lg font-semibold">Gambar</h2>
-        {/* Panel gambar: Task 11 */}
+        <ImagePanel materialId={id} images={material.images} referencedIds={referencedIds} />
       </section>
       {material.status === "DRAFT" && (
         <div>
