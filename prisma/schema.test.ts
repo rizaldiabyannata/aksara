@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { assertTestDatabaseUrl } from "@/tests/test-db-url";
+import { assertTestDatabaseUrl } from "@/tests/test-db-url.mts";
 import { makeClass, makeStudent } from "@/tests/factories";
 
 describe("assertTestDatabaseUrl", () => {

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { assertTestDatabaseUrl, TEST_DATABASE_URL } from "./test-db-url";
+import { assertTestDatabaseUrl, TEST_DATABASE_URL } from "./test-db-url.mts";
 
 export default function setup() {
   assertTestDatabaseUrl(TEST_DATABASE_URL);

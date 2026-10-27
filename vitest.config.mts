@@ -1,11 +1,10 @@
 import { fileURLToPath } from "node:url";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
-import { TEST_DATABASE_URL } from "./tests/test-db-url";
+import { TEST_DATABASE_URL } from "./tests/test-db-url.mts";
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
   resolve: {
+    tsconfigPaths: true,
     alias: {
       "server-only": fileURLToPath(
         new URL("./tests/server-only-stub.ts", import.meta.url),
