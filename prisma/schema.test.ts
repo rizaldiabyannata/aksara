@@ -97,13 +97,28 @@ describe("schema constraints", () => {
     await expectP2002(makeStudent(b.id, { nis: "12345" }));
   });
 
-  it("DB rejects a material whose subchapter belongs to another chapter", async () => {
+  it("DB accepts a material whose subchapter belongs to the same chapter", async () => {
+    const { user } = await makeTeacher();
+    const c1 = await makeChapter();
+    const sub = await makeSubchapter(c1.id);
+    await expect(
+      makeMaterial(c1.id, user.id, { subchapterId: sub.id }),
+    ).resolves.toMatchObject({ subchapterId: sub.id, chapterId: c1.id });
+  });
+
+  it("DB rejects a material whose subchapter belongs to another chapter (Material_subchapterId_chapterId_fkey)", async () => {
     const { user } = await makeTeacher();
     const c1 = await makeChapter();
     const c2 = await makeChapter();
     const sub = await makeSubchapter(c2.id);
-    await expect(
-      makeMaterial(c1.id, user.id, { subchapterId: sub.id }),
-    ).rejects.toThrow(/Foreign key/i);
+    const err = await makeMaterial(c1.id, user.id, { subchapterId: sub.id }).then(
+      () => null,
+      (e: unknown) => e,
+    );
+    expect(err).toBeInstanceOf(Prisma.PrismaClientKnownRequestError);
+    expect((err as Prisma.PrismaClientKnownRequestError).code).toBe("P2003");
+    expect(JSON.stringify((err as Prisma.PrismaClientKnownRequestError).meta)).toContain(
+      "Material_subchapterId_chapterId_fkey",
+    );
   });
 });
