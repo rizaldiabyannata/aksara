@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
 import { revokeSessions } from "@/lib/auth/session";
-import { Prisma } from "@/lib/generated/prisma/client";
+import { uniqueViolation as sharedUniqueViolation } from "@/lib/unique-violation";
 
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const CODE_LENGTH = 6;
@@ -42,17 +42,8 @@ function parseName(
   return { ok: false, error: "INVALID", fieldErrors };
 }
 
-// Prisma 7 + adapter-pg reports the violated index in
-// meta.driverAdapterError.cause.constraint.index (e.g. "Class_code_key").
-function uniqueViolation(e: unknown): "code" | "name" | null {
-  if (!(e instanceof Prisma.PrismaClientKnownRequestError) || e.code !== "P2002") {
-    return null;
-  }
-  const meta = JSON.stringify(e.meta ?? {});
-  if (meta.includes("Class_code_key")) return "code";
-  if (meta.includes("Class_name_key")) return "name";
-  return null;
-}
+const uniqueViolation = (e: unknown) =>
+  sharedUniqueViolation(e, { Class_code_key: "code", Class_name_key: "name" } as const);
 
 export async function createClassWithCodes(
   actorId: string,
