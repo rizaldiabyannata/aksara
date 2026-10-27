@@ -2,27 +2,29 @@ import type { ComponentProps } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-/** Labelled input whose error (and optional hint) is linked via aria-describedby. `name` doubles as the id. */
+/** Labelled input whose error (and optional hint) is linked via aria-describedby. `id` defaults to `name`. */
 export function FormField({
   name,
+  id = name,
   label,
   error,
   hint,
   ...props
 }: ComponentProps<typeof Input> & {
   name: string;
+  id?: string;
   label: string;
   error?: string;
   hint?: string;
 }) {
   const describedBy =
-    [error && `${name}-error`, hint && `${name}-hint`].filter(Boolean).join(" ") ||
+    [error && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(" ") ||
     undefined;
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <Input
-        id={name}
+        id={id}
         name={name}
         className="h-11"
         aria-invalid={error ? true : undefined}
@@ -30,12 +32,12 @@ export function FormField({
         {...props}
       />
       {hint && (
-        <p id={`${name}-hint`} className="text-sm text-muted-foreground">
+        <p id={`${id}-hint`} className="text-sm text-muted-foreground">
           {hint}
         </p>
       )}
       {error && (
-        <p id={`${name}-error`} className="text-sm text-destructive">
+        <p id={`${id}-error`} className="text-sm text-destructive">
           {error}
         </p>
       )}
