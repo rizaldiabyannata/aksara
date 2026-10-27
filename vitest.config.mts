@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import { TEST_DATABASE_URL } from "./tests/test-db-url.mts";
 
 export default defineConfig({
@@ -13,6 +13,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // Nested git worktrees.
+    exclude: [...configDefaults.exclude, ".claude/**"],
     globalSetup: "tests/global-setup.ts",
     setupFiles: ["tests/setup.ts"],
     fileParallelism: false,
