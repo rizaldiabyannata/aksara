@@ -23,17 +23,21 @@ type Result =
   | { ok: false; error: keyof typeof ERRORS };
 
 // Only the domain call is inside try; the guard and revalidate stay outside.
-async function run(call: () => Promise<Result>, success: string): Promise<FormState> {
+async function run(
+  call: () => Promise<Result>,
+  success: string,
+  values?: Record<string, string>,
+): Promise<FormState> {
   let result: Result;
   try {
     result = await call();
   } catch {
-    return { message: UNEXPECTED };
+    return { message: UNEXPECTED, values };
   }
   if (!result.ok) {
     return result.error === "INVALID"
-      ? { fieldErrors: result.fieldErrors }
-      : { message: ERRORS[result.error] };
+      ? { fieldErrors: result.fieldErrors, values }
+      : { message: ERRORS[result.error], values };
   }
   revalidatePath("/teacher/classes");
   return { message: success, ok: true };
@@ -44,7 +48,8 @@ export async function createClassAction(
   formData: FormData,
 ): Promise<FormState> {
   const user = await requireTeacher();
-  return run(() => createClass(user.id, { name: field(formData, "name") }), "Kelas dibuat.");
+  const values = { name: field(formData, "name") };
+  return run(() => createClass(user.id, values), "Kelas dibuat.", values);
 }
 
 export async function renameClassAction(
@@ -53,10 +58,8 @@ export async function renameClassAction(
   formData: FormData,
 ): Promise<FormState> {
   const user = await requireTeacher();
-  return run(
-    () => renameClass(user.id, classId, { name: field(formData, "name") }),
-    "Nama kelas diubah.",
-  );
+  const values = { name: field(formData, "name") };
+  return run(() => renameClass(user.id, classId, values), "Nama kelas diubah.", values);
 }
 
 export async function rotateClassCodeAction(

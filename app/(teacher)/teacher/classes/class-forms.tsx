@@ -22,7 +22,7 @@ import {
 } from "./actions";
 
 /** "ABCDEF" -> "ABC DEF" (login accepts the space). */
-export const groupCode = (code: string) => `${code.slice(0, 3)} ${code.slice(3)}`;
+const groupCode =(code: string) => `${code.slice(0, 3)} ${code.slice(3)}`;
 
 export function CreateClassForm() {
   const [state, formAction, pending] = useActionState(createClassAction, undefined);
@@ -34,6 +34,7 @@ export function CreateClassForm() {
         placeholder="Contoh: VI-A"
         autoComplete="off"
         required
+        defaultValue={state?.values?.name}
         error={state?.fieldErrors?.name}
       />
       <Feedback state={state} />
@@ -55,7 +56,7 @@ export function RenameClassForm({ classId, name }: { classId: string; name: stri
         name="name"
         id={`name-${classId}`}
         label="Ubah nama kelas"
-        defaultValue={name}
+        defaultValue={state?.values?.name ?? name}
         autoComplete="off"
         required
         error={state?.fieldErrors?.name}

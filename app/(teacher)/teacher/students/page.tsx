@@ -118,7 +118,10 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
       </ul>
       <Card className="max-w-sm">
         <CardContent>
-          <CreateStudentForm classes={classes} />
+          <CreateStudentForm
+            classes={classes}
+            defaultClassId={classes.some((c) => c.id === kelas) ? kelas : undefined}
+          />
         </CardContent>
       </Card>
     </>

@@ -82,16 +82,16 @@ describe("student actions", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/teacher/students");
   });
 
-  it("maps NAME_TAKEN with the class name", async () => {
+  it("maps NAME_TAKEN with the class name and echoes the submitted values", async () => {
     const { user } = await makeTeacher();
     await signIn(user);
     const cls = await makeClass({ name: "VI-A" });
     await makeStudent(cls.id, { displayName: "Ahmad", loginName: "ahmad" });
-    expect(
-      await createStudentAction(undefined, form({ displayName: "Ahmad", classId: cls.id })),
-    ).toEqual({
+    const values = { displayName: "Ahmad", nis: "123456", classId: cls.id };
+    expect(await createStudentAction(undefined, form(values))).toEqual({
       message:
         "Nama ini sudah dipakai siswa lain di kelas VI-A. Tambahkan inisial, misalnya 'Ahmad R'.",
+      values,
     });
   });
 
@@ -105,7 +105,10 @@ describe("student actions", () => {
         undefined,
         form({ displayName: "Lain", nis: "5555", classId: cls.id }),
       ),
-    ).toEqual({ message: "NIS ini sudah dipakai siswa lain." });
+    ).toEqual({
+      message: "NIS ini sudah dipakai siswa lain.",
+      values: { displayName: "Lain", nis: "5555", classId: cls.id },
+    });
   });
 
   it("returns field errors and maps NOT_FOUND", async () => {

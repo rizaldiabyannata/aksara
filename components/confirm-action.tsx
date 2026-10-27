@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { Feedback } from "@/components/form-feedback";
 import {
   AlertDialog,
@@ -25,7 +25,7 @@ type ConfirmProps = {
   destructive?: boolean;
 };
 
-/** Button + AlertDialog confirmation. The form lives outside the dialog so closing it never cancels the submit. */
+/** Button + AlertDialog confirmation. The action is dispatched before the dialog closes, so closing never cancels it. */
 export function ConfirmAction({
   action,
   trigger,
@@ -34,15 +34,21 @@ export function ConfirmAction({
   confirm,
   destructive,
 }: ConfirmProps) {
-  const [state, formAction, pending] = useActionState(action, undefined);
+  const [state, dispatch, pending] = useActionState(action, undefined);
   const [open, setOpen] = useState(false);
-  const formId = useId();
   return (
     <div className="flex flex-col gap-2">
-      <form id={formId} action={formAction} />
-      <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialog open={open} onOpenChange={(next) => setOpen(next && !pending)}>
+        {/* aria-disabled, not disabled: the trigger stays focusable so focus can return to it on close. */}
         <AlertDialogTrigger
-          render={<Button variant="outline" className="h-11" disabled={pending} />}
+          render={
+            <Button
+              variant="outline"
+              className="h-11 aria-disabled:opacity-50"
+              aria-disabled={pending || undefined}
+              aria-busy={pending || undefined}
+            />
+          }
         >
           {trigger}
         </AlertDialogTrigger>
@@ -54,11 +60,13 @@ export function ConfirmAction({
           <AlertDialogFooter>
             <AlertDialogCancel className="h-11">Batal</AlertDialogCancel>
             <AlertDialogAction
-              type="submit"
-              form={formId}
               variant={destructive ? "destructive" : "default"}
               className="h-11"
-              onClick={() => setOpen(false)}
+              disabled={pending}
+              onClick={() => {
+                startTransition(() => dispatch());
+                setOpen(false);
+              }}
             >
               {confirm}
             </AlertDialogAction>

@@ -80,15 +80,17 @@ describe("class actions", () => {
     await signIn(user);
     const state = await createClassAction(undefined, form({ name: " " }));
     expect(state?.fieldErrors?.name).toBeTruthy();
+    expect(state?.values).toEqual({ name: " " });
     expect(revalidatePath).not.toHaveBeenCalled();
   });
 
-  it("maps NAME_TAKEN", async () => {
+  it("maps NAME_TAKEN and echoes the submitted name", async () => {
     const { user } = await makeTeacher();
     await signIn(user);
     await makeClass({ name: "VI-A" });
     expect(await createClassAction(undefined, form({ name: "VI-A" }))).toEqual({
       message: "Nama kelas ini sudah dipakai.",
+      values: { name: "VI-A" },
     });
   });
 
@@ -97,6 +99,7 @@ describe("class actions", () => {
     await signIn(user);
     expect(await renameClassAction("hilang", undefined, form({ name: "Baru" }))).toEqual({
       message: "Kelas tidak ditemukan.",
+      values: { name: "Baru" },
     });
     expect(await rotateClassCodeAction("hilang")).toEqual({
       message: "Kelas tidak ditemukan.",

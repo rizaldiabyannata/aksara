@@ -24,21 +24,26 @@ type Result =
   | { ok: false; error: keyof typeof ERRORS };
 
 // Only the domain call is inside try; the guard and revalidate stay outside.
-async function run(call: () => Promise<Result>, success: string): Promise<FormState> {
+async function run(
+  call: () => Promise<Result>,
+  success: string,
+  values?: Record<string, string>,
+): Promise<FormState> {
   let result: Result;
   try {
     result = await call();
   } catch {
-    return { message: UNEXPECTED };
+    return { message: UNEXPECTED, values };
   }
   if (!result.ok) {
-    if (result.error === "INVALID") return { fieldErrors: result.fieldErrors };
+    if (result.error === "INVALID") return { fieldErrors: result.fieldErrors, values };
     if (result.error === "NAME_TAKEN") {
       return {
         message: `Nama ini sudah dipakai siswa lain di kelas ${result.className}. Tambahkan inisial, misalnya 'Ahmad R'.`,
+        values,
       };
     }
-    return { message: ERRORS[result.error] };
+    return { message: ERRORS[result.error], values };
   }
   revalidatePath("/teacher/students");
   return { message: success, ok: true };
@@ -55,7 +60,8 @@ export async function createStudentAction(
   formData: FormData,
 ): Promise<FormState> {
   const user = await requireTeacher();
-  return run(() => createStudent(user.id, input(formData)), "Siswa ditambahkan.");
+  const values = input(formData);
+  return run(() => createStudent(user.id, values), "Siswa ditambahkan.", values);
 }
 
 export async function updateStudentAction(
@@ -64,7 +70,8 @@ export async function updateStudentAction(
   formData: FormData,
 ): Promise<FormState> {
   const user = await requireTeacher();
-  return run(() => updateStudent(user.id, studentId, input(formData)), "Data siswa disimpan.");
+  const values = input(formData);
+  return run(() => updateStudent(user.id, studentId, values), "Data siswa disimpan.", values);
 }
 
 export async function revokeStudentSessionsAction(studentId: string): Promise<FormState> {

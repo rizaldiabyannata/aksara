@@ -6,7 +6,6 @@ import { requireTeacher } from "@/lib/auth/guard";
 import { listClasses } from "@/lib/classes";
 import {
   CreateClassForm,
-  groupCode,
   RenameClassForm,
   RevokeSessionsButton,
   RotateCodeButton,
@@ -51,9 +50,10 @@ async function ClassList() {
                 <p className="text-sm text-muted-foreground">{c.studentCount} siswa</p>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
+                {/* Masked: this page may be projected. The dialog reveals the code. */}
                 <p className="font-mono text-2xl font-bold tracking-widest">
-                  <span className="sr-only">Kode kelas: </span>
-                  {groupCode(c.code)}
+                  <span className="sr-only">Kode kelas disembunyikan. Tekan Tampilkan kode.</span>
+                  <span aria-hidden="true">••• •••</span>
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <ShowCodeDialog name={c.name} code={c.code} />

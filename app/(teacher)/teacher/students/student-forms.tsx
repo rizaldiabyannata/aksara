@@ -40,7 +40,9 @@ function ClassSelect({
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor={id}>Kelas</Label>
+      {/* React applies a select's defaultValue only on mount; the key remounts it when it changes. */}
       <select
+        key={defaultValue}
         id={id}
         name="classId"
         required
@@ -68,7 +70,13 @@ function ClassSelect({
   );
 }
 
-export function CreateStudentForm({ classes }: { classes: ClassOption[] }) {
+export function CreateStudentForm({
+  classes,
+  defaultClassId,
+}: {
+  classes: ClassOption[];
+  defaultClassId?: string;
+}) {
   const [state, formAction, pending] = useActionState(createStudentAction, undefined);
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -77,6 +85,7 @@ export function CreateStudentForm({ classes }: { classes: ClassOption[] }) {
         label="Nama siswa"
         autoComplete="off"
         required
+        defaultValue={state?.values?.displayName}
         error={state?.fieldErrors?.displayName}
       />
       <FormField
@@ -84,9 +93,15 @@ export function CreateStudentForm({ classes }: { classes: ClassOption[] }) {
         label="NIS (boleh dikosongkan)"
         inputMode="numeric"
         autoComplete="off"
+        defaultValue={state?.values?.nis}
         error={state?.fieldErrors?.nis}
       />
-      <ClassSelect id="classId" classes={classes} error={state?.fieldErrors?.classId} />
+      <ClassSelect
+        id="classId"
+        classes={classes}
+        defaultValue={state?.values?.classId ?? defaultClassId}
+        error={state?.fieldErrors?.classId}
+      />
       <Feedback state={state} />
       <Button type="submit" className="h-11 text-base" disabled={pending} aria-busy={pending}>
         {pending ? "Sedang menyimpan…" : "Tambah siswa"}
@@ -126,7 +141,7 @@ export function EditStudentDialog({
             name="displayName"
             id={`name-${sid}`}
             label="Nama siswa"
-            defaultValue={student.displayName}
+            defaultValue={state?.values?.displayName ?? student.displayName}
             autoComplete="off"
             required
             error={state?.fieldErrors?.displayName}
@@ -135,7 +150,7 @@ export function EditStudentDialog({
             name="nis"
             id={`nis-${sid}`}
             label="NIS (boleh dikosongkan)"
-            defaultValue={student.nis ?? ""}
+            defaultValue={state?.values?.nis ?? student.nis ?? ""}
             inputMode="numeric"
             autoComplete="off"
             error={state?.fieldErrors?.nis}
@@ -143,7 +158,7 @@ export function EditStudentDialog({
           <ClassSelect
             id={`class-${sid}`}
             classes={classes}
-            defaultValue={student.classId ?? undefined}
+            defaultValue={state?.values?.classId ?? student.classId ?? undefined}
             error={state?.fieldErrors?.classId}
           />
           <Feedback state={state} />

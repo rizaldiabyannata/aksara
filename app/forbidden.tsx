@@ -11,6 +11,12 @@ export default function Forbidden() {
       <Link href="/login" className={buttonVariants({ size: "lg" })}>
         Kembali ke halaman masuk
       </Link>
+      <Link
+        href="/teacher/login"
+        className="inline-flex min-h-11 items-center px-2 text-sm underline underline-offset-4"
+      >
+        Masuk sebagai guru
+      </Link>
     </main>
   );
 }

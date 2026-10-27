@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { StudentLoginForm } from "./student-login-form";
 
 export const metadata: Metadata = { title: "Masuk" };
@@ -23,6 +31,14 @@ export default function StudentLoginPage({ searchParams }: PageProps<"/login">) 
         <CardContent>
           <StudentLoginForm />
         </CardContent>
+        <CardFooter className="justify-center">
+          <Link
+            href="/teacher/login"
+            className="inline-flex min-h-11 items-center px-2 text-sm underline underline-offset-4"
+          >
+            Masuk sebagai guru
+          </Link>
+        </CardFooter>
       </Card>
     </main>
   );
