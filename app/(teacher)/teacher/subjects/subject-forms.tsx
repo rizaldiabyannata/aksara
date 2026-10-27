@@ -190,12 +190,13 @@ export function MoveButtons({
   );
 }
 
-export function DeleteSubjectButton({ id }: { id: string }) {
+export function DeleteSubjectButton({ id, name }: { id: string; name: string }) {
   return (
     <ConfirmAction
       action={deleteSubjectAction.bind(null, id)}
       trigger="Hapus"
-      title="Hapus mapel ini?"
+      triggerLabel={`Hapus mapel ${name}`}
+      title={`Hapus mapel "${name}"?`}
       description="Mapel yang masih punya bab tidak bisa dihapus. Hapus babnya dulu."
       confirm="Ya, hapus"
       destructive
@@ -203,12 +204,13 @@ export function DeleteSubjectButton({ id }: { id: string }) {
   );
 }
 
-export function DeleteChapterButton({ id }: { id: string }) {
+export function DeleteChapterButton({ id, title }: { id: string; title: string }) {
   return (
     <ConfirmAction
       action={deleteChapterAction.bind(null, id)}
       trigger="Hapus"
-      title="Hapus bab ini?"
+      triggerLabel={`Hapus bab ${title}`}
+      title={`Hapus bab "${title}"?`}
       description="Bab yang masih dipakai materi atau subbab tidak bisa dihapus."
       confirm="Ya, hapus"
       destructive
@@ -216,12 +218,13 @@ export function DeleteChapterButton({ id }: { id: string }) {
   );
 }
 
-export function DeleteSubchapterButton({ id }: { id: string }) {
+export function DeleteSubchapterButton({ id, title }: { id: string; title: string }) {
   return (
     <ConfirmAction
       action={deleteSubchapterAction.bind(null, id)}
       trigger="Hapus"
-      title="Hapus subbab ini?"
+      triggerLabel={`Hapus subbab ${title}`}
+      title={`Hapus subbab "${title}"?`}
       description="Subbab yang masih dipakai materi tidak bisa dihapus."
       confirm="Ya, hapus"
       destructive

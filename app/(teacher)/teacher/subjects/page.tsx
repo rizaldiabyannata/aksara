@@ -48,12 +48,12 @@ async function SubjectTree() {
           <CardContent className="flex flex-col gap-6">
             <div className="flex flex-wrap gap-2">
               <details>
-                <summary className={summaryClass}>Ubah</summary>
+                <summary className={summaryClass}>Ubah<span className="sr-only"> mapel {s.name}</span></summary>
                 <div className="mt-3 max-w-sm">
                   <SubjectForm subject={s} />
                 </div>
               </details>
-              <DeleteSubjectButton id={s.id} />
+              <DeleteSubjectButton id={s.id} name={s.name} />
             </div>
 
             <ol className="flex flex-col gap-4">
@@ -76,12 +76,12 @@ async function SubjectTree() {
                       isLast={i === s.chapters.length - 1}
                     />
                     <details>
-                      <summary className={summaryClass}>Ubah</summary>
+                      <summary className={summaryClass}>Ubah<span className="sr-only"> bab {c.title}</span></summary>
                       <div className="mt-3 max-w-sm">
                         <ChapterForm subjectId={s.id} chapter={c} />
                       </div>
                     </details>
-                    <DeleteChapterButton id={c.id} />
+                    <DeleteChapterButton id={c.id} title={c.title} />
                   </div>
 
                   <div className="flex flex-col gap-3 border-l-2 pl-3">
@@ -105,18 +105,18 @@ async function SubjectTree() {
                               isLast={j === c.subchapters.length - 1}
                             />
                             <details>
-                              <summary className={summaryClass}>Ubah</summary>
+                              <summary className={summaryClass}>Ubah<span className="sr-only"> subbab {x.title}</span></summary>
                               <div className="mt-3 max-w-sm">
                                 <SubchapterForm chapterId={c.id} subchapter={x} />
                               </div>
                             </details>
-                            <DeleteSubchapterButton id={x.id} />
+                            <DeleteSubchapterButton id={x.id} title={x.title} />
                           </div>
                         </li>
                       ))}
                     </ol>
                     <details>
-                      <summary className={summaryClass}>Tambah subbab</summary>
+                      <summary className={summaryClass}>Tambah subbab<span className="sr-only"> di bab {c.title}</span></summary>
                       <div className="mt-3 max-w-sm">
                         <SubchapterForm chapterId={c.id} />
                       </div>
@@ -127,7 +127,7 @@ async function SubjectTree() {
             </ol>
 
             <details>
-              <summary className={summaryClass}>Tambah bab</summary>
+              <summary className={summaryClass}>Tambah bab<span className="sr-only"> di mapel {s.name}</span></summary>
               <div className="mt-3 max-w-sm">
                 <ChapterForm subjectId={s.id} />
               </div>

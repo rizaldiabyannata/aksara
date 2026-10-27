@@ -23,6 +23,8 @@ type ConfirmProps = {
   description: string;
   confirm: string;
   destructive?: boolean;
+  /** Accessible name for the trigger when `trigger` alone is not unique on the page. */
+  triggerLabel?: string;
 };
 
 /** Button + AlertDialog confirmation. The action is dispatched before the dialog closes, so closing never cancels it. */
@@ -33,6 +35,7 @@ export function ConfirmAction({
   description,
   confirm,
   destructive,
+  triggerLabel,
 }: ConfirmProps) {
   const [state, dispatch, pending] = useActionState(action, undefined);
   const [open, setOpen] = useState(false);
@@ -47,6 +50,7 @@ export function ConfirmAction({
               className="h-11 aria-disabled:opacity-50"
               aria-disabled={pending || undefined}
               aria-busy={pending || undefined}
+              aria-label={triggerLabel}
             />
           }
         >
