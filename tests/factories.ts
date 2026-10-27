@@ -54,3 +54,71 @@ export async function makeTeacher(
   });
   return { user, password };
 }
+
+export async function makeChapter(overrides: Partial<Prisma.ChapterUncheckedCreateInput> = {}) {
+  const i = ++n;
+  const subject = await prisma.subject.create({ data: { name: `Mapel ${i}` } });
+  return prisma.chapter.create({
+    data: {
+      subjectId: subject.id,
+      title: `Bab ${i}`,
+      order: 1,
+      sourceBook: "Buku Uji",
+      sourceYearOrEdition: "2022",
+      ...overrides,
+    },
+  });
+}
+
+export function makeSubchapter(
+  chapterId: string,
+  overrides: Partial<Prisma.SubchapterUncheckedCreateInput> = {},
+) {
+  const i = ++n;
+  return prisma.subchapter.create({
+    data: { chapterId, title: `Subbab ${i}`, order: i, ...overrides },
+  });
+}
+
+export function makeMaterial(
+  chapterId: string,
+  createdById: string,
+  overrides: Partial<Prisma.MaterialUncheckedCreateInput> = {},
+) {
+  const i = ++n;
+  return prisma.material.create({
+    data: {
+      chapterId,
+      title: `Materi ${i}`,
+      summary: "Ringkasan uji",
+      content: "Isi uji",
+      sourceReference: "Buku Uji",
+      status: "DRAFT",
+      order: i,
+      createdById,
+      updatedById: createdById,
+      ...overrides,
+    },
+  });
+}
+
+export function makeImage(
+  materialId: string,
+  createdById: string,
+  overrides: Partial<Prisma.ImageUncheckedCreateInput> = {},
+) {
+  const i = ++n;
+  return prisma.image.create({
+    data: {
+      materialId,
+      storageKey: `images/test-${i}.jpg`,
+      mimeType: "image/jpeg",
+      sizeBytes: 1000,
+      width: 10,
+      height: 10,
+      altText: "Gambar uji",
+      createdById,
+      ...overrides,
+    },
+  });
+}

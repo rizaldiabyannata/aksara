@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "db:up": "docker compose up -d",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "bun prisma/seed.ts"
+    "db:seed": "bun prisma/seed.ts",
+    "db:seed:content": "bun prisma/seed-content.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

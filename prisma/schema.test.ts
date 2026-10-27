@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { assertTestDatabaseUrl } from "@/tests/test-db-url.mts";
-import { makeClass, makeStudent } from "@/tests/factories";
+import {
+  makeChapter,
+  makeClass,
+  makeMaterial,
+  makeStudent,
+  makeSubchapter,
+  makeTeacher,
+} from "@/tests/factories";
 
 describe("assertTestDatabaseUrl", () => {
   it("rejects a non-_test database", () => {
@@ -88,5 +95,15 @@ describe("schema constraints", () => {
     const [a, b] = [await makeClass(), await makeClass()];
     await makeStudent(a.id, { nis: "12345" });
     await expectP2002(makeStudent(b.id, { nis: "12345" }));
+  });
+
+  it("DB rejects a material whose subchapter belongs to another chapter", async () => {
+    const { user } = await makeTeacher();
+    const c1 = await makeChapter();
+    const c2 = await makeChapter();
+    const sub = await makeSubchapter(c2.id);
+    await expect(
+      makeMaterial(c1.id, user.id, { subchapterId: sub.id }),
+    ).rejects.toThrow(/Foreign key/i);
   });
 });

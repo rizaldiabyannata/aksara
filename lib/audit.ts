@@ -14,7 +14,12 @@ export type AuditAction =
   | "CLASS_SESSIONS_REVOKED"
   | "CLASS_DEACTIVATED"
   | "CLASS_ACTIVATED"
-  | "TEACHER_PASSWORD_CHANGED";
+  | "TEACHER_PASSWORD_CHANGED"
+  | "MATERIAL_STATUS_CHANGED"
+  | "MATERIAL_UPDATED"
+  | "MATERIAL_DELETED"
+  | "IMAGE_ADDED"
+  | "IMAGE_REMOVED";
 
 /** Thin insert. Callers must never put secrets (passwords, tokens, class codes) in metadata. */
 export async function writeAudit(
@@ -22,7 +27,7 @@ export async function writeAudit(
   e: {
     actorUserId: string;
     action: AuditAction;
-    entityType: "User" | "Class";
+    entityType: "User" | "Class" | "Material" | "Image";
     entityId: string;
     metadata?: Record<string, string | number | boolean | string[]>;
   },
