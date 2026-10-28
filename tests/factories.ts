@@ -147,3 +147,47 @@ export function makeImage(
     },
   });
 }
+
+export function makeQuiz(
+  subjectId: string,
+  createdById: string,
+  overrides: Partial<Prisma.QuizUncheckedCreateInput> = {},
+) {
+  const i = ++n;
+  return prisma.quiz.create({
+    data: { subjectId, title: `Ulangan ${i}`, durationMinutes: 30, createdById, ...overrides },
+  });
+}
+
+export function makeQuizQuestion(
+  quizId: string,
+  questionId: string,
+  overrides: Partial<Prisma.QuizQuestionUncheckedCreateInput> = {},
+) {
+  const i = ++n;
+  return prisma.quizQuestion.create({
+    data: { quizId, questionId, position: i, points: 1, ...overrides },
+  });
+}
+
+export function makeAttempt(
+  quizId: string,
+  studentId: string,
+  overrides: Partial<Prisma.QuizAttemptUncheckedCreateInput> = {},
+) {
+  const now = Date.now();
+  return prisma.quizAttempt.create({
+    data: {
+      quizId,
+      studentId,
+      attemptNumber: 1,
+      slot: 1,
+      startedAt: new Date(now),
+      deadlineAt: new Date(now + 30 * 60_000),
+      questionOrder: [],
+      optionOrder: {},
+      maxPoints: 1,
+      ...overrides,
+    },
+  });
+}

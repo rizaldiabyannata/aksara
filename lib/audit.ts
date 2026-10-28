@@ -22,7 +22,11 @@ export type AuditAction =
   | "IMAGE_REMOVED"
   | "QUESTION_STATUS_CHANGED"
   | "QUESTION_UPDATED"
-  | "QUESTION_DELETED";
+  | "QUESTION_DELETED"
+  | "QUIZ_PUBLISHED"
+  | "QUIZ_UNPUBLISHED"
+  | "QUIZ_SCORING_CHANGED"
+  | "ATTEMPT_REPLACEMENT_GRANTED";
 
 /** Thin insert. Callers must never put secrets (passwords, tokens, class codes) in metadata. */
 export async function writeAudit(
@@ -30,9 +34,9 @@ export async function writeAudit(
   e: {
     actorUserId: string;
     action: AuditAction;
-    entityType: "User" | "Class" | "Material" | "Image" | "Question";
+    entityType: "User" | "Class" | "Material" | "Image" | "Question" | "Quiz" | "QuizAttempt";
     entityId: string;
-    metadata?: Record<string, string | number | boolean | string[]>;
+    metadata?: Record<string, string | number | boolean | string[] | null>;
   },
 ): Promise<void> {
   await tx.auditLog.create({ data: e });

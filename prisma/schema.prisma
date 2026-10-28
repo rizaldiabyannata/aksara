@@ -42,41 +42,76 @@ enum Difficulty {
   HARD
 }
 
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ScoringPolicy {
+  HIGHEST
+  REMEDIAL
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+}
+
+enum SubmitReason {
+  MANUAL
+  TIMEOUT
+  REPLACED
+}
+
+enum GradingStatus {
+  PENDING_MANUAL_GRADING
+  FINAL
+}
+
+enum ImageVisibility {
+  QUESTION
+  EXPLANATION
+}
+
 model User {
-  id                 String     @id @default(cuid())
-  role               Role
-  username           String?    @unique
-  passwordHash       String?
-  mustChangePassword Boolean    @default(false)
-  displayName        String
-  loginName          String?
-  nis                String?    @unique
-  classId            String?
-  class              Class?     @relation(fields: [classId], references: [id])
-  isActive           Boolean    @default(true)
-  createdAt          DateTime   @default(now()) @db.Timestamptz(3)
-  updatedAt          DateTime   @updatedAt @db.Timestamptz(3)
-  sessions           Session[]
-  auditLogs          AuditLog[]
-  materialsCreated   Material[] @relation("MaterialCreatedBy")
-  materialsUpdated   Material[] @relation("MaterialUpdatedBy")
-  imagesCreated      Image[]
-  questionsCreated   Question[] @relation("QuestionCreatedBy")
-  questionsUpdated   Question[] @relation("QuestionUpdatedBy")
+  id                  String        @id @default(cuid())
+  role                Role
+  username            String?       @unique
+  passwordHash        String?
+  mustChangePassword  Boolean       @default(false)
+  displayName         String
+  loginName           String?
+  nis                 String?       @unique
+  classId             String?
+  class               Class?        @relation(fields: [classId], references: [id])
+  isActive            Boolean       @default(true)
+  createdAt           DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime      @updatedAt @db.Timestamptz(3)
+  sessions            Session[]
+  auditLogs           AuditLog[]
+  materialsCreated    Material[]    @relation("MaterialCreatedBy")
+  materialsUpdated    Material[]    @relation("MaterialUpdatedBy")
+  imagesCreated       Image[]
+  questionsCreated    Question[]    @relation("QuestionCreatedBy")
+  questionsUpdated    Question[]    @relation("QuestionUpdatedBy")
+  quizzesCreated      Quiz[]        @relation("QuizCreatedBy")
+  quizAttempts        QuizAttempt[] @relation("AttemptStudent")
+  replacementsGranted QuizAttempt[] @relation("AttemptReplacementGrantedBy")
 
   @@unique([classId, loginName])
   @@index([classId])
 }
 
 model Class {
-  id            String   @id @default(cuid())
-  name          String   @unique
-  code          String   @unique
-  codeRotatedAt DateTime @default(now()) @db.Timestamptz(3)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+  id            String      @id @default(cuid())
+  name          String      @unique
+  code          String      @unique
+  codeRotatedAt DateTime    @default(now()) @db.Timestamptz(3)
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(3)
   users         User[]
+  quizClasses   QuizClass[]
 }
 
 model Session {
@@ -119,6 +154,7 @@ model Subject {
   createdAt   DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
   chapters    Chapter[]
+  quizzes     Quiz[]
 }
 
 model Chapter {
@@ -207,6 +243,7 @@ model Question {
   createdAt        DateTime       @default(now()) @db.Timestamptz(3)
   updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
   images           Image[]
+  quizQuestions    QuizQuestion[]
 
   @@index([chapterId, status])
   @@index([type])
@@ -217,24 +254,140 @@ model Question {
 }
 
 model Image {
-  id              String    @id @default(cuid())
-  materialId      String?
-  material        Material? @relation(fields: [materialId], references: [id], onDelete: Restrict)
-  questionId      String?
-  question        Question? @relation(fields: [questionId], references: [id], onDelete: Restrict)
-  storageKey      String    @unique
-  mimeType        String
-  sizeBytes       Int
-  width           Int
-  height          Int
-  altText         String
-  caption         String?
-  sourceReference String?
-  createdById     String
-  createdBy       User      @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  id                 String              @id @default(cuid())
+  materialId         String?
+  material           Material?           @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  questionId         String?
+  question           Question?           @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  storageKey         String              @unique
+  mimeType           String
+  sizeBytes          Int
+  width              Int
+  height             Int
+  altText            String
+  caption            String?
+  sourceReference    String?
+  createdById        String
+  createdBy          User                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(3)
+  deletedAt          DateTime?           @db.Timestamptz(3)
+  quizQuestionImages QuizQuestionImage[]
 
   @@index([materialId])
   @@index([questionId])
   @@index([createdById])
+}
+
+model Quiz {
+  id                       String         @id @default(cuid())
+  subjectId                String
+  subject                  Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  title                    String
+  instructions             String?
+  durationMinutes          Int
+  startsAt                 DateTime?      @db.Timestamptz(3)
+  endsAt                   DateTime?      @db.Timestamptz(3)
+  maxAttempts              Int            @default(1)
+  shuffleQuestions         Boolean        @default(false)
+  shuffleOptions           Boolean        @default(false)
+  showFeedbackAfterRelease Boolean        @default(true)
+  scoringPolicy            ScoringPolicy  @default(HIGHEST)
+  kkm                      Int?
+  status                   QuizStatus     @default(DRAFT)
+  resultsReleasedAt        DateTime?      @db.Timestamptz(3)
+  createdById              String
+  createdBy                User           @relation("QuizCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  publishedAt              DateTime?      @db.Timestamptz(3)
+  createdAt                DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime       @updatedAt @db.Timestamptz(3)
+  classes                  QuizClass[]
+  questions                QuizQuestion[]
+  attempts                 QuizAttempt[]
+}
+
+model QuizClass {
+  quizId  String
+  quiz    Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  classId String
+  class   Class  @relation(fields: [classId], references: [id], onDelete: Restrict)
+
+  @@id([quizId, classId])
+  @@index([classId])
+}
+
+model QuizQuestion {
+  id                String              @id @default(cuid())
+  quizId            String
+  quiz              Quiz                @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionId        String
+  question          Question            @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  position          Int
+  points            Int
+  questionSnapshot  Json?
+  answerKeySnapshot Json?
+  images            QuizQuestionImage[]
+  answers           AttemptAnswer[]
+
+  @@unique([quizId, position])
+  @@unique([quizId, questionId])
+  @@index([questionId])
+}
+
+model QuizQuestionImage {
+  quizQuestionId String
+  quizQuestion   QuizQuestion    @relation(fields: [quizQuestionId], references: [id], onDelete: Cascade)
+  imageId        String
+  image          Image           @relation(fields: [imageId], references: [id], onDelete: Restrict)
+  visibility     ImageVisibility
+
+  @@id([quizQuestionId, imageId])
+  @@index([imageId])
+}
+
+model QuizAttempt {
+  id                     String          @id @default(cuid())
+  quizId                 String
+  quiz                   Quiz            @relation(fields: [quizId], references: [id], onDelete: Restrict)
+  studentId              String
+  student                User            @relation("AttemptStudent", fields: [studentId], references: [id], onDelete: Restrict)
+  attemptNumber          Int
+  slot                   Int
+  status                 AttemptStatus   @default(IN_PROGRESS)
+  submitReason           SubmitReason?
+  startedAt              DateTime        @db.Timestamptz(3)
+  deadlineAt             DateTime        @db.Timestamptz(3)
+  submittedAt            DateTime?       @db.Timestamptz(3)
+  questionOrder          Json
+  optionOrder            Json
+  replacementGrantedAt   DateTime?       @db.Timestamptz(3)
+  replacementGrantedById String?
+  replacementGrantedBy   User?           @relation("AttemptReplacementGrantedBy", fields: [replacementGrantedById], references: [id], onDelete: Restrict)
+  replacementReason      String?
+  replacesAttemptId      String?         @unique
+  replacesAttempt        QuizAttempt?    @relation("AttemptReplacement", fields: [replacesAttemptId], references: [id], onDelete: Restrict)
+  replacedBy             QuizAttempt?    @relation("AttemptReplacement")
+  maxPoints              Int
+  objectiveScore         Int?
+  gradingStatus          GradingStatus?
+  createdAt              DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt              DateTime        @updatedAt @db.Timestamptz(3)
+  answers                AttemptAnswer[]
+
+  @@unique([quizId, studentId, attemptNumber])
+  @@index([quizId, status])
+  @@index([studentId, status])
+  @@index([deadlineAt])
+}
+
+model AttemptAnswer {
+  id              String       @id @default(cuid())
+  attemptId       String
+  attempt         QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  quizQuestionId  String
+  quizQuestion    QuizQuestion @relation(fields: [quizQuestionId], references: [id], onDelete: Restrict)
+  answer          Json?
+  objectivePoints Int?
+  savedAt         DateTime     @default(now()) @db.Timestamptz(3)
+
+  @@unique([attemptId, quizQuestionId])
 }
