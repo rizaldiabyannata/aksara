@@ -13,7 +13,7 @@ import {
 } from "@/lib/questions";
 import * as storage from "@/lib/storage";
 import { objects } from "../tests/storage-fake";
-import { makeChapter, makeImage, makeMaterial, makeQuestion, makeSubchapter, makeTeacher } from "../tests/factories";
+import { makeQuiz, makeQuizQuestion, makeChapter, makeImage, makeMaterial, makeQuestion, makeSubchapter, makeTeacher } from "../tests/factories";
 
 vi.mock("@/lib/storage", () => import("../tests/storage-fake").then((m) => m.storageMock()));
 
@@ -377,5 +377,24 @@ describe("duplicateQuestion", () => {
     expect([...objects.keys()].sort()).toEqual(["images/old1.png", "images/old2.jpg"]);
     spy.mockRestore();
     errSpy.mockRestore();
+  });
+});
+
+describe("quiz interplay", () => {
+  it("deleteQuestion of a question in a draft quiz is IN_USE and keeps everything", async () => {
+    const { actor, chapter } = await setup();
+    const q = await makeQuestion(chapter.id, actor);
+    const quiz = await makeQuiz(chapter.subjectId, actor);
+    await makeQuizQuestion(quiz.id, q.id);
+    expect(await deleteQuestion(actor, q.id)).toEqual({ ok: false, error: "IN_USE" });
+    expect(await prisma.question.count()).toBe(1);
+  });
+
+  it("teacher detail hides soft-deleted images", async () => {
+    const { actor, chapter } = await setup();
+    const q = await makeQuestion(chapter.id, actor);
+    await makeImage(null, actor, { questionId: q.id });
+    await makeImage(null, actor, { questionId: q.id, deletedAt: new Date() });
+    expect((await getQuestionForTeacher(q.id))!.images).toHaveLength(1);
   });
 });

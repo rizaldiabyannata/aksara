@@ -11,7 +11,7 @@ import {
 } from "@/lib/images";
 import { prisma } from "@/lib/db";
 import { objects } from "../tests/storage-fake";
-import { makeChapter, makeClass, makeImage, makeMaterial, makeQuestion, makeStudent, makeTeacher } from "../tests/factories";
+import { makeChapter, makeClass, makeImage, makeMaterial, makeQuestion, makeQuiz, makeQuizQuestion, makeStudent, makeTeacher } from "../tests/factories";
 
 vi.mock("@/lib/storage", () => import("../tests/storage-fake").then((m) => m.storageMock()));
 beforeEach(() => objects.clear());
@@ -282,5 +282,37 @@ describe("question-owned images", () => {
     const stu = await makeStudent((await makeClass()).id);
     expect(await imageRedirectTarget({ id: user.id, role: "TEACHER" } as never, img.id)).toBe(`https://r2.test/${img.storageKey}?sig=1`);
     expect(await imageRedirectTarget({ id: stu.id, role: "STUDENT" } as never, img.id)).toBeNull();
+  });
+});
+
+describe("removeImage with a published quiz", () => {
+  it("referenced: soft delete, row and object stay, audit written; unreferenced: hard delete", async () => {
+    const { user } = await setup();
+    const chapter = await makeChapter();
+    const q = await makeQuestion(chapter.id, user.id);
+    const used = await makeImage(null, user.id, { questionId: q.id });
+    const free = await makeImage(null, user.id, { questionId: q.id });
+    for (const i of [used, free]) objects.set(i.storageKey, { body: Buffer.from("x"), contentType: "image/jpeg" });
+    const quiz = await makeQuiz(chapter.subjectId, user.id);
+    const qq = await makeQuizQuestion(quiz.id, q.id);
+    await prisma.quizQuestionImage.create({ data: { quizQuestionId: qq.id, imageId: used.id, visibility: "QUESTION" } });
+
+    expect(await removeImage(user.id, used.id)).toEqual({ ok: true });
+    expect((await prisma.image.findUniqueOrThrow({ where: { id: used.id } })).deletedAt).not.toBeNull();
+    expect(objects.has(used.storageKey)).toBe(true);
+    expect(await prisma.auditLog.count({ where: { action: "IMAGE_REMOVED", entityId: used.id } })).toBe(1);
+    expect(await removeImage(user.id, used.id)).toEqual({ ok: false, error: "NOT_FOUND" });
+
+    expect(await removeImage(user.id, free.id)).toEqual({ ok: true });
+    expect(await prisma.image.findUnique({ where: { id: free.id } })).toBeNull();
+    expect(objects.has(free.storageKey)).toBe(false);
+  });
+
+  it("soft-deleted images do not count toward the question limit", async () => {
+    const { user, file } = await setup();
+    const chapter = await makeChapter();
+    const q = await makeQuestion(chapter.id, user.id);
+    for (let i = 0; i < 5; i++) await makeImage(null, user.id, { questionId: q.id, deletedAt: new Date() });
+    expect((await addImage(user.id, { questionId: q.id, altText: "a", file })).ok).toBe(true);
   });
 });

@@ -141,7 +141,7 @@ export async function addImage(
     : await prisma.question.findUnique({ where: { id: input.questionId }, select: { id: true } });
   if (!exists) return { ok: false, error: "NOT_FOUND" };
   // ponytail: count then insert is not atomic; a double submit could pass the cap. Fine with a single teacher.
-  const count = await prisma.image.count({ where: owner });
+  const count = await prisma.image.count({ where: { ...owner, deletedAt: null } });
   if (count >= (input.materialId ? MAX_IMAGES_PER_MATERIAL : MAX_IMAGES_PER_QUESTION)) {
     return { ok: false, error: "LIMIT" };
   }
@@ -190,9 +190,12 @@ export async function updateImageMeta(id: string, input: unknown): Promise<{ ok:
 
 export async function removeImage(actorId: string, id: string): Promise<{ ok: true } | NotFound> {
   const storageKey = await prisma.$transaction(async (tx) => {
-    const img = await tx.image.findUnique({ where: { id }, select: { storageKey: true, materialId: true, questionId: true } });
+    const img = await tx.image.findFirst({ where: { id, deletedAt: null }, select: { storageKey: true, materialId: true, questionId: true } });
     if (!img) return null;
-    await tx.image.delete({ where: { id } });
+    // Referenced by a published quiz: hide it but keep the row and the R2 object.
+    const frozen = (await tx.quizQuestionImage.count({ where: { imageId: id } })) > 0;
+    if (frozen) await tx.image.update({ where: { id }, data: { deletedAt: new Date() } });
+    else await tx.image.delete({ where: { id } });
     await writeAudit(tx, {
       actorUserId: actorId,
       action: "IMAGE_REMOVED",
@@ -203,10 +206,10 @@ export async function removeImage(actorId: string, id: string): Promise<{ ok: tr
         ...(img.materialId ? { materialId: img.materialId } : { questionId: img.questionId! }),
       },
     });
-    return img.storageKey;
+    return frozen ? "" : img.storageKey;
   });
-  if (!storageKey) return { ok: false, error: "NOT_FOUND" };
-  await removeObject(storageKey, id);
+  if (storageKey === null) return { ok: false, error: "NOT_FOUND" };
+  if (storageKey) await removeObject(storageKey, id);
   return { ok: true };
 }
 

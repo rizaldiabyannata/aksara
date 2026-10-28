@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import {
   addQuizQuestion,
@@ -6,6 +6,8 @@ import {
   getQuizForTeacher,
   listQuizzes,
   moveQuizQuestion,
+  publishQuiz,
+  unpublishQuiz,
   removeQuizQuestion,
   setQuizClasses,
   setQuizQuestionPoints,
@@ -13,16 +15,20 @@ import {
   validateForPublish,
   type PublishCheck,
 } from "@/lib/quizzes";
+import { updateQuestion, getQuestionForTeacher, toPublicQuestion } from "@/lib/questions";
 import {
   makeAttempt,
   makeChapter,
   makeClass,
+  makeImage,
   makeQuestion,
   makeQuiz,
   makeQuizQuestion,
   makeStudent,
   makeTeacher,
 } from "../tests/factories";
+
+vi.mock("@/lib/storage", () => import("../tests/storage-fake").then((m) => m.storageMock()));
 
 const DUR = "Durasi harus bilangan bulat 1 sampai 300 menit.";
 const TIME = "Tanggal dan jam tidak valid.";
@@ -484,5 +490,148 @@ describe("listQuizzes and getQuizForTeacher", () => {
       ],
     });
     expect(await getQuizForTeacher("tidak-ada")).toBeNull();
+  });
+});
+
+describe("publishQuiz / unpublishQuiz", () => {
+  async function ready(over: { prompt?: string; explanation?: string } = {}) {
+    const { actor, chapter, subjectId } = await setup();
+    const quiz = await makeQuiz(subjectId, actor);
+    const cls = await makeClass();
+    await prisma.quizClass.create({ data: { quizId: quiz.id, classId: cls.id } });
+    const q = await makeQuestion(chapter.id, actor, { status: "ACTIVE", defaultPoints: 3, explanation: "Karena begitu", ...over });
+    const qq = await makeQuizQuestion(quiz.id, q.id, { position: 1, points: 3 });
+    return { actor, chapter, subjectId, quiz, cls, q, qq };
+  }
+  const audits = (action: string) => prisma.auditLog.count({ where: { action: action as never } });
+
+  it("without questions: INVALID_PUBLISH, stays DRAFT, no snapshot", async () => {
+    const { actor, subjectId } = await setup();
+    const quiz = await makeQuiz(subjectId, actor);
+    const cls = await makeClass();
+    await prisma.quizClass.create({ data: { quizId: quiz.id, classId: cls.id } });
+    const r = await publishQuiz(actor, quiz.id);
+    expect(r).toMatchObject({ ok: false, error: "INVALID_PUBLISH" });
+    expect((r as { reasons: string[] }).reasons).toContain("Tambahkan minimal satu soal.");
+    expect((await prisma.quiz.findUniqueOrThrow({ where: { id: quiz.id } })).status).toBe("DRAFT");
+    expect(await prisma.quizQuestion.count({ where: { questionSnapshot: { not: undefined } } })).toBe(0);
+    expect(await audits("QUIZ_PUBLISHED")).toBe(0);
+  });
+
+  it("unknown quiz is NOT_FOUND", async () => {
+    const { actor } = await setup();
+    expect(await publishQuiz(actor, "nope")).toEqual({ ok: false, error: "NOT_FOUND" });
+    expect(await unpublishQuiz(actor, "nope")).toEqual({ ok: false, error: "NOT_FOUND" });
+  });
+
+  it("a rejected publish rolls back snapshots of valid questions", async () => {
+    const { actor, chapter, quiz, qq } = await ready();
+    const draft = await makeQuestion(chapter.id, actor, { status: "DRAFT" });
+    await makeQuizQuestion(quiz.id, draft.id, { position: 2 });
+    const r = await publishQuiz(actor, quiz.id);
+    expect((r as { reasons: string[] }).reasons).toContain("Soal nomor 2 masih draf. Aktifkan dulu di bank soal.");
+    const row = await prisma.quizQuestion.findUniqueOrThrow({ where: { id: qq.id } });
+    expect(row.questionSnapshot).toBeNull();
+  });
+
+  it("double publish: both ok, one audit, no secret in metadata", async () => {
+    const { actor, quiz } = await ready();
+    const rs = await Promise.all([publishQuiz(actor, quiz.id), publishQuiz(actor, quiz.id)]);
+    expect(rs).toEqual([{ ok: true }, { ok: true }]);
+    expect(await audits("QUIZ_PUBLISHED")).toBe(1);
+    const a = await prisma.auditLog.findFirstOrThrow({ where: { action: "QUIZ_PUBLISHED" } });
+    expect(a.metadata).toEqual({ questionCount: 1, maxPoints: 3 });
+    const row = await prisma.quiz.findUniqueOrThrow({ where: { id: quiz.id } });
+    expect(row.status).toBe("PUBLISHED");
+    expect(row.publishedAt).not.toBeNull();
+  });
+
+  it("snapshot = toPublicQuestion without id; key and explanation only in answerKeySnapshot", async () => {
+    const { quiz, q, qq, actor } = await ready();
+    await publishQuiz(actor, quiz.id);
+    const row = await prisma.quizQuestion.findUniqueOrThrow({ where: { id: qq.id } });
+    const expected: Record<string, unknown> = { ...toPublicQuestion((await getQuestionForTeacher(q.id))!) };
+    delete expected.id;
+    expect(row.questionSnapshot).toEqual(expected);
+    expect(row.answerKeySnapshot).toEqual({ answerKey: { optionId: "a" }, explanation: "Karena begitu" });
+    expect(JSON.stringify(row.questionSnapshot)).not.toContain("Karena begitu");
+  });
+
+  it("image visibility: prompt/option -> QUESTION, explanation only -> EXPLANATION", async () => {
+    const { actor, quiz, q, qq } = await ready();
+    const i1 = await makeImage(null, actor, { questionId: q.id });
+    const i2 = await makeImage(null, actor, { questionId: q.id });
+    await makeImage(null, actor, { questionId: q.id }); // unreferenced
+    await prisma.question.update({
+      where: { id: q.id },
+      data: { prompt: `Lihat ![x](aksara-image:${i1.id})`, explanation: `![y](aksara-image:${i2.id})` },
+    });
+    await publishQuiz(actor, quiz.id);
+    const rows = await prisma.quizQuestionImage.findMany({ where: { quizQuestionId: qq.id } });
+    expect(rows.map((r) => [r.imageId, r.visibility]).sort()).toEqual(
+      [[i1.id, "QUESTION"], [i2.id, "EXPLANATION"]].sort(),
+    );
+  });
+
+  it("bank edit after publish does not change the snapshot", async () => {
+    const { actor, quiz, q, qq, chapter } = await ready();
+    await publishQuiz(actor, quiz.id);
+    const before = await prisma.quizQuestion.findUniqueOrThrow({ where: { id: qq.id } });
+    const r = await updateQuestion(actor, q.id, {
+      chapterId: chapter.id, subchapterId: "", type: "SINGLE_CHOICE", prompt: "Prompt baru", explanation: "Baru",
+      defaultPoints: 2, difficulty: "EASY", sourceReference: "", verificationNote: "",
+      options: [{ id: "a", text: "A" }, { id: "b", text: "B" }], answerKey: { optionId: "b" },
+    });
+    expect(r.ok).toBe(true);
+    const after = await prisma.quizQuestion.findUniqueOrThrow({ where: { id: qq.id } });
+    expect(after.questionSnapshot).toEqual(before.questionSnapshot);
+    expect(after.answerKeySnapshot).toEqual(before.answerKeySnapshot);
+  });
+
+  it("a question whose image was soft-deleted blocks publishing of another quiz", async () => {
+    const { actor, quiz, q } = await ready();
+    const img = await makeImage(null, actor, { questionId: q.id });
+    await prisma.question.update({ where: { id: q.id }, data: { prompt: `![x](aksara-image:${img.id})` } });
+    await prisma.image.update({ where: { id: img.id }, data: { deletedAt: new Date() } });
+    const r = await publishQuiz(actor, quiz.id);
+    expect((r as { reasons: string[] }).reasons).toContain("Soal nomor 1 memakai gambar yang sudah dihapus.");
+  });
+
+  it("inactive class does not count as active", async () => {
+    const { actor, quiz, cls } = await ready();
+    await prisma.class.update({ where: { id: cls.id }, data: { isActive: false } });
+    const r = await publishQuiz(actor, quiz.id);
+    expect((r as { reasons: string[] }).reasons).toContain("Pilih minimal satu kelas aktif.");
+  });
+
+  it("edits on a published quiz stay locked after the lock was added", async () => {
+    const { actor, quiz, q } = await ready();
+    await publishQuiz(actor, quiz.id);
+    expect(await addQuizQuestion(quiz.id, q.id)).toMatchObject({ ok: false });
+  });
+
+  it("unpublish without attempts: DRAFT, snapshot null, no image rows, one audit", async () => {
+    const { actor, quiz, q, qq } = await ready();
+    const img = await makeImage(null, actor, { questionId: q.id });
+    await prisma.question.update({ where: { id: q.id }, data: { prompt: `![x](aksara-image:${img.id})` } });
+    await publishQuiz(actor, quiz.id);
+    expect(await prisma.quizQuestionImage.count()).toBe(1);
+    expect(await unpublishQuiz(actor, quiz.id)).toEqual({ ok: true });
+    const row = await prisma.quizQuestion.findUniqueOrThrow({ where: { id: qq.id } });
+    expect(row.questionSnapshot).toBeNull();
+    expect(row.answerKeySnapshot).toBeNull();
+    expect(await prisma.quizQuestionImage.count()).toBe(0);
+    expect(await prisma.quiz.findUniqueOrThrow({ where: { id: quiz.id } })).toMatchObject({ status: "DRAFT", publishedAt: null });
+    expect(await audits("QUIZ_UNPUBLISHED")).toBe(1);
+    expect(await unpublishQuiz(actor, quiz.id)).toEqual({ ok: true }); // draft: no-op
+    expect(await audits("QUIZ_UNPUBLISHED")).toBe(1);
+  });
+
+  it("unpublish with an attempt: HAS_ATTEMPTS and stays published", async () => {
+    const { actor, quiz, cls } = await ready();
+    await publishQuiz(actor, quiz.id);
+    await makeAttempt(quiz.id, (await makeStudent(cls.id)).id);
+    expect(await unpublishQuiz(actor, quiz.id)).toEqual({ ok: false, error: "HAS_ATTEMPTS" });
+    expect((await prisma.quiz.findUniqueOrThrow({ where: { id: quiz.id } })).status).toBe("PUBLISHED");
   });
 });

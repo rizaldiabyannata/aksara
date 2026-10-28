@@ -16,6 +16,7 @@ import {
 const UNEXPECTED = "Ada masalah. Coba lagi sebentar lagi.";
 const ERRORS = {
   NOT_DRAFT: "Jadikan soal draft dulu sebelum menghapusnya.",
+  IN_USE: "Soal ini dipakai di ulangan. Keluarkan dari ulangan draf dulu.",
   NOT_FOUND: "Soal tidak ditemukan. Muat ulang halaman.",
 };
 

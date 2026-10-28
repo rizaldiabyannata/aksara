@@ -7,6 +7,9 @@ import { uniqueViolation } from "@/lib/unique-violation";
 import { writeAudit } from "@/lib/audit";
 import { parseWitaInput } from "@/lib/format";
 import { swapOrder } from "@/lib/subjects";
+import { extractImageIds } from "@/lib/images";
+import { toPublicQuestion, type PublicQuestion, type QuestionContent } from "@/lib/questions";
+import { Prisma } from "@/lib/generated/prisma/client";
 
 export type QuizRow = {
   id: string;
@@ -54,6 +57,9 @@ export type PublishCheck = {
   maxAttempts: number;
   activeClassCount: number;
 };
+
+export type QuestionSnapshot = Omit<PublicQuestion, "id">;
+export type AnswerKeySnapshot = { answerKey: QuestionContent["answerKey"]; explanation: string | null };
 
 type Result = { ok: true } | Invalid | NotFound;
 
@@ -133,6 +139,15 @@ const createSchema = z
 
 const sameTime = (a: Date | null, b: Date | null) => (a?.getTime() ?? null) === (b?.getTime() ?? null);
 
+/** Row lock on the quiz. Two literal queries on purpose: never build SQL from a mode string. false = no such quiz. */
+export async function lockQuiz(tx: Prisma.TransactionClient, id: string, mode: "UPDATE" | "SHARE"): Promise<boolean> {
+  const rows =
+    mode === "UPDATE"
+      ? await tx.$queryRaw<{ id: string }[]>`SELECT "id" FROM "Quiz" WHERE "id" = ${id} FOR UPDATE`
+      : await tx.$queryRaw<{ id: string }[]>`SELECT "id" FROM "Quiz" WHERE "id" = ${id} FOR SHARE`;
+  return rows.length > 0;
+}
+
 /** Reasons a draft cannot be published. Empty = publishable. `now` is injected so tests stay deterministic. */
 export function validateForPublish(q: PublishCheck, now: Date): string[] {
   const out: string[] = [];
@@ -169,6 +184,7 @@ export async function updateQuiz(actorId: string, id: string, input: unknown): P
   if (!p.ok) return p;
   const d = p.data;
   return prisma.$transaction(async (tx): Promise<Result> => {
+    if (!(await lockQuiz(tx, id, "UPDATE"))) return NOT_FOUND;
     const old = await tx.quiz.findUnique({
       where: { id },
       select: {
@@ -218,6 +234,7 @@ export async function updateQuiz(actorId: string, id: string, input: unknown): P
 export async function setQuizClasses(id: string, classIds: string[]): Promise<Result> {
   const ids = [...new Set(classIds)];
   return prisma.$transaction(async (tx): Promise<Result> => {
+    if (!(await lockQuiz(tx, id, "UPDATE"))) return NOT_FOUND;
     const quiz = await tx.quiz.findUnique({ where: { id }, select: { status: true } });
     if (!quiz) return NOT_FOUND;
     const known = (await tx.class.findMany({ where: { id: { in: ids } }, select: { id: true } })).map((c) => c.id);
@@ -241,6 +258,7 @@ export async function setQuizClasses(id: string, classIds: string[]): Promise<Re
 export async function addQuizQuestion(id: string, questionId: string): Promise<Result> {
   try {
     return await prisma.$transaction(async (tx): Promise<Result> => {
+      if (!(await lockQuiz(tx, id, "UPDATE"))) return NOT_FOUND;
       const quiz = await tx.quiz.findUnique({ where: { id }, select: { status: true, subjectId: true } });
       if (!quiz) return NOT_FOUND;
       if (quiz.status === "PUBLISHED") return LOCKED_QUESTIONS;
@@ -267,6 +285,7 @@ export async function addQuizQuestion(id: string, questionId: string): Promise<R
 
 export async function removeQuizQuestion(id: string, quizQuestionId: string): Promise<Result> {
   return prisma.$transaction(async (tx): Promise<Result> => {
+    if (!(await lockQuiz(tx, id, "UPDATE"))) return NOT_FOUND;
     const quiz = await tx.quiz.findUnique({ where: { id }, select: { status: true } });
     if (!quiz) return NOT_FOUND;
     if (quiz.status === "PUBLISHED") return LOCKED_QUESTIONS;
@@ -292,6 +311,7 @@ export async function removeQuizQuestion(id: string, quizQuestionId: string): Pr
 export async function moveQuizQuestion(id: string, quizQuestionId: string, dir: "up" | "down"): Promise<Result> {
   if (dir !== "up" && dir !== "down") return { ok: true };
   return prisma.$transaction(async (tx): Promise<Result> => {
+    if (!(await lockQuiz(tx, id, "UPDATE"))) return NOT_FOUND;
     const quiz = await tx.quiz.findUnique({ where: { id }, select: { status: true } });
     if (!quiz) return NOT_FOUND;
     if (quiz.status === "PUBLISHED") return LOCKED_QUESTIONS;
@@ -328,6 +348,7 @@ export async function setQuizQuestionPoints(id: string, quizQuestionId: string, 
   );
   if (!p.ok) return p;
   return prisma.$transaction(async (tx): Promise<Result> => {
+    if (!(await lockQuiz(tx, id, "UPDATE"))) return NOT_FOUND;
     const quiz = await tx.quiz.findUnique({ where: { id }, select: { status: true } });
     if (!quiz) return NOT_FOUND;
     if (quiz.status === "PUBLISHED") return LOCKED_QUESTIONS;
@@ -335,6 +356,131 @@ export async function setQuizQuestionPoints(id: string, quizQuestionId: string, 
     if (!qq) return NOT_FOUND;
     await tx.quizQuestion.update({ where: { id: quizQuestionId }, data: { points: p.data.points } });
     return { ok: true };
+  });
+}
+
+class PublishRejected extends Error {
+  constructor(readonly reasons: string[]) {
+    super("INVALID_PUBLISH");
+  }
+}
+
+export async function publishQuiz(
+  actorId: string,
+  id: string,
+  now: Date = new Date(),
+): Promise<{ ok: true } | NotFound | { ok: false; error: "INVALID_PUBLISH"; reasons: string[] }> {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      if (!(await lockQuiz(tx, id, "UPDATE"))) return NOT_FOUND;
+      const quiz = await tx.quiz.findUniqueOrThrow({
+        where: { id },
+        select: {
+          status: true, endsAt: true, scoringPolicy: true, kkm: true, maxAttempts: true,
+          classes: { where: { class: { isActive: true } }, select: { classId: true } },
+          questions: {
+            orderBy: { position: "asc" },
+            select: {
+              id: true, points: true,
+              question: {
+                select: {
+                  id: true, type: true, prompt: true, options: true, answerKey: true, explanation: true, status: true,
+                  images: {
+                    orderBy: { createdAt: "asc" },
+                    select: { id: true, altText: true, caption: true, sourceReference: true, width: true, height: true, deletedAt: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      if (quiz.status === "PUBLISHED") return { ok: true } as const;
+
+      const items = quiz.questions.map((qq) => {
+        const q = qq.question;
+        const options = q.options as { id: string; text: string }[] | null;
+        const live = q.images.filter((i) => !i.deletedAt);
+        const inBody = new Set(extractImageIds([q.prompt, ...(options ?? []).map((o) => o.text)].join("\n")));
+        const inExplanation = new Set(extractImageIds(q.explanation ?? ""));
+        return { qq, q, options, live, inBody, inExplanation };
+      });
+      const reasons = validateForPublish(
+        {
+          questions: items.map(({ qq, q }) => ({ status: q.status, points: qq.points, type: q.type })),
+          endsAt: quiz.endsAt, scoringPolicy: quiz.scoringPolicy, kkm: quiz.kkm, maxAttempts: quiz.maxAttempts,
+          activeClassCount: quiz.classes.length,
+        },
+        now,
+      );
+      items.forEach(({ q, inBody, inExplanation }, i) => {
+        const gone = q.images.some((m) => m.deletedAt && (inBody.has(m.id) || inExplanation.has(m.id)));
+        if (gone) reasons.push(`Soal nomor ${i + 1} memakai gambar yang sudah dihapus.`);
+      });
+      if (reasons.length) throw new PublishRejected(reasons);
+
+      let maxPoints = 0;
+      for (const { qq, q, options, live, inBody, inExplanation } of items) {
+        maxPoints += qq.points;
+        const pub = toPublicQuestion({
+          id: q.id, type: q.type, prompt: q.prompt, options,
+          images: live.map((m) => ({
+            id: m.id, altText: m.altText, caption: m.caption, sourceReference: m.sourceReference, width: m.width, height: m.height,
+          })),
+        });
+        const questionSnapshot: QuestionSnapshot = { type: pub.type, prompt: pub.prompt, options: pub.options, images: pub.images };
+        const answerKeySnapshot: AnswerKeySnapshot = {
+          answerKey: q.answerKey as QuestionContent["answerKey"],
+          explanation: q.explanation,
+        };
+        await tx.quizQuestion.update({
+          where: { id: qq.id },
+          data: {
+            questionSnapshot: questionSnapshot as Prisma.InputJsonValue,
+            answerKeySnapshot: answerKeySnapshot as Prisma.InputJsonValue,
+          },
+        });
+        const imgs = live
+          .filter((m) => inBody.has(m.id) || inExplanation.has(m.id))
+          .map((m) => ({
+            quizQuestionId: qq.id, imageId: m.id,
+            visibility: inBody.has(m.id) ? ("QUESTION" as const) : ("EXPLANATION" as const),
+          }));
+        if (imgs.length) await tx.quizQuestionImage.createMany({ data: imgs });
+      }
+      await tx.quiz.update({ where: { id }, data: { status: "PUBLISHED", publishedAt: now } });
+      await writeAudit(tx, {
+        actorUserId: actorId, action: "QUIZ_PUBLISHED", entityType: "Quiz", entityId: id,
+        metadata: { questionCount: items.length, maxPoints },
+      });
+      return { ok: true } as const;
+    });
+  } catch (e) {
+    if (e instanceof PublishRejected) return { ok: false, error: "INVALID_PUBLISH", reasons: e.reasons };
+    throw e;
+  }
+}
+
+export async function unpublishQuiz(
+  actorId: string,
+  id: string,
+): Promise<{ ok: true } | NotFound | { ok: false; error: "HAS_ATTEMPTS" }> {
+  return prisma.$transaction(async (tx) => {
+    if (!(await lockQuiz(tx, id, "UPDATE"))) return NOT_FOUND;
+    const quiz = await tx.quiz.findUniqueOrThrow({
+      where: { id },
+      select: { status: true, _count: { select: { attempts: true } } },
+    });
+    if (quiz.status !== "PUBLISHED") return { ok: true } as const;
+    if (quiz._count.attempts > 0) return { ok: false, error: "HAS_ATTEMPTS" } as const;
+    await tx.quizQuestion.updateMany({
+      where: { quizId: id },
+      data: { questionSnapshot: Prisma.DbNull, answerKeySnapshot: Prisma.DbNull },
+    });
+    await tx.quizQuestionImage.deleteMany({ where: { quizQuestion: { quizId: id } } });
+    await tx.quiz.update({ where: { id }, data: { status: "DRAFT", publishedAt: null } });
+    await writeAudit(tx, { actorUserId: actorId, action: "QUIZ_UNPUBLISHED", entityType: "Quiz", entityId: id, metadata: {} });
+    return { ok: true } as const;
   });
 }
 

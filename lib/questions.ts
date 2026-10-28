@@ -208,7 +208,7 @@ async function checkRefs(
   }
   const own = new Set(
     questionId
-      ? (await tx.image.findMany({ where: { questionId }, select: { id: true } })).map((i) => i.id)
+      ? (await tx.image.findMany({ where: { questionId, deletedAt: null }, select: { id: true } })).map((i) => i.id)
       : [],
   );
   const foreign = (s: string) => extractImageIds(s).some((id) => !own.has(id));
@@ -305,7 +305,7 @@ export async function setQuestionStatus(
 export async function deleteQuestion(
   actorId: string,
   id: string,
-): Promise<{ ok: true } | NotFound | { ok: false; error: "NOT_DRAFT" }> {
+): Promise<{ ok: true } | NotFound | { ok: false; error: "NOT_DRAFT" | "IN_USE" }> {
   const res = await prisma.$transaction(async (tx) => {
     const q = await tx.question.findUnique({
       where: { id },
@@ -313,6 +313,7 @@ export async function deleteQuestion(
     });
     if (!q) return { ok: false, error: "NOT_FOUND" } as const;
     if (q.status !== "DRAFT") return { ok: false, error: "NOT_DRAFT" } as const; // UI copy: "Jadikan soal draft dulu sebelum menghapusnya."
+    if ((await tx.quizQuestion.count({ where: { questionId: id } })) > 0) return { ok: false, error: "IN_USE" } as const;
     await tx.image.deleteMany({ where: { questionId: id } });
     await tx.question.delete({ where: { id } });
     await writeAudit(tx, {
@@ -343,6 +344,7 @@ export async function duplicateQuestion(actorId: string, id: string): Promise<{ 
       type: true, prompt: true, options: true, answerKey: true, explanation: true, defaultPoints: true,
       difficulty: true, sourceReference: true, verificationNote: true, chapterId: true, subchapterId: true,
       images: {
+        where: { deletedAt: null },
         orderBy: { createdAt: "asc" },
         select: {
           id: true, storageKey: true, mimeType: true, sizeBytes: true, width: true, height: true,
@@ -457,6 +459,7 @@ export async function getQuestionForTeacher(id: string): Promise<QuestionDetail 
       chapter: { select: { title: true, subject: { select: { name: true } } } },
       subchapter: { select: { title: true } },
       images: {
+        where: { deletedAt: null },
         orderBy: { createdAt: "asc" },
         select: { id: true, altText: true, caption: true, sourceReference: true, width: true, height: true },
       },
