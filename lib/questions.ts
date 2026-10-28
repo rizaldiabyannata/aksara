@@ -7,7 +7,8 @@ import { extractImageIds } from "@/lib/images";
 import { normalizeShortAnswer } from "@/lib/grading";
 import { copyObject, deleteImage } from "@/lib/storage";
 import { Prisma } from "@/lib/generated/prisma/client";
-import type { Difficulty, QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
+import { QuestionStatus } from "@/lib/generated/prisma/enums";
+import type { Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
 import type { ImageView } from "@/lib/materials";
 
 export type Option = { id: string; text: string };
@@ -82,7 +83,7 @@ const base = {
 };
 
 const optionSchema = z.object({
-  id: z.string().regex(/^[a-h]$/),
+  id: z.string().regex(/^[a-h]$/, { error: "Opsi tidak valid." }),
   text: required(1000, "Teks opsi paling banyak 1.000 huruf."),
 });
 const optionsOf = (min: number, max: number) =>
@@ -126,7 +127,12 @@ const questionSchema = z.discriminatedUnion(
         type: z.literal("MULTIPLE_SELECT"),
         options: optionsOf(3, 8),
         answerKey: z.object(
-          { optionIds: z.array(z.string()) },
+          {
+            optionIds: z
+              .array(z.string(), { error: "Tandai minimal satu jawaban benar, tetapi jangan semuanya." })
+              .max(8, { error: "Tandai minimal satu jawaban benar, tetapi jangan semuanya." })
+              .transform((ids) => [...new Set(ids)]),
+          },
           { error: "Tandai minimal satu jawaban benar, tetapi jangan semuanya." },
         ),
       })
@@ -242,7 +248,14 @@ export async function updateQuestion(
   const p = parse(questionSchema, input);
   if (!p.ok) return p;
   return prisma.$transaction(async (tx) => {
-    const old = await tx.question.findUnique({ where: { id } });
+    const old = await tx.question.findUnique({
+      where: { id },
+      select: {
+        type: true, status: true, chapterId: true, subchapterId: true, prompt: true, options: true,
+        answerKey: true, explanation: true, defaultPoints: true, difficulty: true,
+        sourceReference: true, verificationNote: true,
+      },
+    });
     if (!old) return { ok: false, error: "NOT_FOUND" } as const;
     if (old.type !== p.data.type) {
       return { ok: false, error: "INVALID", fieldErrors: { type: "Tipe soal tidak bisa diubah." } } as const;
@@ -272,6 +285,7 @@ export async function setQuestionStatus(
   id: string,
   to: QuestionStatus,
 ): Promise<{ ok: true } | NotFound> {
+  if (!Object.hasOwn(QuestionStatus, to)) return { ok: false, error: "NOT_FOUND" }; // untyped callers (server action args)
   return prisma.$transaction(async (tx) => {
     const q = await tx.question.findUnique({ where: { id }, select: { status: true } });
     if (!q) return { ok: false, error: "NOT_FOUND" } as const;

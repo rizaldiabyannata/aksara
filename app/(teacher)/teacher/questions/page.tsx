@@ -51,7 +51,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
   const difficulty = known<Difficulty>(DIFFICULTY_LABEL, one(sp.difficulty));
   const status = known<QuestionStatus>(STATUS_LABEL, one(sp.status));
   const q = one(sp.q);
-  const page = Number(one(sp.page)) || 1;
+  const page = Math.max(1, Math.trunc(Number(one(sp.page))) || 1);
   const [{ rows, hasNext }, subjects, chapters] = await Promise.all([
     listQuestions({ subjectId, chapterId, subchapterId, type, difficulty, status, q, page }),
     getSubjectTree(),

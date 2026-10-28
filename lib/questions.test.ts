@@ -66,6 +66,16 @@ describe("createQuestion validation", () => {
     expect(fe(await createQuestion(actor, sc(c, { options: O("a", "b", "c", "d", "e", "f", "g") }))).options).toBe("Isi 2 sampai 6 opsi.");
   });
 
+  it("multiple select stores de-duplicated ids", async () => {
+    const { actor, chapter } = await setup();
+    const r = await createQuestion(actor, {
+      ...base(chapter.id), type: "MULTIPLE_SELECT", options: O("a", "b", "c"), answerKey: { optionIds: ["a", "a", "b"] },
+    });
+    expect(r.ok).toBe(true);
+    const row = await prisma.question.findFirstOrThrow();
+    expect(row.answerKey).toEqual({ optionIds: ["a", "b"] });
+  });
+
   it("multiple select rules", async () => {
     const { actor, chapter } = await setup();
     const ms = (ids: string[]) => ({
@@ -185,6 +195,16 @@ describe("status and delete", () => {
     expect(a[0].metadata).toEqual({ from: "DRAFT", to: "ACTIVE" });
     expect(await setQuestionStatus(actor, "nope", "ACTIVE")).toEqual({ ok: false, error: "NOT_FOUND" });
     expect(await countQuestionsByStatus()).toEqual({ DRAFT: 0, ACTIVE: 1 });
+  });
+
+  it("rejects an unknown status without writing", async () => {
+    const { actor, chapter } = await setup();
+    const q = await makeQuestion(chapter.id, actor);
+    for (const bad of ["FOO", { set: "ACTIVE" }]) {
+      expect(await setQuestionStatus(actor, q.id, bad as never)).toEqual({ ok: false, error: "NOT_FOUND" });
+    }
+    expect((await prisma.question.findUniqueOrThrow({ where: { id: q.id } })).status).toBe("DRAFT");
+    expect(await prisma.auditLog.count()).toBe(0);
   });
 
   it("refuses to delete ACTIVE", async () => {

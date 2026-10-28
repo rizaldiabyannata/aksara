@@ -60,7 +60,7 @@ function fromForm(fd: FormData, type: QuestionType) {
   for (const id of slots) values[`option_${id}`] = field(fd, `option_${id}`);
   const correct = fd.getAll("correct").filter((x) => typeof x === "string");
   values.correct = correct.join(",");
-  if (fd.get("caseSensitive") === "on") values.caseSensitive = "on";
+  values.caseSensitive = fd.get("caseSensitive") === "on" ? "on" : "";
 
   const options = slots
     .map((id) => ({ id, text: values[`option_${id}`].trim() }))
@@ -73,7 +73,7 @@ function fromForm(fd: FormData, type: QuestionType) {
         accepted: values.accepted.split("\n").map((l) => l.trim()).filter(Boolean),
         caseSensitive: values.caseSensitive === "on",
       }
-    : { rubric: values.rubric.trim() || null };
+    : { rubric: values.rubric.trim() || undefined };
 
   const input = {
     chapterId: values.chapterId,

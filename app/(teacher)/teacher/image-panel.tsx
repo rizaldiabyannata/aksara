@@ -168,7 +168,7 @@ function ImageCard({ owner, image, referenced }: { owner: Owner; image: ImageVie
         trigger="Hapus"
         triggerLabel={`Hapus gambar ${image.altText}`}
         title="Hapus gambar ini?"
-        description={`Gambar ini akan dihapus permanen.${referenced ? " Gambar ini masih dipakai di isi materi." : ""}`}
+        description={`Gambar ini akan dihapus permanen.${referenced ? ` Gambar ini masih dipakai di ${owner === "questionId" ? "teks soal" : "isi materi"}.` : ""}`}
         confirm="Hapus"
         destructive
       />

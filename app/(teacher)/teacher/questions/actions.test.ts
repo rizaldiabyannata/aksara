@@ -157,4 +157,35 @@ describe("question actions", () => {
     expect(state?.message).toBe("Jadikan soal draft dulu sebelum menghapusnya.");
     expect(await prisma.question.count()).toBe(1);
   });
+
+  it.each([
+    ["SINGLE_CHOICE", { correct: "b" }, { optionId: "b" }],
+    ["TRUE_FALSE", { correct: "true" }, { value: true }],
+    ["SHORT_ANSWER", { accepted: "Jakarta" }, { accepted: ["Jakarta"], caseSensitive: false }],
+    ["ESSAY", {}, { rubric: null }],
+  ] as const)("%s saves with every optional field empty", async (type, extra, key) => {
+    const { user } = await makeTeacher();
+    await signIn(user);
+    const ch = await makeChapter();
+    await createQuestionAction(type, undefined, form({ ...valid(ch.id), ...extra })).catch(() => {});
+    const q = await getQuestionForTeacher((await prisma.question.findFirstOrThrow()).id);
+    expect(q?.answerKey).toEqual(key);
+  });
+
+  it("updateQuestionAction echoes an unticked caseSensitive on error", async () => {
+    const { user } = await makeTeacher();
+    await signIn(user);
+    const ch = await makeChapter();
+    const q = await makeQuestion(ch.id, user.id, {
+      type: "SHORT_ANSWER",
+      answerKey: { accepted: ["a"], caseSensitive: true },
+    });
+    const state = await updateQuestionAction(
+      q.id,
+      undefined,
+      form({ ...valid(ch.id), type: "SHORT_ANSWER", accepted: "a", prompt: "" }),
+    );
+    expect(state?.fieldErrors?.prompt).toBeTruthy();
+    expect(state?.values?.caseSensitive).toBe("");
+  });
 });

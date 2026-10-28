@@ -14,7 +14,7 @@ function insertImage(createdById: string, materialId: string | null, questionId:
 describe("Image owner CHECK", () => {
   it("CHECK rejects an image with no owner", async () => {
     const { user } = await makeTeacher();
-    await expect(insertImage(user.id, null, null)).rejects.toThrow();
+    await expect(insertImage(user.id, null, null)).rejects.toThrow(/Image_one_owner/);
   });
 
   it("CHECK rejects an image with both owners", async () => {
@@ -22,7 +22,7 @@ describe("Image owner CHECK", () => {
     const chapter = await makeChapter();
     const material = await makeMaterial(chapter.id, user.id);
     const question = await makeQuestion(chapter.id, user.id);
-    await expect(insertImage(user.id, material.id, question.id)).rejects.toThrow();
+    await expect(insertImage(user.id, material.id, question.id)).rejects.toThrow(/Image_one_owner/);
   });
 });
 
@@ -34,7 +34,7 @@ describe("Question subchapter FK", () => {
     const subB = await makeSubchapter(chapterB.id);
     await expect(
       makeQuestion(chapterA.id, user.id, { subchapterId: subB.id }),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/Question_subchapterId_chapterId_fkey/);
   });
 });
 
