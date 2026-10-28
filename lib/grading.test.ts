@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { gradeObjective, normalizeShortAnswer, type ObjectiveQuestion } from "@/lib/grading";
+import {
+  gradeObjective,
+  normalizeShortAnswer,
+  parseAnswer,
+  type ObjectiveQuestion,
+} from "@/lib/grading";
+
+const INVALID = { ok: false, error: "INVALID", fieldErrors: { answer: "Jawaban tidak valid." } };
+const opts = [
+  { id: "a", text: "A" },
+  { id: "b", text: "B" },
+];
 
 describe("normalizeShortAnswer", () => {
   it("trims, collapses whitespace, and lowercases when case-insensitive", () => {
@@ -153,5 +164,93 @@ describe("gradeObjective", () => {
       };
       expect(gradeObjective(sa, { text: 1 }, 3)).toBe(0);
     });
+  });
+});
+
+describe("parseAnswer", () => {
+  const single = { type: "SINGLE_CHOICE" as const, options: opts };
+  const multi = { type: "MULTIPLE_SELECT" as const, options: opts };
+  const tf = { type: "TRUE_FALSE" as const, options: null };
+  const short = { type: "SHORT_ANSWER" as const, options: null };
+  const essay = { type: "ESSAY" as const, options: null };
+
+  it("accepts a valid answer for every type", () => {
+    expect(parseAnswer(single, { optionId: "a" })).toEqual({ ok: true, answer: { optionId: "a" } });
+    expect(parseAnswer(tf, { value: false })).toEqual({ ok: true, answer: { value: false } });
+    expect(parseAnswer(multi, { optionIds: ["b", "a"] })).toEqual({
+      ok: true,
+      answer: { optionIds: ["b", "a"] },
+    });
+    expect(parseAnswer(short, { text: "Jakarta" })).toEqual({
+      ok: true,
+      answer: { text: "Jakarta" },
+    });
+    expect(parseAnswer(essay, { text: "Uraian" })).toEqual({ ok: true, answer: { text: "Uraian" } });
+  });
+
+  it("refuses an optionId that is not in the snapshot options", () => {
+    expect(parseAnswer(single, { optionId: "z" })).toEqual(INVALID);
+  });
+
+  it("refuses duplicate or unknown optionIds", () => {
+    expect(parseAnswer(multi, { optionIds: ["a", "a"] })).toEqual(INVALID);
+    expect(parseAnswer(multi, { optionIds: ["a", "z"] })).toEqual(INVALID);
+  });
+
+  it("treats an empty selection as null", () => {
+    expect(parseAnswer(multi, { optionIds: [] })).toEqual({ ok: true, answer: null });
+  });
+
+  it("treats whitespace-only text as null", () => {
+    expect(parseAnswer(short, { text: "   " })).toEqual({ ok: true, answer: null });
+    expect(parseAnswer(essay, { text: "   " })).toEqual({ ok: true, answer: null });
+  });
+
+  it("gives the short-answer message for 201 code points, and accepts 200", () => {
+    expect(parseAnswer(short, { text: "😀".repeat(201) })).toEqual({
+      ok: false,
+      error: "INVALID",
+      fieldErrors: { answer: "Jawaban paling banyak 200 huruf." },
+    });
+    expect(parseAnswer(short, { text: "😀".repeat(200) })).toEqual({
+      ok: true,
+      answer: { text: "😀".repeat(200) },
+    });
+  });
+
+  it("gives the essay message for 5.001 code points, and accepts 5.000", () => {
+    expect(parseAnswer(essay, { text: "a".repeat(5001) })).toEqual({
+      ok: false,
+      error: "INVALID",
+      fieldErrors: { answer: "Jawaban paling banyak 5.000 huruf." },
+    });
+    expect(parseAnswer(essay, { text: "a".repeat(5000) })).toEqual({
+      ok: true,
+      answer: { text: "a".repeat(5000) },
+    });
+  });
+
+  it("refuses a string where a boolean belongs", () => {
+    expect(parseAnswer(tf, { value: "true" })).toEqual(INVALID);
+  });
+
+  it("refuses non-object raw values", () => {
+    expect(parseAnswer(single, "a")).toEqual(INVALID);
+    expect(parseAnswer(single, 42)).toEqual(INVALID);
+  });
+
+  it("drops extra keys from the stored answer", () => {
+    expect(parseAnswer(single, { optionId: "a", extra: 1 })).toEqual({
+      ok: true,
+      answer: { optionId: "a" },
+    });
+  });
+
+  it("treats raw null as an unanswered question", () => {
+    expect(parseAnswer(single, null)).toEqual({ ok: true, answer: null });
+  });
+
+  it("does not check options for TRUE_FALSE", () => {
+    expect(parseAnswer(tf, { value: true })).toEqual({ ok: true, answer: { value: true } });
   });
 });

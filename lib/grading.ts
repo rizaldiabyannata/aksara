@@ -2,6 +2,9 @@
 // every shape is parsed with Zod and anything malformed scores 0.
 import { z } from "zod";
 import { normalizeIdentity } from "@/lib/normalize";
+import type { Option } from "@/lib/questions";
+import type { QuestionType } from "@/lib/generated/prisma/enums";
+import type { Invalid } from "@/lib/validation";
 
 export type ObjectiveQuestion =
   | { type: "SINGLE_CHOICE"; answerKey: { optionId: string } }
@@ -15,6 +18,75 @@ const multipleSelectAnswer = z.object({ optionIds: z.array(z.string()) });
 const shortAnswer = z.object({
   text: z.string().refine((t) => [...t].length <= 200),
 });
+const essayAnswer = z.object({
+  text: z.string().refine((t) => [...t].length <= 5000),
+});
+
+export type StoredAnswer =
+  | { optionId: string }
+  | { value: boolean }
+  | { optionIds: string[] }
+  | { text: string };
+
+const INVALID = "Jawaban tidak valid.";
+const SHORT_TOO_LONG = "Jawaban paling banyak 200 huruf.";
+const ESSAY_TOO_LONG = "Jawaban paling banyak 5.000 huruf.";
+
+// Validates a student answer against the snapshot and rebuilds it, so extra keys are never stored.
+// Empty answers come back as null; the caller stores them as DbNull.
+export function parseAnswer(
+  q: { type: QuestionType; options: Option[] | null },
+  raw: unknown,
+): { ok: true; answer: StoredAnswer | null } | Invalid {
+  if (raw === null) return { ok: true, answer: null };
+  const fail = (message: string): Invalid => ({
+    ok: false,
+    error: "INVALID",
+    fieldErrors: { answer: message },
+  });
+  const hasOption = (id: string) => q.options?.some((o) => o.id === id) ?? false;
+
+  switch (q.type) {
+    case "SINGLE_CHOICE": {
+      const a = singleChoiceAnswer.safeParse(raw);
+      if (!a.success || !hasOption(a.data.optionId)) return fail(INVALID);
+      return { ok: true, answer: { optionId: a.data.optionId } };
+    }
+    case "TRUE_FALSE": {
+      const a = trueFalseAnswer.safeParse(raw);
+      if (!a.success) return fail(INVALID);
+      return { ok: true, answer: { value: a.data.value } };
+    }
+    case "MULTIPLE_SELECT": {
+      const a = multipleSelectAnswer.safeParse(raw);
+      if (!a.success) return fail(INVALID);
+      const ids = a.data.optionIds;
+      if (ids.length === 0) return { ok: true, answer: null };
+      if (new Set(ids).size !== ids.length || !ids.every(hasOption)) return fail(INVALID);
+      return { ok: true, answer: { optionIds: ids } };
+    }
+    case "SHORT_ANSWER":
+      return parseText(raw, shortAnswer, SHORT_TOO_LONG);
+    case "ESSAY":
+      return parseText(raw, essayAnswer, ESSAY_TOO_LONG);
+    default:
+      return fail(INVALID);
+  }
+
+  function parseText(
+    input: unknown,
+    schema: typeof shortAnswer | typeof essayAnswer,
+    tooLong: string,
+  ): { ok: true; answer: StoredAnswer | null } | Invalid {
+    const a = schema.safeParse(input);
+    if (!a.success) {
+      // Only a well-formed text that failed the length refine gets the length message.
+      return fail(z.object({ text: z.string() }).safeParse(input).success ? tooLong : INVALID);
+    }
+    if (a.data.text.trim() === "") return { ok: true, answer: null };
+    return { ok: true, answer: { text: a.data.text } };
+  }
+}
 
 // Case-sensitive keeps casing but still folds width and whitespace.
 export function normalizeShortAnswer(s: string, caseSensitive: boolean): string {
