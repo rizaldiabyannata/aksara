@@ -59,7 +59,7 @@ const uniqueViolation = (e: unknown) =>
   sharedUniqueViolation(e, { Subject_name_key: "name" } as const);
 
 // Swap in 3 writes: the temporary negative order keeps the unique (parent, order) from colliding.
-async function swapOrder(
+export async function swapOrder(
   a: { id: string; order: number },
   b: { id: string; order: number },
   set: (id: string, order: number) => Promise<unknown>,
