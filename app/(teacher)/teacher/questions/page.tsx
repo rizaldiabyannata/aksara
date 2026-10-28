@@ -115,10 +115,10 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
             <p className="text-sm text-muted-foreground">{r.subjectName} · {r.chapterTitle}</p>
             <div className="flex flex-wrap items-start gap-2">
               <Link href={`/teacher/questions/${r.id}`} className="inline-flex min-h-11 items-center underline">
-                Ubah<span className="sr-only"> soal: {snippet(r.prompt)}</span>
+                Ubah<span className="sr-only"> soal: {snippet(r.prompt) || TYPE_LABEL[r.type]}</span>
               </Link>
               <Link href={`/teacher/questions/${r.id}/preview`} className="inline-flex min-h-11 items-center underline">
-                Pratinjau<span className="sr-only"> soal: {snippet(r.prompt)}</span>
+                Pratinjau<span className="sr-only"> soal: {snippet(r.prompt) || TYPE_LABEL[r.type]}</span>
               </Link>
             </div>
           </li>

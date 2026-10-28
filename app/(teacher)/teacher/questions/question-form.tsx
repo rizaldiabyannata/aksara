@@ -3,7 +3,7 @@
 import { startTransition, useActionState } from "react";
 import { ConfirmAction } from "@/components/confirm-action";
 import { Feedback } from "@/components/form-feedback";
-import { FormField } from "@/components/form-field";
+import { FormField, FormMessage } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { Difficulty, QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
@@ -248,6 +248,7 @@ export function QuestionForm({
       <FormField id="sourceReference" name="sourceReference" label="Sumber (opsional)" autoComplete="off" defaultValue={v("sourceReference")} error={e?.sourceReference} />
       <Area name="verificationNote" label="Catatan verifikasi (opsional)" rows={3} v={v("verificationNote")} error={e?.verificationNote} />
       <Feedback state={state} />
+      <FormMessage message={e?.type} />
       <Button type="submit" className="h-11 text-base" disabled={pending} aria-busy={pending}>
         {pending ? "Sedang menyimpan…" : question ? "Simpan soal" : "Buat soal"}
       </Button>
