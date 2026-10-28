@@ -191,7 +191,9 @@ export function ImagePanel({
     <div className="flex flex-col gap-6">
       <UploadForm owner={owner} ownerId={ownerId} />
       {images.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Belum ada gambar di sini.</p>
+        <p className="text-sm text-muted-foreground">
+          {owner === "questionId" ? "Belum ada gambar di soal ini." : "Belum ada gambar di materi ini."}
+        </p>
       ) : (
         <ul className="flex flex-col gap-4">
           {images.map((image) => (

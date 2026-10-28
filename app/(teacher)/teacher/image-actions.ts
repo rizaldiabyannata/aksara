@@ -15,7 +15,7 @@ type Result =
   | { ok: false; error: "INVALID"; fieldErrors: Record<string, string> }
   | { ok: false; error: keyof typeof ERRORS };
 
-// Shared by materials and questions. Only the domain call is inside try.
+// Image metadata and removal actions, used by the shared image panel. Only the domain call is inside try.
 async function run(
   call: () => Promise<Result>,
   success: string,
