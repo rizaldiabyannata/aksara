@@ -8,6 +8,7 @@ const NAV = [
   { href: "/teacher/subjects", label: "Mapel & Bab" },
   { href: "/teacher/materials", label: "Materi" },
   { href: "/teacher/questions", label: "Bank Soal" },
+  { href: "/teacher/quizzes", label: "Ulangan" },
 ] as const;
 
 // Static shell only: pages guard themselves inside <Suspense>.

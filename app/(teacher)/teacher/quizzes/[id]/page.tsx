@@ -1,0 +1,178 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { requireTeacher } from "@/lib/auth/guard";
+import { listClasses } from "@/lib/classes";
+import type { Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
+import { toWitaInput } from "@/lib/format";
+import { listQuestions } from "@/lib/questions";
+import { getQuizForTeacher } from "@/lib/quizzes";
+import { listChapterOptions } from "@/lib/subjects";
+import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
+import { STATUS_LABEL } from "../labels";
+import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, SettingsForm } from "../quiz-forms";
+
+export const metadata: Metadata = { title: "Ulangan" };
+
+export default function QuizPage({ params, searchParams }: PageProps<"/teacher/quizzes/[id]">) {
+  return (
+    <Suspense fallback={<p>Memuat…</p>}>
+      <Detail params={params} searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+type SP = Record<string, string | string[] | undefined>;
+const one = (v: string | string[] | undefined) => (typeof v === "string" && v ? v : undefined);
+const known = <T extends string>(label: Record<string, string>, v: string | undefined) =>
+  v && Object.hasOwn(label, v) ? (v as T) : undefined;
+const snippet = (s: string) => {
+  const t = s.replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/[*_`#>[\]|]/g, "").replace(/\s+/g, " ").trim();
+  return t.length > 120 ? `${t.slice(0, 120)}…` : t;
+};
+const selectClass =
+  "h-11 w-full rounded-lg border border-input bg-transparent px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50";
+
+async function Detail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<SP> }) {
+  await requireTeacher();
+  const { id } = await params;
+  const sp = await searchParams;
+  const quiz = await getQuizForTeacher(id);
+  if (!quiz) notFound();
+  const published = quiz.status === "PUBLISHED";
+  const classes = (await listClasses()).map(({ id, name, isActive }) => ({ id, name, isActive }));
+  const total = quiz.questions.reduce((s, x) => s + x.points, 0);
+  const essays = quiz.questions.filter((x) => x.type === "ESSAY").length;
+  return (
+    <section className="flex flex-col gap-8">
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-semibold">{quiz.title}</h1>
+        <Badge variant={published ? "default" : "secondary"}>{STATUS_LABEL[quiz.status]}</Badge>
+        <Badge variant="outline">{quiz.subjectName}</Badge>
+      </div>
+
+      <section aria-labelledby="setelan" className="flex flex-col gap-3">
+        <h2 id="setelan" className="text-xl font-semibold">Setelan</h2>
+        <SettingsForm
+          id={id}
+          q={{
+            ...quiz,
+            startsAt: quiz.startsAt ? toWitaInput(quiz.startsAt) : "",
+            endsAt: quiz.endsAt ? toWitaInput(quiz.endsAt) : "",
+          }}
+        />
+      </section>
+
+      <section aria-labelledby="kelas" className="flex flex-col gap-3">
+        <h2 id="kelas" className="text-xl font-semibold">Kelas</h2>
+        <ClassesForm id={id} classes={classes} selected={quiz.classIds} published={published} />
+      </section>
+
+      <section aria-labelledby="soal" className="flex flex-col gap-3">
+        <h2 id="soal" className="text-xl font-semibold">Soal</h2>
+        <p className="text-sm text-muted-foreground">
+          {quiz.questions.length} soal · total {total} poin · {essays} uraian
+        </p>
+        <ol className="flex flex-col gap-3">
+          {quiz.questions.map((x, i) => (
+            <li key={x.id} className="flex flex-col gap-3 rounded-lg border p-3">
+              <p className="font-medium">{i + 1}. {snippet(x.prompt) || TYPE_LABEL[x.type]}</p>
+              <Badge variant="outline" className="self-start">{TYPE_LABEL[x.type]}</Badge>
+              {published ? (
+                <p className="text-sm">{x.points} poin</p>
+              ) : (
+                <QuestionControls
+                  id={id} qqId={x.id} n={i + 1} prompt={snippet(x.prompt)} points={x.points}
+                  isFirst={i === 0} isLast={i === quiz.questions.length - 1}
+                />
+              )}
+            </li>
+          ))}
+        </ol>
+        {!published && (
+          <Suspense fallback={<p>Memuat…</p>}>
+            <AddPanel quizId={id} subjectId={quiz.subjectId} chosen={quiz.questions.map((x) => x.questionId)} sp={sp} />
+          </Suspense>
+        )}
+      </section>
+
+      <section aria-labelledby="terbit" className="flex flex-col gap-3">
+        <h2 id="terbit" className="text-xl font-semibold">{published ? "Status terbit" : "Terbitkan"}</h2>
+        <PublishControls id={id} published={published} />
+      </section>
+
+      {/* Pemantauan: Task 11 fills this section. */}
+      <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex flex-col gap-3">
+        <h2 id="pemantauan" className="sr-only">Pemantauan</h2>
+      </section>
+    </section>
+  );
+}
+
+async function AddPanel({
+  quizId, subjectId, chosen, sp,
+}: { quizId: string; subjectId: string; chosen: string[]; sp: SP }) {
+  const chapterId = one(sp.chapterId);
+  const type = known<QuestionType>(TYPE_LABEL, one(sp.type));
+  const difficulty = known<Difficulty>(DIFFICULTY_LABEL, one(sp.difficulty));
+  const page = Math.max(1, Math.trunc(Number(one(sp.page))) || 1);
+  const [{ rows, hasNext }, chapters] = await Promise.all([
+    listQuestions({ subjectId, chapterId, type, difficulty, status: "ACTIVE", page }),
+    listChapterOptions(),
+  ]);
+  const pageHref = (p: number) => {
+    const u = new URLSearchParams();
+    for (const [k, v] of Object.entries({ chapterId, type, difficulty })) if (v) u.set(k, v);
+    u.set("page", String(p));
+    return `/teacher/quizzes/${quizId}?${u}#tambah`;
+  };
+  const sel = (name: string, label: string, all: string, current: string | undefined, children: React.ReactNode) => (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={`f-${name}`}>{label}</Label>
+      <select id={`f-${name}`} name={name} defaultValue={current ?? ""} className={selectClass}>
+        <option value="">{all}</option>
+        {children}
+      </select>
+    </div>
+  );
+  const labels = (m: Record<string, string>) =>
+    Object.entries(m).map(([k, l]) => <option key={k} value={k}>{l}</option>);
+  return (
+    <div id="tambah" className="flex flex-col gap-3">
+      <h3 className="text-lg font-semibold">Tambah soal dari bank</h3>
+      <form method="get" action={`/teacher/quizzes/${quizId}`} className="grid gap-3 sm:grid-cols-3 sm:items-end">
+        {sel("chapterId", "Bab", "Semua bab", chapterId,
+          chapters.map((c) => <option key={c.id} value={c.id}>{c.label}</option>))}
+        {sel("type", "Tipe", "Semua tipe", type, labels(TYPE_LABEL))}
+        {sel("difficulty", "Kesulitan", "Semua tingkat", difficulty, labels(DIFFICULTY_LABEL))}
+        <Button type="submit" className="h-11 text-base">Terapkan</Button>
+      </form>
+      {rows.length === 0 && <p className="text-muted-foreground">Tidak ada soal aktif yang cocok.</p>}
+      <ul className="flex flex-col gap-3">
+        {rows.map((r) => (
+          <li key={r.id} className="flex flex-col gap-2 rounded-lg border p-3">
+            <p className="font-medium">{snippet(r.prompt) || TYPE_LABEL[r.type]}</p>
+            <p className="text-sm text-muted-foreground">
+              {TYPE_LABEL[r.type]} · {DIFFICULTY_LABEL[r.difficulty]} · {r.chapterTitle} · {r.defaultPoints} poin
+            </p>
+            {chosen.includes(r.id) ? (
+              <p className="text-sm">Sudah dipilih</p>
+            ) : (
+              <AddQuestionButton id={quizId} questionId={r.id} label={snippet(r.prompt) || TYPE_LABEL[r.type]} />
+            )}
+          </li>
+        ))}
+      </ul>
+      {(page > 1 || hasNext) && (
+        <nav aria-label="Halaman" className="flex gap-4">
+          {page > 1 && <Link href={pageHref(page - 1)} className="inline-flex min-h-11 items-center underline">Sebelumnya</Link>}
+          {hasNext && <Link href={pageHref(page + 1)} className="inline-flex min-h-11 items-center underline">Berikutnya</Link>}
+        </nav>
+      )}
+    </div>
+  );
+}
