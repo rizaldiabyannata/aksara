@@ -6,6 +6,7 @@ const MSG = {
   type: "File harus gambar JPG, PNG, atau WEBP.",
   size: "Ukuran gambar paling besar 4 MB.",
   limit: "Satu materi paling banyak 20 gambar.",
+  limitQuestion: "Satu soal paling banyak 5 gambar.",
 };
 
 const json = (body: Record<string, unknown>, status = 200) =>
@@ -38,10 +39,12 @@ export async function POST(req: Request): Promise<Response> {
   };
 
   const bytes = new Uint8Array(await file.arrayBuffer());
+  const questionId = str("questionId");
+  const materialId = str("materialId");
   let r: Awaited<ReturnType<typeof addImage>>;
   try {
     r = await addImage(user.id, {
-      materialId: str("materialId") ?? "",
+      ...(questionId ? { questionId } : { materialId: materialId ?? "" }),
       altText: str("altText") ?? "",
       caption: str("caption"),
       sourceReference: str("sourceReference"),
@@ -49,14 +52,14 @@ export async function POST(req: Request): Promise<Response> {
     });
   } catch {
     // Log the id only: the raw AWS error and the image bytes stay out of logs.
-    console.error("Gagal mengunggah gambar", str("materialId"));
+    console.error("Gagal mengunggah gambar", questionId ?? materialId);
     return fail("Ada masalah. Coba lagi sebentar lagi.", 500);
   }
   if (r.ok) return json({ ok: true, id: r.id });
   switch (r.error) {
     case "INVALID": return fail("Periksa isian gambar.", 400, { fieldErrors: r.fieldErrors });
-    case "NOT_FOUND": return fail("Materi tidak ditemukan.", 404);
-    case "LIMIT": return fail(MSG.limit, 400);
+    case "NOT_FOUND": return fail(questionId ? "Soal tidak ditemukan." : "Materi tidak ditemukan.", 404);
+    case "LIMIT": return fail(questionId ? MSG.limitQuestion : MSG.limit, 400);
     case "UNSUPPORTED": return fail(MSG.type, 400);
     case "TOO_LARGE": return fail(MSG.size, 413);
   }

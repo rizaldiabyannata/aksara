@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { deleteImage, presignGet, putImage } from "@/lib/storage";
+import { copyObject, deleteImage, presignGet, putImage } from "@/lib/storage";
 
 // Runs only against a real R2 bucket (see README setup checklist).
 describe.skipIf(!process.env.R2_BUCKET)("R2 smoke", () => {
@@ -24,6 +24,14 @@ describe.skipIf(!process.env.R2_BUCKET)("R2 smoke", () => {
       );
       expect(unsigned.status).toBeGreaterThanOrEqual(400);
       expect(unsigned.status).toBeLessThan(500);
+
+      const copyKey = `smoke/${randomUUID()}.jpg`;
+      await copyObject(key, copyKey);
+      try {
+        expect((await fetch(await presignGet(copyKey))).status).toBe(200);
+      } finally {
+        await deleteImage(copyKey);
+      }
     } finally {
       await deleteImage(key);
     }

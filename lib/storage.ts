@@ -1,5 +1,6 @@
 import "server-only";
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
@@ -50,6 +51,11 @@ export async function putImage(
 export async function deleteImage(key: string): Promise<void> {
   const { client, bucket } = r2();
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+}
+
+export async function copyObject(fromKey: string, toKey: string): Promise<void> {
+  const { client, bucket } = r2();
+  await client.send(new CopyObjectCommand({ Bucket: bucket, Key: toKey, CopySource: `${bucket}/${fromKey}` }));
 }
 
 export async function presignGet(key: string): Promise<string> {

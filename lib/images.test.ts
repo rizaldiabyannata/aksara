@@ -11,7 +11,7 @@ import {
 } from "@/lib/images";
 import { prisma } from "@/lib/db";
 import { objects } from "../tests/storage-fake";
-import { makeChapter, makeClass, makeImage, makeMaterial, makeStudent, makeTeacher } from "../tests/factories";
+import { makeChapter, makeClass, makeImage, makeMaterial, makeQuestion, makeStudent, makeTeacher } from "../tests/factories";
 
 vi.mock("@/lib/storage", () => import("../tests/storage-fake").then((m) => m.storageMock()));
 beforeEach(() => objects.clear());
@@ -226,5 +226,61 @@ describe("imageRedirectTarget", () => {
     expect(await imageRedirectTarget(student, pubImg.id)).toBe(`https://r2.test/${pubImg.storageKey}?sig=1`);
     expect(await imageRedirectTarget(teacher, draftImg.id)).toBe(`https://r2.test/${draftImg.storageKey}?sig=1`);
     expect(await imageRedirectTarget(teacher, "nope")).toBeNull();
+  });
+});
+
+describe("question-owned images", () => {
+  async function qsetup() {
+    const { user, file } = await setup();
+    const q = await makeQuestion((await makeChapter()).id, user.id);
+    return { user, q, file };
+  }
+
+  it("adds an image to a question, audit has questionId, 6th -> LIMIT", async () => {
+    const { user, q, file } = await qsetup();
+    const r = await addImage(user.id, { questionId: q.id, altText: "Gambar A", file });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(await prisma.image.findUniqueOrThrow({ where: { id: r.id } })).toMatchObject({ questionId: q.id, materialId: null });
+    const audit = await prisma.auditLog.findFirstOrThrow({ where: { action: "IMAGE_ADDED" } });
+    expect(audit.metadata).toEqual({ imageId: r.id, questionId: q.id });
+    for (let i = 0; i < 4; i++) await makeImage(null, user.id, { questionId: q.id });
+    const before = objects.size;
+    expect(await addImage(user.id, { questionId: q.id, altText: "a", file })).toEqual({ ok: false, error: "LIMIT" });
+    expect(objects.size).toBe(before);
+  });
+
+  it("both or no owner -> INVALID form; unknown question -> NOT_FOUND", async () => {
+    const { user, q, file } = await qsetup();
+    const m = await makeMaterial((await makeChapter()).id, user.id);
+    for (const o of [{}, { materialId: m.id, questionId: q.id }]) {
+      expect(await addImage(user.id, { ...o, altText: "a", file })).toMatchObject({
+        ok: false, error: "INVALID", fieldErrors: { form: expect.any(String) },
+      });
+    }
+    expect(await addImage(user.id, { questionId: "nope", altText: "a", file })).toEqual({ ok: false, error: "NOT_FOUND" });
+    expect(objects.size).toBe(0);
+  });
+
+  it("removeImage audit of a question image carries questionId", async () => {
+    const { user, q } = await qsetup();
+    const img = await makeImage(null, user.id, { questionId: q.id });
+    await removeImage(user.id, img.id);
+    const audit = await prisma.auditLog.findFirstOrThrow({ where: { action: "IMAGE_REMOVED" } });
+    expect(audit.metadata).toEqual({ imageId: img.id, questionId: q.id });
+  });
+
+  it("canStudentViewImage with no material: teacher only", () => {
+    expect(canStudentViewImage({ role: "STUDENT", materialStatus: null })).toBe(false);
+    expect(canStudentViewImage({ role: "TEACHER", materialStatus: null })).toBe(true);
+  });
+
+  it("teacher gets a presigned URL; student gets null even for an ACTIVE question", async () => {
+    const { user } = await qsetup();
+    const q = await makeQuestion((await makeChapter()).id, user.id, { status: "ACTIVE" });
+    const img = await makeImage(null, user.id, { questionId: q.id });
+    const stu = await makeStudent((await makeClass()).id);
+    expect(await imageRedirectTarget({ id: user.id, role: "TEACHER" } as never, img.id)).toBe(`https://r2.test/${img.storageKey}?sig=1`);
+    expect(await imageRedirectTarget({ id: stu.id, role: "STUDENT" } as never, img.id)).toBeNull();
   });
 });

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 import { prisma } from "@/lib/db";
 import { createSession } from "@/lib/auth/session";
-import { makeChapter, makeClass, makeImage, makeMaterial, makeStudent, makeTeacher } from "../../../tests/factories";
+import { makeChapter, makeClass, makeImage, makeMaterial, makeQuestion, makeStudent, makeTeacher } from "../../../tests/factories";
 import { cookieJar, expectForbidden, expectRedirect, resetNextMocks } from "../../../tests/next-mocks";
 import { objects } from "../../../tests/storage-fake";
 import * as storage from "@/lib/storage";
@@ -159,5 +159,35 @@ describe("GET /api/images/[id]", () => {
     const img = await makeImage(material.id, user.id);
     await signIn(user);
     expect((await get(img.id)).status).toBe(302);
+  });
+});
+
+describe("question images over HTTP", () => {
+  it("POST questionId stores; unknown question 404; limit message", async () => {
+    const { user } = await setup();
+    const q = await makeQuestion((await makeChapter()).id, user.id);
+    await signIn(user);
+    const file = new File([await png()], "a.png", { type: "image/png" });
+    const ok = await POST(upload({ file, questionId: q.id, altText: "A" }));
+    expect(ok.status).toBe(200);
+    expect(await prisma.image.count({ where: { questionId: q.id } })).toBe(1);
+    const nf = await POST(upload({ file, questionId: "nope", altText: "A" }));
+    expect(nf.status).toBe(404);
+    expect(await nf.json()).toMatchObject({ message: "Soal tidak ditemukan." });
+    for (let i = 0; i < 4; i++) await makeImage(null, user.id, { questionId: q.id });
+    const lim = await POST(upload({ file, questionId: q.id, altText: "A" }));
+    expect(lim.status).toBe(400);
+    expect(await lim.json()).toMatchObject({ message: "Satu soal paling banyak 5 gambar." });
+  });
+
+  it("GET by a student is 404 for a question image, 302 for the teacher", async () => {
+    const { user } = await setup();
+    const q = await makeQuestion((await makeChapter()).id, user.id, { status: "ACTIVE" });
+    const img = await makeImage(null, user.id, { questionId: q.id });
+    const get = () => GET(new Request("http://localhost/x"), { params: Promise.resolve({ id: img.id }) });
+    await signIn(await makeStudent((await makeClass()).id));
+    expect((await get()).status).toBe(404);
+    await signIn(user);
+    expect((await get()).status).toBe(302);
   });
 });

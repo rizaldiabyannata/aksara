@@ -1,10 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { parse, required, optional, type Invalid, type NotFound } from "@/lib/validation";
 import { writeAudit } from "@/lib/audit";
 import { extractImageIds } from "@/lib/images";
 import { normalizeShortAnswer } from "@/lib/grading";
-import { deleteImage } from "@/lib/storage";
+import { copyObject, deleteImage } from "@/lib/storage";
 import { Prisma } from "@/lib/generated/prisma/client";
 import type { Difficulty, QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
 import type { ImageView } from "@/lib/materials";
@@ -319,6 +320,83 @@ export async function deleteQuestion(
     }
   }
   return { ok: true };
+}
+
+export async function duplicateQuestion(actorId: string, id: string): Promise<{ ok: true; id: string } | NotFound> {
+  const src = await prisma.question.findUnique({
+    where: { id },
+    select: {
+      type: true, prompt: true, options: true, answerKey: true, explanation: true, defaultPoints: true,
+      difficulty: true, sourceReference: true, verificationNote: true, chapterId: true, subchapterId: true,
+      images: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true, storageKey: true, mimeType: true, sizeBytes: true, width: true, height: true,
+          altText: true, caption: true, sourceReference: true,
+        },
+      },
+    },
+  });
+  if (!src) return { ok: false, error: "NOT_FOUND" };
+  // Copy objects first (outside the transaction); undo them if anything fails.
+  const copies: { oldId: string; key: string; img: (typeof src.images)[number] }[] = [];
+  try {
+    for (const img of src.images) {
+      const key = `images/${randomUUID()}.${img.storageKey.split(".").pop()}`;
+      await copyObject(img.storageKey, key);
+      copies.push({ oldId: img.id, key, img });
+    }
+    const newId = await prisma.$transaction(async (tx) => {
+      const { options } = src;
+      const q = await tx.question.create({
+        data: {
+          type: src.type, prompt: src.prompt, answerKey: src.answerKey as Prisma.InputJsonValue,
+          explanation: src.explanation, defaultPoints: src.defaultPoints, difficulty: src.difficulty,
+          sourceReference: src.sourceReference, verificationNote: src.verificationNote,
+          chapterId: src.chapterId, subchapterId: src.subchapterId,
+          options: (options ?? Prisma.DbNull) as Prisma.InputJsonValue,
+          status: "DRAFT",
+          createdById: actorId,
+          updatedById: actorId,
+        },
+        select: { id: true },
+      });
+      const idMap = new Map<string, string>();
+      for (const c of copies) {
+        const { mimeType, sizeBytes, width, height, altText, caption, sourceReference } = c.img;
+        const row = await tx.image.create({
+          data: { mimeType, sizeBytes, width, height, altText, caption, sourceReference, storageKey: c.key, questionId: q.id, createdById: actorId },
+          select: { id: true },
+        });
+        idMap.set(c.oldId, row.id);
+      }
+      if (idMap.size) {
+        const rw = (t: string) => t.replace(/aksara-image:([A-Za-z0-9_-]+)/g, (m, i: string) =>
+          idMap.has(i) ? `aksara-image:${idMap.get(i)}` : m);
+        await tx.question.update({
+          where: { id: q.id },
+          data: {
+            prompt: rw(src.prompt),
+            explanation: src.explanation === null ? null : rw(src.explanation),
+            ...(Array.isArray(options) && {
+              options: (options as Option[]).map((o) => ({ id: o.id, text: rw(o.text) })),
+            }),
+          },
+        });
+      }
+      return q.id;
+    });
+    return { ok: true, id: newId };
+  } catch (e) {
+    for (const c of copies) {
+      try {
+        await deleteImage(c.key);
+      } catch {
+        console.error("Gagal menghapus objek gambar", c.oldId);
+      }
+    }
+    throw e;
+  }
 }
 
 export async function listQuestions(

@@ -4,12 +4,14 @@ import {
   countQuestionsByStatus,
   createQuestion,
   deleteQuestion,
+  duplicateQuestion,
   getQuestionForTeacher,
   listQuestions,
   setQuestionStatus,
   toPublicQuestion,
   updateQuestion,
 } from "@/lib/questions";
+import * as storage from "@/lib/storage";
 import { objects } from "../tests/storage-fake";
 import { makeChapter, makeImage, makeMaterial, makeQuestion, makeSubchapter, makeTeacher } from "../tests/factories";
 
@@ -274,5 +276,86 @@ describe("listQuestions / getQuestionForTeacher", () => {
     expect(JSON.stringify(d)).not.toContain("zzz");
     expect(d?.subjectName).toBeDefined();
     expect(await getQuestionForTeacher("nope")).toBeNull();
+  });
+});
+
+describe("question options with own images", () => {
+  it("option texts that differ only in own image ids are accepted", async () => {
+    const { actor, chapter } = await setup();
+    const q = await makeQuestion(chapter.id, actor);
+    const i1 = await makeImage(null, actor, { questionId: q.id });
+    const i2 = await makeImage(null, actor, { questionId: q.id });
+    const options = [
+      { id: "a", text: `![x](aksara-image:${i1.id})` },
+      { id: "b", text: `![x](aksara-image:${i2.id})` },
+    ];
+    const r = await updateQuestion(actor, q.id, sc(chapter.id, { options, answerKey: { optionId: "a" } }));
+    expect(r.ok).toBe(true);
+  });
+});
+
+describe("duplicateQuestion", () => {
+  async function withImages() {
+    const { actor, chapter } = await setup();
+    const q = await makeQuestion(chapter.id, actor, { status: "ACTIVE", explanation: "x" });
+    const i1 = await makeImage(null, actor, { questionId: q.id, storageKey: "images/old1.png", altText: "Alt 1", caption: "Cap", mimeType: "image/png" });
+    const i2 = await makeImage(null, actor, { questionId: q.id, storageKey: "images/old2.jpg" });
+    for (const i of [i1, i2]) objects.set(i.storageKey, { body: Buffer.from("x"), contentType: i.mimeType });
+    const ref = (i: { id: string }) => `![a](aksara-image:${i.id})`;
+    await prisma.question.update({
+      where: { id: q.id },
+      data: {
+        prompt: `P ${ref(i1)} ${ref(i1)}`,
+        options: [{ id: "a", text: ref(i1) }, { id: "b", text: ref(i2) }],
+        explanation: `E ${ref(i2)}`,
+      },
+    });
+    return { actor, q, i1, i2 };
+  }
+
+  it("copies images and rewrites ids; source untouched; DRAFT; no audit", async () => {
+    const { actor, q, i1, i2 } = await withImages();
+    const before = await prisma.question.findUniqueOrThrow({ where: { id: q.id } });
+    const r = await duplicateQuestion(actor, q.id);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const dup = await prisma.question.findUniqueOrThrow({ where: { id: r.id }, include: { images: true } });
+    expect(dup.status).toBe("DRAFT");
+    expect(dup.images).toHaveLength(2);
+    const byAlt = (alt: string) => dup.images.find((i) => i.altText === alt)!;
+    const n1 = byAlt("Alt 1");
+    const n2 = dup.images.find((i) => i.id !== n1.id)!;
+    expect(n1).toMatchObject({ caption: "Cap", mimeType: "image/png", questionId: r.id });
+    expect(n1.storageKey).toMatch(/^images\/[0-9a-f-]{36}\.png$/);
+    expect(n2.storageKey).toMatch(/\.jpg$/);
+    expect(objects.has(n1.storageKey) && objects.has(n2.storageKey)).toBe(true);
+    expect(dup.prompt).toBe(`P ![a](aksara-image:${n1.id}) ![a](aksara-image:${n1.id})`);
+    expect(dup.options).toEqual([
+      { id: "a", text: `![a](aksara-image:${n1.id})` },
+      { id: "b", text: `![a](aksara-image:${n2.id})` },
+    ]);
+    expect(dup.explanation).toBe(`E ![a](aksara-image:${n2.id})`);
+    expect(dup.createdById).toBe(actor);
+    expect(JSON.stringify(dup)).not.toContain(i1.id);
+    expect(await prisma.question.findUniqueOrThrow({ where: { id: q.id } })).toEqual(before);
+    expect(await prisma.image.count({ where: { questionId: q.id } })).toBe(2);
+    expect(i2.id).not.toBe(n2.id);
+    expect(await prisma.auditLog.count()).toBe(0);
+    expect(await duplicateQuestion(actor, "nope")).toEqual({ ok: false, error: "NOT_FOUND" });
+  });
+
+  it("rolls back when the 2nd copy fails", async () => {
+    const { actor, q } = await withImages();
+    const real = (await import("../tests/storage-fake")).storageMock().copyObject;
+    const spy = vi.spyOn(storage, "copyObject")
+      .mockImplementationOnce(real)
+      .mockRejectedValueOnce(new Error("R2 down"));
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(duplicateQuestion(actor, q.id)).rejects.toThrow("R2 down");
+    expect(await prisma.question.count()).toBe(1);
+    expect(await prisma.image.count()).toBe(2);
+    expect([...objects.keys()].sort()).toEqual(["images/old1.png", "images/old2.jpg"]);
+    spy.mockRestore();
+    errSpy.mockRestore();
   });
 });

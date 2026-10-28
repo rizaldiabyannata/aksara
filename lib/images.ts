@@ -88,6 +88,7 @@ type Invalid = { ok: false; error: "INVALID"; fieldErrors: Record<string, string
 type NotFound = { ok: false; error: "NOT_FOUND" };
 
 const MAX_IMAGES_PER_MATERIAL = 20;
+const MAX_IMAGES_PER_QUESTION = 5;
 const ALT_MSG = "Teks alternatif wajib diisi, paling banyak 200 huruf.";
 const optional = (msg: string) =>
   z.string({ error: msg }).trim().max(200, { error: msg }).optional().transform((v) => v || null);
@@ -120,7 +121,7 @@ async function removeObject(key: string, imageId: string) {
 
 export async function addImage(
   actorId: string,
-  input: { materialId: string; altText: string; caption?: string; sourceReference?: string; file: Uint8Array },
+  input: { materialId?: string; questionId?: string; altText: string; caption?: string; sourceReference?: string; file: Uint8Array },
 ): Promise<
   | { ok: true; id: string }
   | Invalid
@@ -129,11 +130,21 @@ export async function addImage(
 > {
   const meta = parseMeta(input);
   if (!meta.ok) return meta;
-  const material = await prisma.material.findUnique({ where: { id: input.materialId }, select: { id: true } });
-  if (!material) return { ok: false, error: "NOT_FOUND" };
-  // ponytail: count then insert is not atomic; a double submit could pass 20. Fine with a single teacher.
-  const count = await prisma.image.count({ where: { materialId: material.id } });
-  if (count >= MAX_IMAGES_PER_MATERIAL) return { ok: false, error: "LIMIT" };
+  if (!input.materialId === !input.questionId) {
+    return { ok: false, error: "INVALID", fieldErrors: { form: "Data tidak lengkap. Coba isi lagi." } };
+  }
+  const owner = input.materialId
+    ? { materialId: input.materialId }
+    : { questionId: input.questionId! };
+  const exists = input.materialId
+    ? await prisma.material.findUnique({ where: { id: input.materialId }, select: { id: true } })
+    : await prisma.question.findUnique({ where: { id: input.questionId }, select: { id: true } });
+  if (!exists) return { ok: false, error: "NOT_FOUND" };
+  // ponytail: count then insert is not atomic; a double submit could pass the cap. Fine with a single teacher.
+  const count = await prisma.image.count({ where: owner });
+  if (count >= (input.materialId ? MAX_IMAGES_PER_MATERIAL : MAX_IMAGES_PER_QUESTION)) {
+    return { ok: false, error: "LIMIT" };
+  }
   const p = await processUpload(input.file);
   if (!p.ok) return p;
   const { image } = p;
@@ -143,7 +154,7 @@ export async function addImage(
     const id = await prisma.$transaction(async (tx) => {
       const row = await tx.image.create({
         data: {
-          materialId: material.id,
+          ...owner,
           storageKey,
           mimeType: image.mimeType,
           sizeBytes: image.data.length,
@@ -159,7 +170,7 @@ export async function addImage(
         action: "IMAGE_ADDED",
         entityType: "Image",
         entityId: row.id,
-        metadata: { imageId: row.id, materialId: material.id },
+        metadata: { imageId: row.id, ...(input.materialId ? { materialId: input.materialId } : { questionId: input.questionId! }) },
       });
       return row.id;
     });
@@ -179,7 +190,7 @@ export async function updateImageMeta(id: string, input: unknown): Promise<{ ok:
 
 export async function removeImage(actorId: string, id: string): Promise<{ ok: true } | NotFound> {
   const storageKey = await prisma.$transaction(async (tx) => {
-    const img = await tx.image.findUnique({ where: { id }, select: { storageKey: true, materialId: true } });
+    const img = await tx.image.findUnique({ where: { id }, select: { storageKey: true, materialId: true, questionId: true } });
     if (!img) return null;
     await tx.image.delete({ where: { id } });
     await writeAudit(tx, {
@@ -187,7 +198,10 @@ export async function removeImage(actorId: string, id: string): Promise<{ ok: tr
       action: "IMAGE_REMOVED",
       entityType: "Image",
       entityId: id,
-      metadata: { imageId: id, ...(img.materialId ? { materialId: img.materialId } : {}) },
+      metadata: {
+        imageId: id,
+        ...(img.materialId ? { materialId: img.materialId } : { questionId: img.questionId! }),
+      },
     });
     return img.storageKey;
   });
