@@ -58,6 +58,11 @@ describe("gradeObjective", () => {
       expect(gradeObjective(q, { optionIds: ["a", "b", "c"] }, 4)).toBe(0);
     });
 
+    it("gives 0 for an empty selection even against an empty key", () => {
+      const none: ObjectiveQuestion = { type: "MULTIPLE_SELECT", answerKey: { optionIds: [] } };
+      expect(gradeObjective(none, { optionIds: [] }, 4)).toBe(0);
+    });
+
     it("gives 0 for duplicate ids even if they cover the key", () => {
       expect(gradeObjective(q, { optionIds: ["a", "a", "c"] }, 4)).toBe(0);
     });
@@ -97,13 +102,29 @@ describe("gradeObjective", () => {
       expect(gradeObjective(ci, { text: "Jakartaa" }, 3)).toBe(0);
     });
 
-    it("rejects text longer than 200 characters", () => {
-      expect(gradeObjective(ci, { text: "a".repeat(201) }, 3)).toBe(0);
+    it("scores a 200-character answer that matches the key", () => {
+      const long: ObjectiveQuestion = {
+        type: "SHORT_ANSWER",
+        answerKey: { accepted: ["a".repeat(200)], caseSensitive: false },
+      };
+      expect(gradeObjective(long, { text: "a".repeat(200) }, 3)).toBe(3);
     });
 
-    it("accepts text of exactly 200 characters, which then fails to match", () => {
-      // Length passes the parse, so the comparison runs and simply does not match.
-      expect(gradeObjective(ci, { text: "a".repeat(200) }, 3)).toBe(0);
+    it("scores 0 for a 201-character answer even when it matches the key exactly", () => {
+      // Key is also 201 chars, so only the length cap can produce 0.
+      const long: ObjectiveQuestion = {
+        type: "SHORT_ANSWER",
+        answerKey: { accepted: ["a".repeat(201)], caseSensitive: false },
+      };
+      expect(gradeObjective(long, { text: "a".repeat(201) }, 3)).toBe(0);
+    });
+
+    it("scores 0 for an empty answer even when a key normalizes to empty", () => {
+      const empty: ObjectiveQuestion = {
+        type: "SHORT_ANSWER",
+        answerKey: { accepted: ["   "], caseSensitive: false },
+      };
+      expect(gradeObjective(empty, { text: "  " }, 3)).toBe(0);
     });
   });
 

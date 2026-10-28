@@ -40,6 +40,8 @@ function isCorrect(q: ObjectiveQuestion, answer: unknown): boolean {
       const a = multipleSelectAnswer.safeParse(answer);
       if (!a.success) return false;
       const ids = a.data.optionIds;
+      // Empty answers never score (F08), even against an empty key.
+      if (ids.length === 0) return false;
       // Duplicates are refused outright, so ["a","a","c"] can't pass for ["a","c"].
       if (new Set(ids).size !== ids.length) return false;
       const key = new Set(q.answerKey.optionIds);
@@ -50,6 +52,8 @@ function isCorrect(q: ObjectiveQuestion, answer: unknown): boolean {
       if (!a.success) return false;
       const { accepted, caseSensitive } = q.answerKey;
       const given = normalizeShortAnswer(a.data.text, caseSensitive);
+      // Empty answers never score (F08), even when a key normalizes to "".
+      if (given === "") return false;
       return accepted.some((k) => normalizeShortAnswer(k, caseSensitive) === given);
     }
   }
