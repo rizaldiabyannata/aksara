@@ -102,8 +102,33 @@ export function makeMaterial(
   });
 }
 
+export function makeQuestion(
+  chapterId: string,
+  createdById: string,
+  overrides: Partial<Prisma.QuestionUncheckedCreateInput> = {},
+) {
+  return prisma.question.create({
+    data: {
+      chapterId,
+      type: "SINGLE_CHOICE",
+      prompt: "Soal uji",
+      options: [
+        { id: "a", text: "Satu" },
+        { id: "b", text: "Dua" },
+      ],
+      answerKey: { optionId: "a" },
+      defaultPoints: 1,
+      difficulty: "EASY",
+      status: "DRAFT",
+      createdById,
+      updatedById: createdById,
+      ...overrides,
+    },
+  });
+}
+
 export function makeImage(
-  materialId: string,
+  materialId: string | null,
   createdById: string,
   overrides: Partial<Prisma.ImageUncheckedCreateInput> = {},
 ) {

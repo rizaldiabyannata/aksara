@@ -19,7 +19,10 @@ export type AuditAction =
   | "MATERIAL_UPDATED"
   | "MATERIAL_DELETED"
   | "IMAGE_ADDED"
-  | "IMAGE_REMOVED";
+  | "IMAGE_REMOVED"
+  | "QUESTION_STATUS_CHANGED"
+  | "QUESTION_UPDATED"
+  | "QUESTION_DELETED";
 
 /** Thin insert. Callers must never put secrets (passwords, tokens, class codes) in metadata. */
 export async function writeAudit(
@@ -27,7 +30,7 @@ export async function writeAudit(
   e: {
     actorUserId: string;
     action: AuditAction;
-    entityType: "User" | "Class" | "Material" | "Image";
+    entityType: "User" | "Class" | "Material" | "Image" | "Question";
     entityId: string;
     metadata?: Record<string, string | number | boolean | string[]>;
   },

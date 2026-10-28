@@ -23,6 +23,25 @@ enum MaterialStatus {
   PUBLISHED
 }
 
+enum QuestionType {
+  SINGLE_CHOICE
+  TRUE_FALSE
+  MULTIPLE_SELECT
+  SHORT_ANSWER
+  ESSAY
+}
+
+enum QuestionStatus {
+  DRAFT
+  ACTIVE
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
 model User {
   id                 String     @id @default(cuid())
   role               Role
@@ -42,6 +61,8 @@ model User {
   materialsCreated   Material[] @relation("MaterialCreatedBy")
   materialsUpdated   Material[] @relation("MaterialUpdatedBy")
   imagesCreated      Image[]
+  questionsCreated   Question[] @relation("QuestionCreatedBy")
+  questionsUpdated   Question[] @relation("QuestionUpdatedBy")
 
   @@unique([classId, loginName])
   @@index([classId])
@@ -101,17 +122,18 @@ model Subject {
 }
 
 model Chapter {
-  id                  String        @id @default(cuid())
+  id                  String       @id @default(cuid())
   subjectId           String
-  subject             Subject       @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  subject             Subject      @relation(fields: [subjectId], references: [id], onDelete: Restrict)
   title               String
   order               Int
   sourceBook          String
   sourceYearOrEdition String
-  createdAt           DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime      @updatedAt @db.Timestamptz(3)
+  createdAt           DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime     @updatedAt @db.Timestamptz(3)
   subchapters         Subchapter[]
   materials           Material[]
+  questions           Question[]
 
   @@unique([subjectId, order])
 }
@@ -126,6 +148,7 @@ model Subchapter {
   createdAt   DateTime   @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime   @updatedAt @db.Timestamptz(3)
   materials   Material[]
+  questions   Question[]
 
   @@unique([chapterId, order])
   @@unique([id, chapterId])
@@ -156,13 +179,50 @@ model Material {
   images          Image[]
 
   @@index([chapterId, status, order])
+  @@index([subchapterId, chapterId])
+  @@index([createdById])
+  @@index([updatedById])
+}
+
+model Question {
+  id               String         @id @default(cuid())
+  chapterId        String
+  chapter          Chapter        @relation(fields: [chapterId], references: [id], onDelete: Restrict)
+  subchapterId     String?
+  subchapter       Subchapter?    @relation(fields: [subchapterId, chapterId], references: [id, chapterId], onDelete: Restrict)
+  type             QuestionType
+  prompt           String
+  options          Json?
+  answerKey        Json
+  explanation      String?
+  defaultPoints    Int
+  difficulty       Difficulty
+  status           QuestionStatus @default(DRAFT)
+  sourceReference  String?
+  verificationNote String?
+  createdById      String
+  createdBy        User           @relation("QuestionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById      String
+  updatedBy        User           @relation("QuestionUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
+  images           Image[]
+
+  @@index([chapterId, status])
+  @@index([type])
+  @@index([difficulty])
+  @@index([subchapterId, chapterId])
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 model Image {
-  id              String   @id @default(cuid())
-  materialId      String
-  material        Material @relation(fields: [materialId], references: [id], onDelete: Restrict)
-  storageKey      String   @unique
+  id              String    @id @default(cuid())
+  materialId      String?
+  material        Material? @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  questionId      String?
+  question        Question? @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  storageKey      String    @unique
   mimeType        String
   sizeBytes       Int
   width           Int
@@ -171,8 +231,10 @@ model Image {
   caption         String?
   sourceReference String?
   createdById     String
-  createdBy       User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  createdBy       User      @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
 
   @@index([materialId])
+  @@index([questionId])
+  @@index([createdById])
 }

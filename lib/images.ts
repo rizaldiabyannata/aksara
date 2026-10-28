@@ -29,9 +29,10 @@ export function extractImageIds(markdown: string): string[] {
   return [...new Set([...markdown.matchAll(IMAGE_REF)].map((m) => m[1]))];
 }
 
+// A question image has no material (null): students never see it, teachers still can.
 export function canStudentViewImage(ctx: {
   role: "TEACHER" | "STUDENT";
-  materialStatus: MaterialStatus;
+  materialStatus: MaterialStatus | null;
 }): boolean {
   return ctx.role === "TEACHER" || ctx.materialStatus === "PUBLISHED";
 }
@@ -186,7 +187,7 @@ export async function removeImage(actorId: string, id: string): Promise<{ ok: tr
       action: "IMAGE_REMOVED",
       entityType: "Image",
       entityId: id,
-      metadata: { imageId: id, materialId: img.materialId },
+      metadata: { imageId: id, ...(img.materialId ? { materialId: img.materialId } : {}) },
     });
     return img.storageKey;
   });
@@ -201,6 +202,6 @@ export async function imageRedirectTarget(user: SessionUser, id: string): Promis
     where: { id },
     select: { storageKey: true, material: { select: { status: true } } },
   });
-  if (!img || !canStudentViewImage({ role: user.role, materialStatus: img.material.status })) return null;
+  if (!img || !canStudentViewImage({ role: user.role, materialStatus: img.material?.status ?? null })) return null;
   return presignGet(img.storageKey);
 }
