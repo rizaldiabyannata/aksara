@@ -353,13 +353,13 @@ export async function listStudentQuizzes(
     const used = q.attempts.filter((a) => !a.replacementGrantedAt).length;
     const pending = q.attempts.some((a) => a.replacementGrantedAt && !a.replacedBy);
     const running = q.attempts.some((a) => a.status === "IN_PROGRESS");
-    const remainingAttempts = pending ? 1 : Math.max(0, q.maxAttempts - used);
+    const remainingAttempts = Math.max(0, q.maxAttempts - used);
     const locked = q.scoringPolicy === "REMEDIAL" && used >= 1 && !q.resultsReleasedAt;
     let state: StudentQuizState;
     if (running) state = "IN_PROGRESS";
-    else if (pending) state = "REPLACEMENT";
     else if (q.startsAt && now < q.startsAt) state = "SCHEDULED";
     else if (q.endsAt && q.endsAt <= now) state = "CLOSED";
+    else if (pending) state = "REPLACEMENT";
     else if (remainingAttempts === 0 || locked) state = "DONE";
     else state = "AVAILABLE";
     return {

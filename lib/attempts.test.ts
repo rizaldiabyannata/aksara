@@ -440,6 +440,23 @@ describe("listStudentQuizzes", () => {
   });
 });
 
+describe("listStudentQuizzes replacement edge cases", () => {
+  it("replaced attempt does not count: maxAttempts=2 shows 2 remaining", async () => {
+    const s = await setup({ maxAttempts: 2 });
+    const a1 = await started(s);
+    await grantReplacement(s.teacher.id, a1, "Alasan sah", at(1000));
+    expect(await state(s, at(2000))).toMatchObject({ state: "REPLACEMENT", remainingAttempts: 2 });
+  });
+
+  it("pending replacement past endsAt is CLOSED", async () => {
+    const s = await setup({ endsAt: at(min(20)) });
+    const a1 = await started(s);
+    await submitAttempt(s.student.id, s.quiz.id, a1, at(1000));
+    await grantReplacement(s.teacher.id, a1, "Alasan sah", at(2000));
+    expect(await state(s, at(min(21)))).toMatchObject({ state: "CLOSED" });
+  });
+});
+
 describe("listQuizAttempts", () => {
   it("finalizes expired attempts and flags replaced ones", async () => {
     const s = await setup({ maxAttempts: 2 });
