@@ -5,6 +5,9 @@ import {
   GRACE_MS,
   finalizeExpiredAttempts,
   getAttemptView,
+  grantReplacement,
+  listQuizAttempts,
+  listStudentQuizzes,
   saveAnswer,
   startAttempt,
   submitAttempt,
@@ -328,5 +331,123 @@ describe("no leak to students", () => {
       expect(json).not.toContain(bad);
     }
     expect((v as { questions: { number: number }[] }).questions.map((q) => q.number)).toEqual([1, 2]);
+  });
+});
+
+const state = async (s: Awaited<ReturnType<typeof setup>>, now: Date) =>
+  (await listStudentQuizzes(s.stu, now)).find((r) => r.quizId === s.quiz.id);
+
+describe("grantReplacement", () => {
+  it("maxAttempts=1: submit, grant, start gives slot 1 replacing the old one; limit after; chain; double grant", async () => {
+    const s = await setup({ endsAt: at(min(100)) });
+    const a1 = await started(s);
+    await submitAttempt(s.student.id, s.quiz.id, a1, at(1000));
+    expect(await grantReplacement(s.teacher.id, a1, "  Koneksi putus  ", at(2000))).toEqual({ ok: true });
+    expect(await grantReplacement(s.teacher.id, a1, "Koneksi putus", at(2001))).toEqual({ ok: false, error: "ALREADY_REPLACED" });
+    expect((await state(s, at(2500)))).toMatchObject({ state: "REPLACEMENT", remainingAttempts: 1 });
+    const r = await startAttempt(s.stu, s.quiz.id, at(3000));
+    const a2 = (r as { attemptId: string }).attemptId;
+    expect(await attemptRow(a2)).toMatchObject({ slot: 1, replacesAttemptId: a1, deadlineAt: at(3000 + min(DUR)) });
+    await submitAttempt(s.student.id, s.quiz.id, a2, at(4000));
+    expect(await startAttempt(s.stu, s.quiz.id, at(5000))).toEqual({ ok: false, error: "ATTEMPT_LIMIT" });
+    expect(await grantReplacement(s.teacher.id, a2, "Sekali lagi", at(6000))).toEqual({ ok: true });
+    expect(await startAttempt(s.stu, s.quiz.id, at(7000))).toMatchObject({ ok: true });
+    const audits = await prisma.auditLog.findMany({ where: { action: "ATTEMPT_REPLACEMENT_GRANTED", entityId: a1 } });
+    expect(audits).toHaveLength(1);
+    expect(audits[0].metadata).toEqual({ attemptId: a1, reason: "Koneksi putus" });
+    expect(audits[0].entityType).toBe("QuizAttempt");
+  });
+
+  it("closes a live attempt without grading; later saves are ATTEMPT_CLOSED", async () => {
+    const s = await setup();
+    const a1 = await started(s);
+    await saveAnswer(s.student.id, a1, { quizQuestionId: s.qqs[0].id, answer: { optionId: "a" } }, at(10));
+    expect(await grantReplacement(s.teacher.id, a1, "Layar mati", at(20))).toEqual({ ok: true });
+    const row = await attemptRow(a1);
+    expect(row).toMatchObject({ status: "SUBMITTED", submitReason: "REPLACED", objectiveScore: null, replacementGrantedById: s.teacher.id, replacementReason: "Layar mati" });
+    expect(await saveAnswer(s.student.id, a1, { quizQuestionId: s.qqs[0].id, answer: { optionId: "b" } }, at(30))).toEqual({ ok: false, error: "ATTEMPT_CLOSED" });
+    expect((await prisma.attemptAnswer.findFirstOrThrow({ where: { attemptId: a1 } })).answer).toEqual({ optionId: "a" });
+    expect(await submitAttempt(s.student.id, s.quiz.id, a1, at(40))).toMatchObject({ ok: true });
+    expect((await attemptRow(a1)).objectiveScore).toBeNull();
+  });
+
+  it("grant racing submit leaves one consistent final state", async () => {
+    const s = await setup();
+    const a1 = await started(s);
+    await Promise.all([
+      grantReplacement(s.teacher.id, a1, "Bersamaan", at(10)),
+      submitAttempt(s.student.id, s.quiz.id, a1, at(10)),
+    ]);
+    const row = await attemptRow(a1);
+    expect(row.status).toBe("SUBMITTED");
+    expect(row.replacementGrantedAt).not.toBeNull();
+    if (row.submitReason === "REPLACED") expect(row.objectiveScore).toBeNull();
+    else expect(row.submitReason).toBe("MANUAL");
+  });
+
+  it("REMEDIAL: replacement needs no release", async () => {
+    const s = await setup({ scoringPolicy: "REMEDIAL", kkm: 70, maxAttempts: 2 });
+    const a1 = await started(s);
+    await submitAttempt(s.student.id, s.quiz.id, a1, at(1000));
+    await grantReplacement(s.teacher.id, a1, "Gangguan", at(2000));
+    expect(await startAttempt(s.stu, s.quiz.id, at(3000))).toMatchObject({ ok: true });
+  });
+
+  it("reason 'abc' or 301 chars: field error, nothing changes; 300 ok; unknown attempt NOT_FOUND", async () => {
+    const s = await setup();
+    const a1 = await started(s);
+    const bad = { ok: false, error: "INVALID", fieldErrors: { reason: "Alasan wajib diisi, 5 sampai 300 huruf." } };
+    expect(await grantReplacement(s.teacher.id, a1, "abc", at(1))).toEqual(bad);
+    expect(await grantReplacement(s.teacher.id, a1, "x".repeat(301), at(1))).toEqual(bad);
+    expect(await grantReplacement(s.teacher.id, a1, 5, at(1))).toEqual(bad);
+    expect((await attemptRow(a1)).replacementGrantedAt).toBeNull();
+    expect(await prisma.auditLog.count({ where: { action: "ATTEMPT_REPLACEMENT_GRANTED" } })).toBe(0);
+    expect(await grantReplacement(s.teacher.id, "nope", "alasan ok", at(1))).toEqual({ ok: false, error: "NOT_FOUND" });
+    expect(await grantReplacement(s.teacher.id, a1, "x".repeat(300), at(1))).toEqual({ ok: true });
+  });
+});
+
+describe("listStudentQuizzes", () => {
+  it("each state, other class hidden, no leak", async () => {
+    const s = await setup({ startsAt: at(min(10)), maxAttempts: 2 });
+    // publish needs startsAt in the future of publish time (t0); checks below use later times.
+    expect(await state(s, t0)).toMatchObject({ state: "SCHEDULED", hasAttempts: false, remainingAttempts: 2, questionCount: 1 });
+    expect(await state(s, at(min(11)))).toMatchObject({ state: "AVAILABLE" });
+    const a1 = await started(s, at(min(11)));
+    expect(await state(s, at(min(12)))).toMatchObject({ state: "IN_PROGRESS", hasAttempts: true });
+    await submitAttempt(s.student.id, s.quiz.id, a1, at(min(13)));
+    expect(await state(s, at(min(14)))).toMatchObject({ state: "AVAILABLE", remainingAttempts: 1 });
+    const a2 = await started(s, at(min(15)));
+    await submitAttempt(s.student.id, s.quiz.id, a2, at(min(16)));
+    expect(await state(s, at(min(17)))).toMatchObject({ state: "DONE", remainingAttempts: 0 });
+    await grantReplacement(s.teacher.id, a2, "Ulang saja", at(min(18)));
+    expect(await state(s, at(min(19)))).toMatchObject({ state: "REPLACEMENT", remainingAttempts: 1 });
+    const closed = await setup({ endsAt: at(min(20)) });
+    expect(await state(closed, at(min(21)))).toMatchObject({ state: "CLOSED" });
+
+    const other = await setup();
+    const rows = await listStudentQuizzes(s.stu, at(min(1)));
+    expect(rows.map((r) => r.quizId)).not.toContain(other.quiz.id);
+    const json = JSON.stringify(rows);
+    for (const bad of [s.cls.code, "points", "score", "Ulang saja", "replacementReason"]) expect(json).not.toContain(bad);
+  });
+
+  it("REMEDIAL unreleased with a used attempt is DONE; finalizes expired first", async () => {
+    const s = await setup({ scoringPolicy: "REMEDIAL", kkm: 70, maxAttempts: 2 });
+    await started(s);
+    expect(await state(s, at(min(DUR) + GRACE_MS))).toMatchObject({ state: "DONE", remainingAttempts: 1 });
+    expect((await prisma.quizAttempt.findFirstOrThrow({ where: { quizId: s.quiz.id } })).status).toBe("SUBMITTED");
+  });
+});
+
+describe("listQuizAttempts", () => {
+  it("finalizes expired attempts and flags replaced ones", async () => {
+    const s = await setup({ maxAttempts: 2 });
+    const a1 = await started(s);
+    const rows = await listQuizAttempts(s.quiz.id, at(min(DUR) + GRACE_MS));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ attemptId: a1, studentName: s.student.displayName, className: s.cls.name, attemptNumber: 1, slot: 1, status: "SUBMITTED", submitReason: "TIMEOUT", replaced: false });
+    await grantReplacement(s.teacher.id, a1, "Alasan sah", at(min(DUR) + GRACE_MS));
+    expect((await listQuizAttempts(s.quiz.id))[0].replaced).toBe(true);
   });
 });

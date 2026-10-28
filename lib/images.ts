@@ -3,6 +3,7 @@ import sharp, { type Sharp } from "sharp";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
+import { GRACE_MS } from "@/lib/attempts";
 import { deleteImage, presignGet, putImage } from "@/lib/storage";
 import type { SessionUser } from "@/lib/auth/session";
 import type { MaterialStatus } from "@/lib/generated/prisma/enums";
@@ -214,11 +215,35 @@ export async function removeImage(actorId: string, id: string): Promise<{ ok: tr
 }
 
 /** Presigned URL for the caller, or null (unknown id or not allowed). Never expose storageKey. */
-export async function imageRedirectTarget(user: SessionUser, id: string): Promise<string | null> {
+export async function imageRedirectTarget(user: SessionUser, id: string, now: Date = new Date()): Promise<string | null> {
   const img = await prisma.image.findUnique({
     where: { id },
     select: { storageKey: true, material: { select: { status: true } } },
   });
-  if (!img || !canStudentViewImage({ role: user.role, materialStatus: img.material?.status ?? null })) return null;
+  if (!img) return null;
+  if (!canStudentViewImage({ role: user.role, materialStatus: img.material?.status ?? null })) {
+    // Not a visible material image: a student may still see a frozen QUESTION image of a quiz they are taking.
+    // No finalize here: the deadline + grace is checked in the query itself.
+    const frozen = await prisma.quizQuestionImage.findFirst({
+      where: {
+        imageId: id,
+        visibility: "QUESTION",
+        quizQuestion: {
+          quiz: {
+            attempts: {
+              some: {
+                studentId: user.id,
+                status: "IN_PROGRESS",
+                replacementGrantedAt: null,
+                deadlineAt: { gt: new Date(now.getTime() - GRACE_MS) },
+              },
+            },
+          },
+        },
+      },
+      select: { imageId: true },
+    });
+    if (user.role !== "STUDENT" || !frozen) return null;
+  }
   return presignGet(img.storageKey);
 }

@@ -10,7 +10,9 @@ import type { ImageView } from "@/lib/materials";
 import type { Option } from "@/lib/questions";
 import { lockQuiz, type AnswerKeySnapshot, type QuestionSnapshot } from "@/lib/quizzes";
 import { uniqueViolation } from "@/lib/unique-violation";
-import type { Invalid, NotFound } from "@/lib/validation";
+import { writeAudit } from "@/lib/audit";
+import type { AttemptStatus } from "@/lib/generated/prisma/enums";
+import { parse, type Invalid, type NotFound } from "@/lib/validation";
 
 export const GRACE_MS = 60_000;
 
@@ -317,5 +319,112 @@ async function gradeAttempt(tx: Prisma.TransactionClient, attemptId: string): Pr
   await tx.quizAttempt.update({
     where: { id: attemptId },
     data: { objectiveScore: score, gradingStatus: hasEssay ? "PENDING_MANUAL_GRADING" : "FINAL" },
+  });
+}
+
+export type StudentQuizState = "AVAILABLE" | "SCHEDULED" | "IN_PROGRESS" | "REPLACEMENT" | "DONE" | "CLOSED";
+export type StudentQuizRow = {
+  quizId: string; title: string; instructions: string | null; subjectName: string; durationMinutes: number;
+  questionCount: number; startsAt: Date | null; endsAt: Date | null; remainingAttempts: number;
+  state: StudentQuizState; hasAttempts: boolean;
+};
+
+export async function listStudentQuizzes(
+  student: { id: string; classId: string | null },
+  now: Date = new Date(),
+): Promise<StudentQuizRow[]> {
+  if (!student.classId) return [];
+  await finalizeExpiredAttempts({ studentId: student.id }, now);
+  const quizzes = await prisma.quiz.findMany({
+    where: { status: "PUBLISHED", classes: { some: { classId: student.classId } } },
+    orderBy: [{ startsAt: "desc" }, { createdAt: "desc" }],
+    select: {
+      id: true, title: true, instructions: true, durationMinutes: true, startsAt: true, endsAt: true,
+      maxAttempts: true, scoringPolicy: true, resultsReleasedAt: true,
+      subject: { select: { name: true } },
+      _count: { select: { questions: true } },
+      attempts: {
+        where: { studentId: student.id },
+        select: { status: true, replacementGrantedAt: true, replacedBy: { select: { id: true } } },
+      },
+    },
+  });
+  return quizzes.map((q) => {
+    const used = q.attempts.filter((a) => !a.replacementGrantedAt).length;
+    const pending = q.attempts.some((a) => a.replacementGrantedAt && !a.replacedBy);
+    const running = q.attempts.some((a) => a.status === "IN_PROGRESS");
+    const remainingAttempts = pending ? 1 : Math.max(0, q.maxAttempts - used);
+    const locked = q.scoringPolicy === "REMEDIAL" && used >= 1 && !q.resultsReleasedAt;
+    let state: StudentQuizState;
+    if (running) state = "IN_PROGRESS";
+    else if (pending) state = "REPLACEMENT";
+    else if (q.startsAt && now < q.startsAt) state = "SCHEDULED";
+    else if (q.endsAt && q.endsAt <= now) state = "CLOSED";
+    else if (remainingAttempts === 0 || locked) state = "DONE";
+    else state = "AVAILABLE";
+    return {
+      quizId: q.id, title: q.title, instructions: q.instructions, subjectName: q.subject.name,
+      durationMinutes: q.durationMinutes, questionCount: q._count.questions, startsAt: q.startsAt, endsAt: q.endsAt,
+      remainingAttempts, state, hasAttempts: q.attempts.length > 0,
+    };
+  });
+}
+
+export type AttemptRow = {
+  attemptId: string; studentName: string; className: string; attemptNumber: number; slot: number;
+  status: AttemptStatus; submitReason: SubmitReason | null; replaced: boolean; startedAt: Date; submittedAt: Date | null;
+};
+
+export async function listQuizAttempts(quizId: string, now: Date = new Date()): Promise<AttemptRow[]> {
+  await finalizeExpiredAttempts({ quizId }, now);
+  const rows = await prisma.quizAttempt.findMany({
+    where: { quizId },
+    orderBy: [{ student: { displayName: "asc" } }, { attemptNumber: "asc" }],
+    select: {
+      id: true, attemptNumber: true, slot: true, status: true, submitReason: true, replacementGrantedAt: true,
+      startedAt: true, submittedAt: true,
+      student: { select: { displayName: true, class: { select: { name: true } } } },
+    },
+  });
+  return rows.map((r) => ({
+    attemptId: r.id, studentName: r.student.displayName, className: r.student.class?.name ?? "",
+    attemptNumber: r.attemptNumber, slot: r.slot, status: r.status, submitReason: r.submitReason,
+    replaced: r.replacementGrantedAt !== null, startedAt: r.startedAt, submittedAt: r.submittedAt,
+  }));
+}
+
+const REASON_MSG = "Alasan wajib diisi, 5 sampai 300 huruf.";
+const reasonSchema = z.object({
+  reason: z.string({ error: REASON_MSG }).trim()
+    .refine((v) => [...v].length >= 5 && [...v].length <= 300, { error: REASON_MSG }),
+});
+
+export async function grantReplacement(
+  actorId: string,
+  attemptId: string,
+  reason: unknown,
+  now: Date = new Date(),
+): Promise<{ ok: true } | Invalid | NotFound | { ok: false; error: "ALREADY_REPLACED" }> {
+  const p = parse(reasonSchema, { reason });
+  if (!p.ok) return p;
+  return prisma.$transaction(async (tx) => {
+    const r = await tx.quizAttempt.updateMany({
+      where: { id: attemptId, replacementGrantedAt: null },
+      data: { replacementGrantedAt: now, replacementGrantedById: actorId, replacementReason: p.data.reason },
+    });
+    if (r.count === 0) {
+      const exists = await tx.quizAttempt.findUnique({ where: { id: attemptId }, select: { id: true } });
+      return exists ? ({ ok: false, error: "ALREADY_REPLACED" } as const) : NOT_FOUND;
+    }
+    // The grant's row lock serializes with a concurrent submit: whichever commits second sees the other's state.
+    await tx.quizAttempt.updateMany({
+      where: { id: attemptId, status: "IN_PROGRESS" },
+      data: { status: "SUBMITTED", submitReason: "REPLACED", submittedAt: now },
+    });
+    await writeAudit(tx, {
+      actorUserId: actorId, action: "ATTEMPT_REPLACEMENT_GRANTED", entityType: "QuizAttempt",
+      entityId: attemptId, metadata: { attemptId, reason: p.data.reason },
+    });
+    return { ok: true } as const;
   });
 }

@@ -11,7 +11,7 @@ import {
 } from "@/lib/images";
 import { prisma } from "@/lib/db";
 import { objects } from "../tests/storage-fake";
-import { makeChapter, makeClass, makeImage, makeMaterial, makeQuestion, makeQuiz, makeQuizQuestion, makeStudent, makeTeacher } from "../tests/factories";
+import { makeAttempt, makeChapter, makeClass, makeImage, makeMaterial, makeQuestion, makeQuiz, makeQuizQuestion, makeStudent, makeTeacher } from "../tests/factories";
 
 vi.mock("@/lib/storage", () => import("../tests/storage-fake").then((m) => m.storageMock()));
 beforeEach(() => objects.clear());
@@ -314,5 +314,67 @@ describe("removeImage with a published quiz", () => {
     const q = await makeQuestion(chapter.id, user.id);
     for (let i = 0; i < 5; i++) await makeImage(null, user.id, { questionId: q.id, deletedAt: new Date() });
     expect((await addImage(user.id, { questionId: q.id, altText: "a", file })).ok).toBe(true);
+  });
+});
+
+describe("student access to frozen quiz images", () => {
+  const T = new Date("2030-01-01T00:00:00.000Z");
+  const at = (ms: number) => new Date(T.getTime() + ms);
+
+  async function qz(visibility: "QUESTION" | "EXPLANATION" = "QUESTION", imgOver: object = {}) {
+    const { user } = await makeTeacher();
+    const chapter = await makeChapter();
+    const cls = await makeClass();
+    const q = await makeQuestion(chapter.id, user.id, { status: "ACTIVE" });
+    const img = await makeImage(null, user.id, { questionId: q.id, ...imgOver });
+    const quiz = await makeQuiz(chapter.subjectId, user.id, { status: "PUBLISHED" });
+    await prisma.quizClass.create({ data: { quizId: quiz.id, classId: cls.id } });
+    const qq = await makeQuizQuestion(quiz.id, q.id);
+    await prisma.quizQuestionImage.create({ data: { quizQuestionId: qq.id, imageId: img.id, visibility } });
+    const stu = await makeStudent(cls.id);
+    const asStudent = { id: stu.id, role: "STUDENT" } as never;
+    const url = `https://r2.test/${img.storageKey}?sig=1`;
+    const attempt = (over: object = {}) =>
+      makeAttempt(quiz.id, stu.id, { startedAt: T, deadlineAt: at(30 * 60_000), ...over });
+    return { user, img, quiz, stu, asStudent, url, attempt };
+  }
+
+  it("404 before start; 302 in progress; 404 after submit", async () => {
+    const c = await qz();
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(1000))).toBeNull();
+    const a = await c.attempt();
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(1000))).toBe(c.url);
+    await prisma.quizAttempt.update({ where: { id: a.id }, data: { status: "SUBMITTED", submitReason: "MANUAL", submittedAt: at(2000) } });
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBeNull();
+  });
+
+  it("deadline + 61s without submit: null; within grace: URL", async () => {
+    const c = await qz();
+    await c.attempt();
+    const d = 30 * 60_000;
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(d + 59_000))).toBe(c.url);
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(d + 61_000))).toBeNull();
+  });
+
+  it("EXPLANATION is never served to students", async () => {
+    const c = await qz("EXPLANATION");
+    await c.attempt();
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(1000))).toBeNull();
+  });
+
+  it("another student's quiz and replaced attempts: null", async () => {
+    const c = await qz();
+    await c.attempt();
+    const other = await makeStudent((await makeClass()).id);
+    expect(await imageRedirectTarget({ id: other.id, role: "STUDENT" } as never, c.img.id, at(1000))).toBeNull();
+    await prisma.quizAttempt.updateMany({ where: { quizId: c.quiz.id }, data: { replacementGrantedAt: T } });
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(1000))).toBeNull();
+  });
+
+  it("soft-deleted frozen image still served to the active attempt; teacher sees everything", async () => {
+    const c = await qz("QUESTION", { deletedAt: T });
+    await c.attempt();
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(1000))).toBe(c.url);
+    expect(await imageRedirectTarget({ id: c.user.id, role: "TEACHER" } as never, c.img.id, at(1000))).toBe(c.url);
   });
 });
