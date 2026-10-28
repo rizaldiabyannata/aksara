@@ -4,7 +4,9 @@ import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireTeacher } from "@/lib/auth/guard";
 import { countMaterialsByStatus } from "@/lib/materials";
+import { countQuestionsByStatus } from "@/lib/questions";
 import { STATUS_LABEL } from "./materials/status-label";
+import { STATUS_LABEL as QUESTION_STATUS_LABEL } from "./questions/labels";
 
 export const metadata: Metadata = { title: "Dasbor Guru" };
 
@@ -20,7 +22,7 @@ const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 
 async function Dashboard() {
   const user = await requireTeacher();
-  const counts = await countMaterialsByStatus();
+  const [counts, questionCounts] = await Promise.all([countMaterialsByStatus(), countQuestionsByStatus()]);
   return (
     <section className="flex flex-col gap-3">
       <h1 className="text-2xl font-semibold">Halo, {user.displayName}</h1>
@@ -52,6 +54,22 @@ async function Dashboard() {
               <li key={s}>
                 <Link href={`/teacher/materials?status=${s}`} className={LINK}>
                   {STATUS_LABEL[s]}: {counts[s]}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Bank Soal</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="flex flex-col gap-1">
+            {(["DRAFT", "ACTIVE"] as const).map((s) => (
+              <li key={s}>
+                <Link href={`/teacher/questions?status=${s}`} className={LINK}>
+                  {QUESTION_STATUS_LABEL[s]}: {questionCounts[s]}
                 </Link>
               </li>
             ))}
