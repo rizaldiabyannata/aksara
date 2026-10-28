@@ -9,16 +9,23 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { FormState } from "@/lib/form-state";
 import type { ImageView } from "@/lib/materials";
-import { removeImageAction, updateImageMetaAction } from "./actions";
+import { removeImageAction, updateImageMetaAction } from "./image-actions";
 
 const UPLOAD_FAILED = "Gagal mengunggah. Periksa koneksi lalu coba lagi.";
 const SIZE_MSG = "Ukuran gambar paling besar 4 MB.";
 const RELOAD_MSG = "Muat ulang halaman lalu coba lagi.";
 const MAX_BYTES = 4 * 1024 * 1024;
+const ALT_HINT = "Jelaskan isi gambar untuk siswa yang tidak bisa melihatnya.";
+const QUESTION_ALT_HINT = "Teks alternatif jangan membocorkan jawaban. Tulis mis. “Gambar A”.";
 
+type Owner = "materialId" | "questionId";
 type UploadResult = { ok: boolean; message?: string; fieldErrors?: Record<string, string> };
 
-function UploadForm({ materialId }: { materialId: string }) {
+function altHint(owner: Owner) {
+  return owner === "questionId" ? `${ALT_HINT} ${QUESTION_ALT_HINT}` : ALT_HINT;
+}
+
+function UploadForm({ owner, ownerId }: { owner: Owner; ownerId: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [state, setState] = useState<FormState>(undefined);
@@ -54,7 +61,7 @@ function UploadForm({ materialId }: { materialId: string }) {
 
   return (
     <form onSubmit={onSubmit} className="flex max-w-xl flex-col gap-4">
-      <input type="hidden" name="materialId" value={materialId} />
+      <input type="hidden" name={owner} value={ownerId} />
       <div className="flex flex-col gap-2">
         <Label htmlFor="image-file">File gambar</Label>
         <input
@@ -71,7 +78,7 @@ function UploadForm({ materialId }: { materialId: string }) {
         name="altText"
         label="Teks alternatif"
         required
-        hint="Jelaskan isi gambar untuk siswa yang tidak bisa melihatnya."
+        hint={altHint(owner)}
         error={e?.altText}
       />
       <FormField id="upload-caption" name="caption" label="Keterangan (opsional)" />
@@ -84,7 +91,7 @@ function UploadForm({ materialId }: { materialId: string }) {
   );
 }
 
-function ImageCard({ image, referenced }: { image: ImageView; referenced: boolean }) {
+function ImageCard({ owner, image, referenced }: { owner: Owner; image: ImageView; referenced: boolean }) {
   const [state, formAction, pending] = useActionState(updateImageMetaAction.bind(null, image.id), undefined);
   const [copyNote, setCopyNote] = useState("");
   const code = `![${image.altText.replace(/[[\]\\]/g, "\\$&")}](aksara-image:${image.id})`;
@@ -133,7 +140,7 @@ function ImageCard({ image, referenced }: { image: ImageView; referenced: boolea
           name="altText"
           label="Teks alternatif"
           required
-          hint="Jelaskan isi gambar untuk siswa yang tidak bisa melihatnya."
+          hint={altHint(owner)}
           defaultValue={v("altText")}
           error={e?.altText}
         />
@@ -170,23 +177,25 @@ function ImageCard({ image, referenced }: { image: ImageView; referenced: boolea
 }
 
 export function ImagePanel({
-  materialId,
+  owner,
+  ownerId,
   images,
-  referencedIds,
+  referencedIds = [],
 }: {
-  materialId: string;
+  owner: Owner;
+  ownerId: string;
   images: ImageView[];
-  referencedIds: string[];
+  referencedIds?: string[];
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <UploadForm materialId={materialId} />
+      <UploadForm owner={owner} ownerId={ownerId} />
       {images.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Belum ada gambar di materi ini.</p>
+        <p className="text-sm text-muted-foreground">Belum ada gambar di sini.</p>
       ) : (
         <ul className="flex flex-col gap-4">
           {images.map((image) => (
-            <ImageCard key={image.id} image={image} referenced={referencedIds.includes(image.id)} />
+            <ImageCard key={image.id} owner={owner} image={image} referenced={referencedIds.includes(image.id)} />
           ))}
         </ul>
       )}

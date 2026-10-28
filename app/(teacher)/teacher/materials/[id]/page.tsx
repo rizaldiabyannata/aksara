@@ -8,7 +8,7 @@ import { extractImageIds } from "@/lib/images";
 import { formatWita } from "@/lib/format";
 import { canTransition, getMaterialForTeacher } from "@/lib/materials";
 import { listChapterOptions } from "@/lib/subjects";
-import { ImagePanel } from "../image-panel";
+import { ImagePanel } from "../../image-panel";
 import { DeleteMaterialButton, MaterialForm, StatusButtons } from "../material-form";
 import { STATUS_LABEL } from "../status-label";
 
@@ -56,7 +56,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
       <MaterialForm chapters={chapters} material={material} />
       <section aria-labelledby="gambar-heading">
         <h2 id="gambar-heading" className="text-lg font-semibold">Gambar</h2>
-        <ImagePanel materialId={id} images={material.images} referencedIds={referencedIds} />
+        <ImagePanel owner="materialId" ownerId={id} images={material.images} referencedIds={referencedIds} />
       </section>
       {material.status === "DRAFT" && (
         <div>

@@ -11,7 +11,6 @@ import {
   moveMaterial,
   updateMaterial,
 } from "@/lib/materials";
-import { removeImage, updateImageMeta } from "@/lib/images";
 import type { MaterialStatus } from "@/lib/generated/prisma/enums";
 
 const UNEXPECTED = "Ada masalah. Coba lagi sebentar lagi.";
@@ -19,7 +18,6 @@ const ERRORS = {
   BAD_TRANSITION: "Status materi tidak bisa diubah ke sana. Tandai sudah ditinjau dulu.",
   NOT_DRAFT: "Kembalikan materi ke draft dulu sebelum menghapusnya.",
   NOT_FOUND: "Materi tidak ditemukan. Muat ulang halaman.",
-  IMAGE_NOT_FOUND: "Gambar tidak ditemukan. Muat ulang halaman.",
 };
 
 type Result =
@@ -102,33 +100,4 @@ export async function deleteMaterialAction(id: string): Promise<FormState> {
   const state = await run(() => deleteMaterial(user.id, id), "Materi dihapus.");
   if (state?.ok) redirect("/teacher/materials");
   return state;
-}
-
-export async function updateImageMetaAction(
-  imageId: string,
-  _prev: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  await requireTeacher();
-  const values = {
-    altText: field(formData, "altText"),
-    caption: field(formData, "caption"),
-    sourceReference: field(formData, "sourceReference"),
-  };
-  return run(
-    async () => {
-      const r = await updateImageMeta(imageId, values);
-      return r.ok || r.error === "INVALID" ? r : { ok: false, error: "IMAGE_NOT_FOUND" };
-    },
-    "Gambar disimpan.",
-    values,
-  );
-}
-
-export async function removeImageAction(imageId: string): Promise<FormState> {
-  const user = await requireTeacher();
-  return run(async () => {
-    const r = await removeImage(user.id, imageId);
-    return r.ok ? r : { ok: false, error: "IMAGE_NOT_FOUND" };
-  }, "Gambar dihapus.");
 }
