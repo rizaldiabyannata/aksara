@@ -93,7 +93,7 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
       )}
       <ul className="grid gap-4 md:grid-cols-2">
         {students.map((s) => (
-          <li key={s.id}>
+          <li key={s.id} className="min-w-0">
             <Card>
               <CardContent className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">

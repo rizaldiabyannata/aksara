@@ -175,7 +175,7 @@ export function RevokeStudentButton({ studentId }: { studentId: string }) {
   return (
     <ConfirmAction
       action={revokeStudentSessionsAction.bind(null, studentId)}
-      trigger="Keluarkan dari semua perangkat"
+      trigger="Keluarkan dari perangkat"
       title="Keluarkan siswa dari semua perangkat?"
       description="Siswa ini akan keluar dari semua perangkatnya dan harus masuk lagi dengan kode kelas."
       confirm="Ya, keluarkan"

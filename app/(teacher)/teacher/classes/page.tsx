@@ -46,7 +46,7 @@ async function ClassList() {
       )}
       <ul className="grid gap-4 md:grid-cols-2">
         {classes.map((c) => (
-          <li key={c.id}>
+          <li key={c.id} className="min-w-0">
             <Card>
               <CardHeader>
                 <CardTitle className="flex flex-wrap items-center gap-2">
