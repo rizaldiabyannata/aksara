@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Menu01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { LogoutButton } from "@/components/logout-button";
-import { NavLinks } from "./nav-links";
+import { NavItems, NavLinks } from "./nav-links";
 
 // Static shell only: pages guard themselves inside <Suspense>.
 export default function TeacherLayout({ children }: LayoutProps<"/teacher">) {
@@ -14,7 +14,7 @@ export default function TeacherLayout({ children }: LayoutProps<"/teacher">) {
           className="mx-auto flex max-w-5xl flex-wrap items-center gap-1 px-4 py-2"
         >
           <div className="hidden flex-wrap items-center gap-1 md:flex">
-            <Suspense fallback={null}>
+            <Suspense fallback={<NavItems />}>
               <NavLinks />
             </Suspense>
           </div>
@@ -24,9 +24,9 @@ export default function TeacherLayout({ children }: LayoutProps<"/teacher">) {
               Menu
             </summary>
             <div className="absolute left-0 top-full z-10 mt-1 flex w-56 flex-col rounded-xl border bg-background p-2 shadow-md">
-              <Suspense fallback={null}>
-              <NavLinks />
-            </Suspense>
+              <Suspense fallback={<NavItems />}>
+                <NavLinks />
+              </Suspense>
             </div>
           </details>
           <div className="ml-auto">

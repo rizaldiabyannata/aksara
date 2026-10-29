@@ -23,8 +23,8 @@ const NAV: { href: string; label: string; icon: IconSvgElement }[] = [
   { href: "/teacher/quizzes", label: "Ulangan", icon: TaskDone01Icon },
 ];
 
-export function NavLinks() {
-  const pathname = usePathname();
+// No hook, so the layout's Suspense fallback can render it before the pathname is known (no active link yet).
+export function NavItems({ pathname = "" }: { pathname?: string }) {
   return (
     <>
       {NAV.map((item) => {
@@ -49,4 +49,8 @@ export function NavLinks() {
       })}
     </>
   );
+}
+
+export function NavLinks() {
+  return <NavItems pathname={usePathname()} />;
 }
