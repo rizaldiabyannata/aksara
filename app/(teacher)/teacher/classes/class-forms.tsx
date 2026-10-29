@@ -6,23 +6,12 @@ import { Feedback } from "@/components/form-feedback";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   createClassAction,
   renameClassAction,
   revokeClassSessionsAction,
   rotateClassCodeAction,
   setClassActiveAction,
 } from "./actions";
-
-/** "ABCDEF" -> "ABC DEF" (login accepts the space). */
-const groupCode =(code: string) => `${code.slice(0, 3)} ${code.slice(3)}`;
 
 export function CreateClassForm() {
   const [state, formAction, pending] = useActionState(createClassAction, undefined);
@@ -66,29 +55,6 @@ export function RenameClassForm({ classId, name }: { classId: string; name: stri
         Simpan nama
       </Button>
     </form>
-  );
-}
-
-/** The code, very large, for writing on the board. */
-export function ShowCodeDialog({ name, code }: { name: string; code: string }) {
-  return (
-    <Dialog>
-      <DialogTrigger render={<Button variant="outline" className="h-11" />}>
-        Tampilkan kode
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Kode kelas {name}</DialogTitle>
-          <DialogDescription>Tulis kode ini di papan tulis untuk siswa.</DialogDescription>
-        </DialogHeader>
-        <p
-          aria-label={`Kode: ${code.split("").join(" ")}`}
-          className="text-center font-mono text-5xl font-bold tracking-widest sm:text-7xl"
-        >
-          {groupCode(code)}
-        </p>
-      </DialogContent>
-    </Dialog>
   );
 }
 

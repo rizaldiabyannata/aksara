@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
 import { Status } from "@/components/status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DoorIcon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import { requireTeacher } from "@/lib/auth/guard";
 import { listClasses } from "@/lib/classes";
 import {
@@ -9,16 +12,20 @@ import {
   RenameClassForm,
   RevokeSessionsButton,
   RotateCodeButton,
-  ShowCodeDialog,
   ToggleActiveButton,
 } from "./class-forms";
+import { ClassCodeDialog } from "./class-code-dialog";
 
 export const metadata: Metadata = { title: "Kelola Kelas" };
 
 export default function ClassesPage() {
   return (
     <section className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Kelas</h1>
+      <PageHeader
+        eyebrow="Ruang kelas"
+        title="Kelola Kelas"
+        description="Atur kelas, kode masuk, dan sesi siswa."
+      />
       <Suspense fallback={<p>Memuat…</p>}>
         <ClassList />
       </Suspense>
@@ -29,9 +36,15 @@ export default function ClassesPage() {
 async function ClassList() {
   await requireTeacher();
   const classes = await listClasses();
+  const active = classes.filter((c) => c.isActive).length;
+  const total = classes.reduce((n, c) => n + c.studentCount, 0);
   return (
     <>
-      <Card className="max-w-md">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <StatCard label="Kelas aktif" value={active} hint={`dari ${classes.length} kelas`} icon={DoorIcon} tone="info" />
+        <StatCard label="Siswa terdaftar" value={total} icon={UserGroupIcon} tone="primary" />
+      </div>
+      <Card>
         <CardHeader>
           <CardTitle>
             <h2 className="text-xl font-semibold">Tambah kelas</h2>
@@ -62,7 +75,7 @@ async function ClassList() {
                   <span aria-hidden="true">••• •••</span>
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <ShowCodeDialog name={c.name} code={c.code} />
+                  <ClassCodeDialog name={c.name} code={c.code} />
                   <RotateCodeButton classId={c.id} />
                   <RevokeSessionsButton classId={c.id} />
                   <ToggleActiveButton classId={c.id} isActive={c.isActive} />

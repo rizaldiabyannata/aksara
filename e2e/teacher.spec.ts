@@ -28,3 +28,15 @@ test("teacher grades the essay from the dashboard, releases, and the student see
   await expect(student.getByText("75,00").first()).toBeVisible();
   await student.close();
 });
+
+test("class code dialog", async ({ page }) => {
+  await loginTeacher(page);
+  await page.goto("/teacher/classes");
+  await page.getByRole("button", { name: "Tampilkan kode" }).first().click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText(seed().classCode);
+  await page.setViewportSize({ width: 360, height: 780 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+});

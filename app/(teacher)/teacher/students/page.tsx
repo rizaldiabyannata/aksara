@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
 import { Status } from "@/components/status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { UserGroupIcon } from "@hugeicons/core-free-icons";
 import { requireTeacher } from "@/lib/auth/guard";
 import { listClasses } from "@/lib/classes";
 import { formatWita } from "@/lib/format";
@@ -23,7 +26,11 @@ type Params = Promise<Record<string, string | string[] | undefined>>;
 export default function StudentsPage({ searchParams }: { searchParams: Params }) {
   return (
     <section className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Siswa</h1>
+      <PageHeader
+        eyebrow="Data siswa"
+        title="Kelola Siswa"
+        description="Tambah siswa, cari, dan atur sesi masuk mereka."
+      />
       <Suspense fallback={<p>Memuat…</p>}>
         <StudentList searchParams={searchParams} />
       </Suspense>
@@ -47,7 +54,14 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
   const classes = allClasses.map((c) => ({ id: c.id, name: c.name, isActive: c.isActive }));
   return (
     <>
-      <Card className="max-w-md">
+      <StatCard
+        label="Siswa ditampilkan"
+        value={students.length}
+        hint={kelas || q ? "sesuai pencarian" : "semua kelas"}
+        icon={UserGroupIcon}
+        tone="primary"
+      />
+      <Card>
         <CardHeader>
           <CardTitle>
             <h2 className="text-xl font-semibold">Tambah siswa</h2>
@@ -60,7 +74,7 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
           />
         </CardContent>
       </Card>
-      <form method="get" className="flex flex-col gap-3 sm:flex-row sm:items-end">
+      <form method="get" className="flex rounded-2xl border bg-card p-4 flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex flex-col gap-2">
           <Label htmlFor="filter-kelas">Kelas</Label>
           <select
@@ -94,7 +108,7 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
       <ul className="grid gap-4 md:grid-cols-2">
         {students.map((s) => (
           <li key={s.id} className="min-w-0">
-            <Card>
+            <Card className={s.replacedCount7d > 0 ? "ring-2 ring-warning" : undefined}>
               <CardContent className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-lg font-semibold">{s.displayName}</h2>
