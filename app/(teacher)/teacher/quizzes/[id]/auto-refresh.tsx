@@ -25,7 +25,7 @@ export function AutoRefresh({ active, renderedAt }: { active: boolean; renderedA
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Button type="button" variant="outline" size="sm" onClick={() => router.refresh()}>Muat ulang</Button>
-      <p aria-live="polite" className="text-sm text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         Diperbarui pukul {formatWitaTime(new Date(renderedAt))}
       </p>
     </div>

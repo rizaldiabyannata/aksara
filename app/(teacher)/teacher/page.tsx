@@ -125,7 +125,7 @@ function describe(task: TeacherTask): {
     case "OTHER_DEVICE":
       return {
         icon: InformationCircleIcon,
-        text: `${task.students} siswa masuk dari perangkat lain minggu ini`,
+        text: `${task.students} siswa masuk dari perangkat lain 7 hari terakhir`,
         action: "Lihat siswa",
         href: "/teacher/students",
       };

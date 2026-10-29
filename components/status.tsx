@@ -25,7 +25,7 @@ export function Status({ tone, children }: { tone: StatusTone; children: React.R
   return (
     // Badge is nowrap for chips; a status can be a sentence, so let it wrap on phones.
     // `!` because `cn` here does not merge conflicting Tailwind classes.
-    <Badge variant={variant} className="max-w-full justify-start! whitespace-normal! text-left">
+    <Badge variant={variant} className="max-w-full justify-start! rounded-lg! whitespace-normal! text-left">
       <HugeiconsIcon icon={icon} aria-hidden="true" />
       {children}
     </Badge>

@@ -41,12 +41,12 @@ function Scores({ row, quiz }: { row: RecapRow; quiz: QuizRecap["quiz"] }) {
 
 function Tuntas({ row, kkm }: { row: RecapRow; kkm: number | null }) {
   // A provisional score (ungraded essays) must not claim passed or not.
-  if (kkm === null) return null;
+  if (kkm === null) return <span aria-label="Tidak ada KKM">—</span>;
   if (row.recap.passed === null || !row.recap.final) return <p className="text-muted-foreground">Ketuntasan belum ada</p>;
   return row.recap.passed ? <Status tone="success">Tuntas</Status> : <Status tone="warning">Belum tuntas</Status>;
 }
 
-function Attempts({ row, quizId }: { row: RecapRow; quizId: string }) {
+function Attempts({ row, quizId, released }: { row: RecapRow; quizId: string; released: boolean }) {
   return (
     <details className="mt-3">
       <summary className="flex min-h-11 cursor-pointer items-center underline">Lihat percobaan</summary>
@@ -72,7 +72,7 @@ function Attempts({ row, quizId }: { row: RecapRow; quizId: string }) {
                     Nilai uraian
                   </Link>
                 )}
-                {!a.replaced && <ReplaceButton attemptId={a.attemptId} student={row.name} attemptNumber={a.attemptNumber} />}
+                {!a.replaced && !released && <ReplaceButton attemptId={a.attemptId} student={row.name} attemptNumber={a.attemptNumber} />}
               </li>
             );
           })}
@@ -128,7 +128,7 @@ export function MonitorList({ recap, quizId, classFilter }: { recap: QuizRecap; 
                 <Scores row={r} quiz={quiz} />
                 <div><Tuntas row={r} kkm={quiz.kkm} /></div>
               </div>
-              <Attempts row={r} quizId={quizId} />
+              <Attempts row={r} quizId={quizId} released={!!quiz.resultsReleasedAt} />
             </li>
           ))}
         </ul>

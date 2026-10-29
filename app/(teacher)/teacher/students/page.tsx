@@ -105,7 +105,7 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
                 </p>
                 {s.replacedCount7d > 0 && s.lastReplacedAt && (
                   <Status tone="warning">
-                    Masuk dari perangkat lain {s.replacedCount7d}× minggu ini, terakhir{" "}
+                    Masuk dari perangkat lain {s.replacedCount7d}× dalam 7 hari terakhir, terakhir{" "}
                     {formatWita(s.lastReplacedAt)}
                   </Status>
                 )}
