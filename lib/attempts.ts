@@ -4,14 +4,13 @@ import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
-import type { QuestionType, SubmitReason } from "@/lib/generated/prisma/enums";
+import type { AttemptStatus, QuestionType, SubmitReason } from "@/lib/generated/prisma/enums";
 import { gradeObjective, parseAnswer, type ObjectiveQuestion, type StoredAnswer } from "@/lib/grading";
 import type { ImageView } from "@/lib/materials";
 import type { Option } from "@/lib/questions";
 import { lockQuiz, type AnswerKeySnapshot, type QuestionSnapshot } from "@/lib/quizzes";
 import { uniqueViolation } from "@/lib/unique-violation";
 import { writeAudit } from "@/lib/audit";
-import type { AttemptStatus } from "@/lib/generated/prisma/enums";
 import { parse, type Invalid, type NotFound } from "@/lib/validation";
 
 export const GRACE_MS = 60_000;
@@ -256,17 +255,18 @@ export async function submitAttempt(
   attemptId: string,
   now: Date = new Date(),
 ): Promise<{ ok: true; reason: SubmitReason } | NotFound> {
-  const own = await prisma.quizAttempt.findFirst({ where: { id: attemptId, studentId, quizId }, select: { id: true } });
+  const own = await prisma.quizAttempt.findFirst({ where: { id: attemptId, studentId, quizId }, select: { deadlineAt: true } });
   if (!own) return NOT_FOUND;
+  const reason: SubmitReason = now >= own.deadlineAt ? "TIMEOUT" : "MANUAL"; // late but inside grace
   const won = await prisma.$transaction(async (tx) => {
     const r = await tx.quizAttempt.updateMany({
       where: { id: attemptId, status: "IN_PROGRESS", deadlineAt: { gt: new Date(now.getTime() - GRACE_MS) } },
-      data: { status: "SUBMITTED", submitReason: "MANUAL", submittedAt: now },
+      data: { status: "SUBMITTED", submitReason: reason, submittedAt: now },
     });
     if (r.count === 1) await gradeAttempt(tx, attemptId);
     return r.count === 1;
   });
-  if (won) return { ok: true, reason: "MANUAL" };
+  if (won) return { ok: true, reason };
   await finalizeExpiredAttempts({ quizId, studentId }, now);
   const row = await prisma.quizAttempt.findUniqueOrThrow({ where: { id: attemptId }, select: { submitReason: true } });
   return { ok: true, reason: row.submitReason ?? "TIMEOUT" };

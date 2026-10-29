@@ -31,6 +31,7 @@ type Phase = "running" | "done" | "closed";
 
 const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 const CHOICE = "flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border p-3 has-[:checked]:border-2 has-[:checked]:font-medium has-[:focus-visible]:ring-2";
+const SESSION_ENDED_MSG = "Sesimu berakhir. Masuk lagi untuk melanjutkan.";
 const TEXT_DEBOUNCE_MS = 800;
 const FLUSH_TIMEOUT_MS = 5000;
 
@@ -62,7 +63,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
   const anchor = useRef({ deadlineAt, serverNow, receivedAt: 0 });
   const [left, setLeft] = useState(() => remainingMs(deadlineAt, serverNow, 0, 0));
   useEffect(() => {
-    anchor.current.receivedAt = performance.now();
+    if (anchor.current.receivedAt === 0) anchor.current.receivedAt = performance.now(); // keep the anchor when re-shown
   }, []);
 
   const [queue] = useState(() =>
@@ -70,13 +71,20 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
       send: (quizQuestionId, answer) =>
         fetch(`/api/quiz-attempts/${encodeURIComponent(attemptId)}/answers`, {
           method: "PUT",
+          redirect: "manual",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ quizQuestionId, answer }),
         }),
       onStatus: (st) => {
         setStatus(st);
         if (st.kind === "closed") {
-          setClosedMsg(st.error === "DEADLINE_PASSED" ? "Waktu habis, jawabanmu sudah dikumpulkan." : "Jawabanmu sudah dikumpulkan.");
+          setClosedMsg(
+            st.error === "SESSION_ENDED"
+              ? SESSION_ENDED_MSG
+              : st.error === "DEADLINE_PASSED"
+                ? "Waktu habis, jawabanmu sudah dikumpulkan."
+                : "Jawabanmu sudah dikumpulkan.",
+          );
           setPhase("closed");
         }
       },
@@ -126,9 +134,15 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
       try {
         const res = await fetch(`/api/quizzes/${encodeURIComponent(quizId)}/submit`, {
           method: "POST",
+          redirect: "manual",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ attemptId }),
         });
+        if (res.type === "opaqueredirect") {
+          setClosedMsg(SESSION_ENDED_MSG);
+          setPhase("closed");
+          return;
+        }
         if (res.ok || res.status === 409 || res.status === 404) {
           setPhase("done");
           return;
@@ -167,7 +181,12 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
     if (phase !== "running") return;
     const resync = async () => {
       try {
-        const res = await fetch(`/api/quiz-attempts/${encodeURIComponent(attemptId)}`, { cache: "no-store" });
+        const res = await fetch(`/api/quiz-attempts/${encodeURIComponent(attemptId)}`, { cache: "no-store", redirect: "manual" });
+        if (res.type === "opaqueredirect") {
+          setClosedMsg(SESSION_ENDED_MSG);
+          setPhase("closed");
+          return;
+        }
         if (res.status === 409 || res.status === 404) {
           setClosedMsg("Jawabanmu sudah dikumpulkan.");
           setPhase("closed");
@@ -186,6 +205,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
         // still offline; the next event retries
       }
     };
+    void resync(); // a re-shown component (Activity) must not trust stale state
     const onVisible = () => {
       if (document.visibilityState === "visible") void resync();
     };
@@ -224,6 +244,18 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
     };
   }, [queue]);
 
+  if (phase === "closed" && closedMsg === SESSION_ENDED_MSG) {
+    return (
+      <section className="flex flex-col gap-3" aria-live="polite">
+        <p className="font-semibold">{SESSION_ENDED_MSG}</p>
+        <div>
+          <Link href="/login" className={LINK}>
+            Masuk lagi
+          </Link>
+        </div>
+      </section>
+    );
+  }
   if (phase !== "running") {
     return (
       <section className="flex flex-col gap-3" aria-live="polite">

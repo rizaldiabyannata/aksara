@@ -51,6 +51,18 @@ describe("createSaveQueue", () => {
     expect(send.mock.calls).toEqual([["a", 1], ["a", 2]]);
   });
 
+  it("opaqueredirect (session ended) closes with SESSION_ENDED and no retry", async () => {
+    const send = vi.fn().mockResolvedValue({ type: "opaqueredirect", status: 0 } as Response);
+    const seen: SaveStatus[] = [];
+    const q = createSaveQueue({ send, onStatus: (s) => seen.push(s) });
+    q.set("a", 1);
+    await q.flush();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(seen.at(-1)).toEqual({ kind: "closed", error: "SESSION_ENDED" });
+    expect(q.pending()).toBe(false);
+  });
+
   it("409 DEADLINE_PASSED closes without retry", async () => {
     const send = vi.fn().mockResolvedValue(res(409, { ok: false, error: "DEADLINE_PASSED" }));
     const seen: SaveStatus[] = [];

@@ -12,7 +12,7 @@ import {
   saveSubchapter,
   saveSubject,
 } from "@/lib/subjects";
-import { makeChapter, makeMaterial, makeSubchapter, makeTeacher } from "../tests/factories";
+import { makeChapter, makeMaterial, makeQuiz, makeSubchapter, makeTeacher } from "../tests/factories";
 
 async function actor() {
   return (await makeTeacher()).user.id;
@@ -43,6 +43,14 @@ describe("deleteSubject", () => {
     if (r.ok || r.error !== "IN_USE") return;
     expect(r.message).toBe("Mapel ini masih punya 1 bab.");
     expect(await prisma.subject.count({ where: { id: c.subjectId } })).toBe(1);
+  });
+
+  it("subject used by a quiz returns IN_USE, not a FK error", async () => {
+    const { user } = await makeTeacher();
+    const { subjectId } = await makeChapter();
+    await makeQuiz(subjectId, user.id);
+    await prisma.chapter.deleteMany({ where: { subjectId } }); // only the quiz keeps it in use
+    expect(await deleteSubject(subjectId)).toMatchObject({ ok: false, error: "IN_USE" });
   });
 });
 

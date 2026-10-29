@@ -4,7 +4,7 @@ export type SaveStatus =
   | { kind: "saving" }
   | { kind: "saved"; at: Date }
   | { kind: "error" }
-  | { kind: "closed"; error: "DEADLINE_PASSED" | "ATTEMPT_CLOSED" };
+  | { kind: "closed"; error: "DEADLINE_PASSED" | "ATTEMPT_CLOSED" | "SESSION_ENDED" };
 
 const BACKOFF_MS = [1000, 2000, 4000, 8000, 10000];
 const realSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -35,6 +35,13 @@ export function createSaveQueue(opts: {
       let code: unknown;
       try {
         const r = await opts.send(qqId, answer);
+        if (r.type === "opaqueredirect") {
+          // requireStudent redirected to /login: the session is gone, retrying cannot help.
+          closed = true;
+          waiting.clear();
+          opts.onStatus({ kind: "closed", error: "SESSION_ENDED" });
+          return;
+        }
         status = r.status;
         if (status === 409) code = (await r.json().catch(() => null))?.error;
       } catch {

@@ -62,7 +62,16 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
         <SettingsForm
           id={id}
           q={{
-            ...quiz,
+            title: quiz.title,
+            instructions: quiz.instructions,
+            durationMinutes: quiz.durationMinutes,
+            maxAttempts: quiz.maxAttempts,
+            shuffleQuestions: quiz.shuffleQuestions,
+            shuffleOptions: quiz.shuffleOptions,
+            showFeedbackAfterRelease: quiz.showFeedbackAfterRelease,
+            scoringPolicy: quiz.scoringPolicy,
+            kkm: quiz.kkm,
+            status: quiz.status,
             startsAt: quiz.startsAt ? toWitaInput(quiz.startsAt) : "",
             endsAt: quiz.endsAt ? toWitaInput(quiz.endsAt) : "",
           }}

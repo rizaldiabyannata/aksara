@@ -1,20 +1,28 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export function StartButton({ quizId, title, label }: { quizId: string; title: string; label: "Mulai" | "Lanjutkan" | "Ulangi" }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  // cacheComponents keeps this state when the list is hidden; reset it when hidden so coming back isn't stuck on "Membuka…".
+  useLayoutEffect(() => () => setBusy(false), []);
 
   async function start() {
     if (busy) return;
     setBusy(true);
     setMessage("");
     try {
-      const res = await fetch(`/api/quizzes/${encodeURIComponent(quizId)}/start`, { method: "POST" });
+      const res = await fetch(`/api/quizzes/${encodeURIComponent(quizId)}/start`, { method: "POST", redirect: "manual" });
+      if (res.type === "opaqueredirect") {
+        setMessage("Sesimu berakhir. Masuk lagi untuk melanjutkan.");
+        setBusy(false);
+        return;
+      }
       const body = (await res.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
       if (res.ok && body?.ok) {
         router.push(`/student/quizzes/${encodeURIComponent(quizId)}/attempt`);
@@ -34,6 +42,14 @@ export function StartButton({ quizId, title, label }: { quizId: string; title: s
       </Button>
       <p role="status" className="text-sm">
         {message}
+        {message.startsWith("Sesimu") && (
+          <>
+            {" "}
+            <Link href="/login" className="underline underline-offset-4">
+              Masuk lagi
+            </Link>
+          </>
+        )}
       </p>
     </div>
   );

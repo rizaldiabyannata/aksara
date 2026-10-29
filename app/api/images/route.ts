@@ -1,4 +1,5 @@
 import { requireTeacher } from "@/lib/auth/guard";
+import { sameOrigin } from "@/lib/attempt-http";
 import { addImage } from "@/lib/images";
 
 const MAX_BYTES = 4 * 1024 * 1024;
@@ -13,16 +14,6 @@ const json = (body: Record<string, unknown>, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 const fail = (message: string, status: number, extra: Record<string, unknown> = {}) =>
   json({ ok: false, message, ...extra }, status);
-
-function sameOrigin(req: Request) {
-  try {
-    const origin = req.headers.get("origin");
-    // Request drops a manually set Host header, so fall back to the URL host.
-    return !!origin && new URL(origin).host === (req.headers.get("host") ?? new URL(req.url).host);
-  } catch {
-    return false;
-  }
-}
 
 export async function POST(req: Request): Promise<Response> {
   if (!sameOrigin(req)) return fail("Permintaan ditolak.", 403);

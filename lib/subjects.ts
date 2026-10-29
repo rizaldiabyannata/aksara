@@ -137,9 +137,12 @@ export async function deleteSubject(id: string): Promise<{ ok: true } | InUse | 
   return prisma.$transaction(async (tx) => {
     const s = await tx.subject.findUnique({
       where: { id },
-      select: { _count: { select: { chapters: true } } },
+      select: { _count: { select: { chapters: true, quizzes: true } } },
     });
     if (!s) return { ok: false, error: "NOT_FOUND" } as const;
+    if (!s._count.chapters && s._count.quizzes) {
+      return { ok: false, error: "IN_USE", message: `Mapel ini masih dipakai ${s._count.quizzes} ulangan.` } as const;
+    }
     if (s._count.chapters) {
       return {
         ok: false,

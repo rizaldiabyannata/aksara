@@ -243,7 +243,7 @@ export async function imageRedirectTarget(user: SessionUser, id: string, now: Da
       },
       select: { imageId: true },
     });
-    if (user.role !== "STUDENT" || !frozen) return null;
+    if (!frozen) return null;
   }
   return presignGet(img.storageKey);
 }

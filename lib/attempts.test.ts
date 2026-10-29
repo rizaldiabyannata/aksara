@@ -260,6 +260,16 @@ describe("submitAttempt / finalize", () => {
     expect((await attemptRow(id)).submittedAt).toEqual(at(min(DUR)));
   });
 
+  it("submit at deadlineAt+10s is TIMEOUT, before deadlineAt is MANUAL", async () => {
+    const s = await setup();
+    const late = await started(s);
+    expect(await submitAttempt(s.student.id, s.quiz.id, late, at(min(DUR) + 10_000))).toEqual({ ok: true, reason: "TIMEOUT" });
+    expect(await attemptRow(late)).toMatchObject({ submitReason: "TIMEOUT", submittedAt: at(min(DUR) + 10_000) });
+    const s2 = await setup();
+    const early = await started(s2);
+    expect(await submitAttempt(s2.student.id, s2.quiz.id, early, at(min(DUR) - 1000))).toEqual({ ok: true, reason: "MANUAL" });
+  });
+
   it("submit vs finalize past grace: one consistent status", async () => {
     const s = await setup();
     const id = await started(s);
