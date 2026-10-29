@@ -56,7 +56,7 @@ describe("QuestionView", () => {
   it("shows the typing hint for SHORT_ANSWER and ESSAY", () => {
     for (const type of ["SHORT_ANSWER", "ESSAY"] as const) {
       const out = render({ id: "q1", type, prompt: "Jelaskan.", options: null, images: [] });
-      expect(out).toContain("Siswa menjawab dengan mengetik.");
+      expect(out).toContain("Jawaban diketik.");
     }
   });
 });

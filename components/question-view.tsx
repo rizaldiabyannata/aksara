@@ -23,7 +23,7 @@ export function QuestionView({ question }: { question: PublicQuestion }) {
         </ol>
       )}
       {(type === "SHORT_ANSWER" || type === "ESSAY") && (
-        <p className="text-muted-foreground">Siswa menjawab dengan mengetik.</p>
+        <p className="text-muted-foreground">Jawaban diketik.</p>
       )}
     </div>
   );

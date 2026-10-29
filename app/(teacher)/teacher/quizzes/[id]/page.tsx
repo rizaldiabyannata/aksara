@@ -153,7 +153,8 @@ async function Monitor({ quizId }: { quizId: string }) {
   return <AttemptsTable rows={rows} />;
 }
 
-const dash = (n: number | null) => (n === null ? "-" : formatScore(n));
+// Not final yet → every score says so, not only the recap column (PRD §7.9).
+const shown = (n: number | null, final: boolean) => (n === null ? "-" : `${final ? "" : "Sementara "}${formatScore(n)}`);
 
 // Same rows as the "Rekap Nilai" sheet, so the app and the Excel file always agree.
 async function Results({ quizId, endsAt }: { quizId: string; endsAt: Date | null }) {
@@ -187,9 +188,9 @@ async function Results({ quizId, endsAt }: { quizId: string; endsAt: Date | null
                 <th scope="row" className="p-2 font-medium">{r.name}</th>
                 <td className="p-2">{r.className}</td>
                 <td className="p-2">{r.attemptsUsed}</td>
-                <td className="p-2">{dash(r.recap.primary)}</td>
-                <td className="p-2">{dash(r.recap.highest)}</td>
-                <td className="p-2">{r.recap.recap === null ? "-" : `${r.recap.final ? "" : "Sementara "}${formatScore(r.recap.recap)}`}</td>
+                <td className="p-2">{shown(r.recap.primary, r.recap.final)}</td>
+                <td className="p-2">{shown(r.recap.highest, r.recap.final)}</td>
+                <td className="p-2">{shown(r.recap.recap, r.recap.final)}</td>
                 <td className="p-2">
                   {kkm === null || r.recap.passed === null || !r.recap.final ? "-" : r.recap.passed ? "Tuntas" : "Belum tuntas"}
                 </td>
