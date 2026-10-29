@@ -48,7 +48,7 @@ async function List() {
                 <Status tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</Status>
                 <Badge variant="outline">{r.subjectName}</Badge>
               </div>
-              <Link href={`/teacher/quizzes/${r.id}`} className="text-lg font-semibold underline-offset-4 hover:underline">
+              <Link href={`/teacher/quizzes/${r.id}`} className="inline-flex min-h-11 items-center text-lg font-semibold underline-offset-4 hover:underline">
                 {r.title}
               </Link>
               <p className="text-muted-foreground">
