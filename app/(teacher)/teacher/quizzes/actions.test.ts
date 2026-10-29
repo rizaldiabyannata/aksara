@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import { createSession } from "@/lib/auth/session";
 import {
-  makeChapter, makeClass, makeQuestion, makeQuiz, makeQuizQuestion, makeStudent, makeTeacher,
+  makeAttempt, makeChapter, makeClass, makeQuestion, makeQuiz, makeQuizQuestion, makeStudent, makeTeacher,
 } from "../../../../tests/factories";
 import { cookieJar, expectForbidden, expectRedirect, resetNextMocks } from "../../../../tests/next-mocks";
 import { deleteQuestionAction } from "../questions/actions";
 import {
   addQuizQuestionAction, createQuizAction, moveQuizQuestionAction, publishQuizAction,
   removeQuizQuestionAction, setQuizClassesAction, setQuizQuestionPointsAction, unpublishQuizAction,
-  updateQuizAction,
+  grantReplacementAction, updateQuizAction,
 } from "./actions";
 
 vi.mock("next/headers", () => import("../../../../tests/next-mocks").then((m) => m.nextHeadersMock()));
@@ -52,6 +52,13 @@ const calls: [string, (w: Awaited<ReturnType<typeof world>>) => Promise<unknown>
   ["setQuizQuestionPointsAction", (w) => setQuizQuestionPointsAction(w.quiz.id, w.qq.id, undefined, form({ points: "5" }))],
   ["publishQuizAction", (w) => publishQuizAction(w.quiz.id)],
   ["unpublishQuizAction", (w) => unpublishQuizAction(w.quiz.id)],
+  [
+    "grantReplacementAction",
+    async (w) => {
+      const a = await makeAttempt(w.quiz.id, (await makeStudent((await makeClass()).id)).id);
+      return grantReplacementAction(a.id, undefined, form({ reason: "Koneksi putus saat ujian" }));
+    },
+  ],
 ];
 
 describe.each(calls)("%s authz", (_n, call) => {
@@ -176,5 +183,30 @@ describe("quiz actions", () => {
     await prisma.question.update({ where: { id: q.id }, data: { status: "DRAFT" } });
     const state = await deleteQuestionAction(q.id);
     expect(state?.message).toBe("Soal ini dipakai di ulangan. Keluarkan dari ulangan draf dulu.");
+  });
+});
+
+describe("grantReplacementAction", () => {
+  async function setup() {
+    const w = await world();
+    await signIn(w.user);
+    const st = await makeStudent((await makeClass()).id);
+    return { w, attempt: await makeAttempt(w.quiz.id, st.id) };
+  }
+  it("rejects an empty reason with fieldErrors and echoes values", async () => {
+    const { attempt } = await setup();
+    const r = await grantReplacementAction(attempt.id, undefined, form({ reason: "ab" }));
+    expect(r?.fieldErrors?.reason).toBeTruthy();
+    expect(r?.values).toEqual({ reason: "ab" });
+    expect((await prisma.quizAttempt.findUniqueOrThrow({ where: { id: attempt.id } })).replacementGrantedAt).toBeNull();
+    expect((await grantReplacementAction(attempt.id, undefined, form({})))?.fieldErrors?.reason).toBeTruthy();
+  });
+  it("grants once, then reports already replaced", async () => {
+    const { attempt } = await setup();
+    const ok = await grantReplacementAction(attempt.id, undefined, form({ reason: "Koneksi putus" }));
+    expect(ok).toMatchObject({ ok: true, message: "Percobaan pengganti dibuka." });
+    const again = await grantReplacementAction(attempt.id, undefined, form({ reason: "Koneksi putus" }));
+    expect(again).toMatchObject({ message: "Percobaan ini sudah diganti." });
+    expect(again?.ok).toBeFalsy();
   });
 });

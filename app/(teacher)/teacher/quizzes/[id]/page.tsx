@@ -8,11 +8,13 @@ import { Label } from "@/components/ui/label";
 import { requireTeacher } from "@/lib/auth/guard";
 import { listClasses } from "@/lib/classes";
 import type { Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
-import { toWitaInput } from "@/lib/format";
+import { listQuizAttempts } from "@/lib/attempts";
+import { formatWita, toWitaInput } from "@/lib/format";
 import { listQuestions } from "@/lib/questions";
 import { getQuizForTeacher } from "@/lib/quizzes";
 import { listChapterOptions } from "@/lib/subjects";
 import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
+import { AttemptsTable } from "./attempts-table";
 import { STATUS_LABEL } from "../labels";
 import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, SettingsForm } from "../quiz-forms";
 
@@ -105,12 +107,29 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
         <PublishControls id={id} published={published} />
       </section>
 
-      {/* Pemantauan: Task 11 fills this section. */}
-      <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex flex-col gap-3">
-        <h2 id="pemantauan" className="sr-only">Pemantauan</h2>
-      </section>
+      {published && (
+        <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex flex-col gap-3">
+          <h2 id="pemantauan" className="text-xl font-semibold">Pemantauan</h2>
+          <Monitor quizId={id} />
+        </section>
+      )}
     </section>
   );
+}
+
+const ATTEMPT_LABEL = { running: "Sedang dikerjakan", done: "Terkumpul", timeout: "Waktu habis", replaced: "Diganti" };
+
+// Fresh read each render: listQuizAttempts finalizes expired attempts before listing.
+async function Monitor({ quizId }: { quizId: string }) {
+  const rows = (await listQuizAttempts(quizId)).map((r) => ({
+    attemptId: r.attemptId, studentName: r.studentName, className: r.className, attemptNumber: r.attemptNumber,
+    replaced: r.replaced,
+    status: r.replaced ? ATTEMPT_LABEL.replaced
+      : r.status === "IN_PROGRESS" ? ATTEMPT_LABEL.running
+      : r.submitReason === "TIMEOUT" ? ATTEMPT_LABEL.timeout : ATTEMPT_LABEL.done,
+    startedAt: formatWita(r.startedAt), submittedAt: r.submittedAt ? formatWita(r.submittedAt) : "",
+  }));
+  return <AttemptsTable rows={rows} />;
 }
 
 async function AddPanel({

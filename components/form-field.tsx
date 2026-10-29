@@ -49,7 +49,7 @@ export function FormField({
 export function FormMessage({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p role="alert" className="text-sm font-medium text-destructive">
+    <p role="alert" className="text-sm font-medium whitespace-pre-line text-destructive">
       {message}
     </p>
   );

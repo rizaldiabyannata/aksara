@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireTeacher } from "@/lib/auth/guard";
 import { field, type FormState } from "@/lib/form-state";
+import { grantReplacement } from "@/lib/attempts";
 import {
   addQuizQuestion, createQuiz, moveQuizQuestion, publishQuiz, removeQuizQuestion,
   setQuizClasses, setQuizQuestionPoints, unpublishQuiz, updateQuiz,
@@ -11,13 +12,14 @@ import {
 
 const UNEXPECTED = "Ada masalah. Coba lagi sebentar lagi.";
 const NOT_FOUND = "Ulangan tidak ditemukan. Muat ulang halaman.";
+const ALREADY_REPLACED = "Percobaan ini sudah diganti.";
 const HAS_ATTEMPTS = "Ulangan ini sudah dikerjakan siswa, jadi tidak bisa dikembalikan ke draf.";
 
 type Result =
   | { ok: true; id?: string }
   | { ok: false; error: "INVALID"; fieldErrors: Record<string, string> }
   | { ok: false; error: "INVALID_PUBLISH"; reasons: string[] }
-  | { ok: false; error: "NOT_FOUND" | "HAS_ATTEMPTS" };
+  | { ok: false; error: "NOT_FOUND" | "HAS_ATTEMPTS" | "ALREADY_REPLACED" };
 
 /** Only the domain call is inside try. `flat`: no form to show field errors on, so they become one message. */
 async function run(
@@ -38,8 +40,10 @@ async function run(
         ? { message: Object.values(r.fieldErrors).join(" "), values }
         : { fieldErrors: r.fieldErrors, values };
     }
-    if (r.error === "INVALID_PUBLISH") return { message: r.reasons.join(" ") };
-    return { message: r.error === "HAS_ATTEMPTS" ? HAS_ATTEMPTS : NOT_FOUND, values };
+    if (r.error === "INVALID_PUBLISH") return { message: r.reasons.join("\n") };
+    const message =
+      r.error === "HAS_ATTEMPTS" ? HAS_ATTEMPTS : r.error === "ALREADY_REPLACED" ? ALREADY_REPLACED : NOT_FOUND;
+    return { message, values };
   }
   revalidatePath("/teacher/quizzes", "layout");
   return { message: success, ok: true };
@@ -54,9 +58,10 @@ const CHECKS = ["shuffleQuestions", "shuffleOptions", "showFeedbackAfterRelease"
 
 // Raw strings go to the domain, which coerces and rejects. Checkboxes are always "on" or "".
 function fromForm(fd: FormData, withSubject: boolean) {
+  const defaults: Record<string, string> = withSubject ? DEFAULTS : {};
   const values: Record<string, string> = {};
   if (withSubject) values.subjectId = field(fd, "subjectId");
-  for (const n of TEXT) values[n] = fd.has(n) ? field(fd, n) : (DEFAULTS[n] ?? "");
+  for (const n of TEXT) values[n] = fd.has(n) ? field(fd, n) : (Object.hasOwn(defaults, n) ? defaults[n] : "");
   for (const n of CHECKS) values[n] = fd.get(n) === "on" ? "on" : "";
   return values;
 }
@@ -131,4 +136,12 @@ export async function publishQuizAction(id: string): Promise<FormState> {
 export async function unpublishQuizAction(id: string): Promise<FormState> {
   const user = await requireTeacher();
   return run(() => unpublishQuiz(user.id, id), "Ulangan dikembalikan ke draf.");
+}
+
+export async function grantReplacementAction(attemptId: string, _prev: FormState, fd: FormData): Promise<FormState> {
+  const user = await requireTeacher();
+  const reason = field(fd, "reason");
+  return run(() => grantReplacement(user.id, attemptId, reason), "Percobaan pengganti dibuka.", {
+    values: { reason },
+  });
 }
