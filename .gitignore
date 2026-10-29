@@ -49,3 +49,8 @@ next-env.d.ts
 
 # Claude Code worktrees
 /.claude/worktrees/
+
+# playwright
+/test-results/
+/playwright-report/
+/e2e/.auth.json

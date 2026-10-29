@@ -13,7 +13,8 @@
     "db:up": "docker compose up -d",
     "db:migrate": "prisma migrate dev",
     "db:seed": "bun prisma/seed.ts",
-    "db:seed:content": "bun prisma/seed-content.ts"
+    "db:seed:content": "bun prisma/seed-content.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1157.0",
@@ -39,6 +40,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

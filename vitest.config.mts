@@ -14,7 +14,7 @@ export default defineConfig({
   test: {
     environment: "node",
     // Nested git worktrees.
-    exclude: [...configDefaults.exclude, ".claude/**"],
+    exclude: [...configDefaults.exclude, ".claude/**", "e2e/**"],
     globalSetup: "tests/global-setup.ts",
     setupFiles: ["tests/setup.ts"],
     fileParallelism: false,
