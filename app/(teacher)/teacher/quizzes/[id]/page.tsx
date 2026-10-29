@@ -13,7 +13,7 @@ import { listQuizAttempts } from "@/lib/attempts";
 import { formatScore, formatWita, toWitaInput } from "@/lib/format";
 import { listQuestions } from "@/lib/questions";
 import { getQuizForTeacher } from "@/lib/quizzes";
-import { getQuizRecap } from "@/lib/results";
+import { getQuizRecap, type QuizRecap, type RecapState } from "@/lib/results";
 import { listChapterOptions } from "@/lib/subjects";
 import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
 import { AttemptsTable } from "./attempts-table";
@@ -51,14 +51,9 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
   const classes = (await listClasses()).map(({ id, name, isActive }) => ({ id, name, isActive }));
   const total = quiz.questions.reduce((s, x) => s + x.points, 0);
   const essays = quiz.questions.filter((x) => x.type === "ESSAY").length;
-  return (
-    <section className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">{quiz.title}</h1>
-        <Status tone={STATUS_TONE[quiz.status]}>{STATUS_LABEL[quiz.status]}</Status>
-        <Badge variant="outline">{quiz.subjectName}</Badge>
-      </div>
-
+  const recap = published ? await getQuizRecap(id) : null;
+  const setelan = (
+    <>
       <section aria-labelledby="setelan" className="flex flex-col gap-3">
         <h2 id="setelan" className="text-xl font-semibold">Setelan</h2>
         <SettingsForm
@@ -112,25 +107,80 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
           </Suspense>
         )}
       </section>
+    </>
+  );
+  return (
+    <section className="flex flex-col gap-8">
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-semibold">{quiz.title}</h1>
+        <Status tone={STATUS_TONE[quiz.status]}>{STATUS_LABEL[quiz.status]}</Status>
+        <Badge variant="outline">{quiz.subjectName}</Badge>
+      </div>
 
-      <section aria-labelledby="terbit" className="flex flex-col gap-3">
-        <h2 id="terbit" className="text-xl font-semibold">{published ? "Status terbit" : "Terbitkan"}</h2>
-        <PublishControls id={id} published={published} />
-      </section>
+      {recap ? (
+        <>
+          <NextStep id={id} recap={recap} open={!quiz.endsAt || quiz.endsAt > new Date()} />
 
-      {published && (
-        <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex flex-col gap-3">
-          <h2 id="pemantauan" className="text-xl font-semibold">Pemantauan</h2>
-          <Monitor quizId={id} />
-        </section>
+          <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex flex-col gap-3">
+            <h2 id="pemantauan" className="text-xl font-semibold">Pemantauan</h2>
+            <Monitor quizId={id} />
+          </section>
+
+          <section aria-labelledby="hasil" className="flex flex-col gap-3">
+            <h2 id="hasil" className="text-xl font-semibold">Hasil</h2>
+            <Results quizId={id} recap={recap} />
+          </section>
+
+          <details className="flex flex-col gap-8 rounded-lg border p-3">
+            <summary className="flex min-h-11 cursor-pointer items-center text-lg font-semibold">Lihat setelan ulangan</summary>
+            <div className="mt-3 flex flex-col gap-8">
+              {setelan}
+              <section aria-labelledby="terbit" className="flex flex-col gap-3">
+                <h2 id="terbit" className="text-xl font-semibold">Status terbit</h2>
+                <PublishControls id={id} published />
+              </section>
+            </div>
+          </details>
+        </>
+      ) : (
+        <>
+          {setelan}
+          <section aria-labelledby="terbit" className="flex flex-col gap-3">
+            <h2 id="terbit" className="text-xl font-semibold">Terbitkan</h2>
+            <PublishControls id={id} published={false} />
+          </section>
+        </>
       )}
+    </section>
+  );
+}
 
-      {published && (
-        <section aria-labelledby="hasil" className="flex flex-col gap-3">
-          <h2 id="hasil" className="text-xl font-semibold">Hasil</h2>
-          <Results quizId={id} endsAt={quiz.endsAt} />
-        </section>
+// The one thing the teacher should do next, in the order that blocks release (D7).
+function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boolean }) {
+  const count = (st: RecapState) => recap.rows.filter((r) => r.state === st).length;
+  const running = count("IN_PROGRESS");
+  const waiting = count("WAITING_REPLACEMENT");
+  const pending = recap.rows.flatMap((r) => r.attempts.filter((a) => !a.replaced));
+  const essays = pending.reduce((n, a) => n + a.pendingEssays, 0);
+  const first = pending.find((a) => a.pendingEssays > 0);
+  const released = !!recap.quiz.resultsReleasedAt;
+  return (
+    <section aria-labelledby="langkah" className="flex flex-col gap-3 rounded-lg border-2 p-4">
+      <h2 id="langkah" className="text-xl font-semibold">Langkah berikutnya</h2>
+      {running > 0 ? (
+        <p>{running} siswa sedang mengerjakan.</p>
+      ) : essays > 0 && first ? (
+        <Link href={`/teacher/quizzes/${id}/attempts/${first.attemptId}`} className="inline-flex min-h-11 items-center underline">
+          Nilai {essays} jawaban uraian.
+        </Link>
+      ) : waiting > 0 ? (
+        <p>{waiting} siswa belum mengerjakan percobaan pengganti.</p>
+      ) : released ? (
+        <p>Hasil sudah dibagikan.</p>
+      ) : (
+        <ResultsControls id={id} released={false} open={open} />
       )}
+      {released && <ResultsControls id={id} released open={open} />}
     </section>
   );
 }
@@ -158,9 +208,7 @@ async function Monitor({ quizId }: { quizId: string }) {
 const shown = (n: number | null, final: boolean) => (n === null ? "-" : `${final ? "" : "Sementara "}${formatScore(n)}`);
 
 // Same rows as the "Rekap Nilai" sheet, so the app and the Excel file always agree.
-async function Results({ quizId, endsAt }: { quizId: string; endsAt: Date | null }) {
-  const recap = await getQuizRecap(quizId);
-  if (!recap) return null;
+function Results({ quizId, recap }: { quizId: string; recap: QuizRecap }) {
   const { resultsReleasedAt, kkm } = recap.quiz;
   return (
     <>
@@ -168,7 +216,6 @@ async function Results({ quizId, endsAt }: { quizId: string; endsAt: Date | null
         {resultsReleasedAt ? `Dirilis ${formatWita(resultsReleasedAt)}.` : "Belum dirilis. Siswa belum bisa melihat nilai."}
       </p>
       <div className="flex flex-wrap gap-3">
-        <ResultsControls id={quizId} released={!!resultsReleasedAt} open={!endsAt || endsAt > new Date()} />
         <a href={`/api/exports/${quizId}`} download className={buttonVariants({ variant: "outline", className: "h-11" })}>
           Unduh Excel
         </a>

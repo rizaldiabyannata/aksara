@@ -201,6 +201,7 @@ export function PublishControls({ id, published }: { id: string; published: bool
     <ConfirmAction
       action={unpublishQuizAction.bind(null, id)}
       trigger="Kembalikan ke draf"
+      destructive
       title="Kembalikan ulangan ke draf?"
       description="Siswa tidak bisa lagi melihat ulangan ini sampai kamu menerbitkannya lagi."
       confirm="Kembalikan ke draf"
@@ -208,7 +209,8 @@ export function PublishControls({ id, published }: { id: string; published: bool
   ) : (
     <ConfirmAction
       action={publishQuizAction.bind(null, id)}
-      trigger="Terbitkan"
+      trigger="Terbitkan ulangan"
+      primary
       title="Terbitkan ulangan?"
       description="Soal, poin, dan sebagian setelan terkunci setelah terbit."
       confirm="Terbitkan"
@@ -229,6 +231,7 @@ export function ResultsControls({ id, released, open }: { id: string; released: 
     <ConfirmAction
       action={releaseResultsAction.bind(null, id)}
       trigger="Rilis hasil"
+      primary
       title="Rilis hasil ke siswa?"
       description={
         "Siswa bisa melihat nilai, jawaban, dan (bila diizinkan) kunci serta pembahasan." +
