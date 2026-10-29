@@ -15,7 +15,7 @@ const STATE: Record<RecapState, { tone: StatusTone; label: string }> = {
 };
 const ATTEMPT_LABEL = { running: "Sedang dikerjakan", done: "Terkumpul", replaced: "Diganti" };
 const selectClass =
-  "h-12 w-full rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring";
+  "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30";
 
 function StateStatus({ row, now }: { row: RecapRow; now: Date }) {
   const { tone, label } = STATE[row.state];

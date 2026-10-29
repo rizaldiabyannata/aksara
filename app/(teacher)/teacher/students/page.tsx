@@ -67,7 +67,7 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
             id="filter-kelas"
             name="kelas"
             defaultValue={kelas}
-            className="h-12 rounded-lg border-2 border-input bg-background px-3 text-base"
+            className="h-12 rounded-xl border-2 border-input bg-card px-3 text-base"
           >
             <option value="">Semua kelas</option>
             {classes.map((c) => (

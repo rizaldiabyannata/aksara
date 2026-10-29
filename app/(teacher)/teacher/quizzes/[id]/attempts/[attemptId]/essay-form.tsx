@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { gradeEssayAction } from "../../../actions";
 
 const textareaClass =
-  "min-h-32 w-full rounded-lg border-2 border-input bg-background px-3 py-2 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive";
+  "min-h-32 w-full rounded-xl border-2 border-input bg-card px-3 py-2 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30 aria-invalid:border-destructive";
 
 export function EssayGradeForm({
   answerId, n, max, points, feedback, blank,

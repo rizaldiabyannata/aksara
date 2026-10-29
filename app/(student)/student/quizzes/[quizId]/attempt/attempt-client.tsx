@@ -373,7 +373,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
           <input
             type="text"
             aria-label={`Jawaban soal ${q.number}`}
-            className="h-12 w-full rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
+            className="h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30"
             maxLength={200}
             autoComplete="off"
             value={a && "text" in a ? a.text : ""}
@@ -384,7 +384,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
         {q.type === "ESSAY" && (
           <textarea
             aria-label={`Jawaban soal ${q.number}`}
-            className="min-h-40 w-full py-2 rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
+            className="min-h-40 w-full py-2 rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30"
             maxLength={5000}
             value={a && "text" in a ? a.text : ""}
             onChange={(e) => typeText(q.id, e.target.value)}

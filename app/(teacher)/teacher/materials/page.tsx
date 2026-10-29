@@ -14,7 +14,7 @@ import { STATUS_LABEL, STATUS_TONE } from "./status-label";
 export const metadata: Metadata = { title: "Materi" };
 
 const selectClass =
-  "h-12 w-full rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring";
+  "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30";
 
 export default function MaterialsPage({ searchParams }: PageProps<"/teacher/materials">) {
   return (
