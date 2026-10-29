@@ -26,7 +26,6 @@ export function FormField({
       <Input
         id={id}
         name={name}
-        className="h-11"
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         {...props}
