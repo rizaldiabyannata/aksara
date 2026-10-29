@@ -56,7 +56,7 @@ async function NewForm({ searchParams }: { searchParams: Promise<Record<string, 
   return (
     <>
       <div className="flex flex-wrap items-center gap-3">
-        <Badge variant="secondary" className="text-base!">{TYPE_LABEL[type as QuestionType]}</Badge>
+        <Badge variant="secondary">{TYPE_LABEL[type as QuestionType]}</Badge>
         <Link href="/teacher/questions/new" className={buttonVariants({ variant: "ghost" })}>
           Ganti tipe
         </Link>

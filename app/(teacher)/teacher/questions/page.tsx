@@ -125,8 +125,8 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
               <Card className="text-base!">
                 <CardContent className="flex flex-col gap-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary" className="text-base!">{TYPE_LABEL[r.type]}</Badge>
-                    <Badge variant="outline" className="text-base!">{DIFFICULTY_LABEL[r.difficulty]}</Badge>
+                    <Badge variant="secondary">{TYPE_LABEL[r.type]}</Badge>
+                    <Badge variant="outline">{DIFFICULTY_LABEL[r.difficulty]}</Badge>
                     <Status tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</Status>
                   </div>
                   <p className="text-lg font-semibold">{snippet(r.prompt)}</p>

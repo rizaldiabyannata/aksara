@@ -41,7 +41,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
         description={
           <span className="flex flex-col gap-2">
             <span className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="text-base!">{TYPE_LABEL[q.type]}</Badge>
+              <Badge variant="secondary">{TYPE_LABEL[q.type]}</Badge>
               <Status tone={STATUS_TONE[q.status]}>{STATUS_LABEL[q.status]}</Status>
             </span>
             <span className="text-base">
