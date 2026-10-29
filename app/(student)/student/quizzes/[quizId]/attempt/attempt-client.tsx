@@ -210,11 +210,19 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
     return () => window.removeEventListener("beforeunload", onUnload);
   }, [queue]);
 
-  // Clear debounce timers on unmount (also runs once in React strict mode, when none exist yet).
+  // On unmount push pending debounced text into the queue, then clear timers (strict mode runs this once with none pending).
   useEffect(() => {
     const t = timers.current;
-    return () => t.forEach(clearTimeout);
-  }, []);
+    const text = textRef.current;
+    return () => {
+      t.forEach((id, qqId) => {
+        clearTimeout(id);
+        const v = text.get(qqId) ?? "";
+        queue.set(qqId, v.trim() === "" ? null : { text: v });
+      });
+      t.clear();
+    };
+  }, [queue]);
 
   if (phase !== "running") {
     return (

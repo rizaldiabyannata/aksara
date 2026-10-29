@@ -18,10 +18,11 @@ export function createSaveQueue(opts: {
   const waiting = new Map<string, unknown>(); // latest unsent value per question
   const running = new Map<string, Promise<void>>();
   let closed = false;
+  let rejected = false; // server refused an answer (400/403); stays until a later save succeeds
   let wake: (() => void) | null = null; // set while a retry is sleeping
 
   const finish = () => {
-    if (!closed && running.size === 0) opts.onStatus({ kind: "saved", at: new Date() });
+    if (!closed && running.size === 0) opts.onStatus(rejected ? { kind: "error" } : { kind: "saved", at: new Date() });
   };
 
   async function drain(qqId: string) {
@@ -41,6 +42,7 @@ export function createSaveQueue(opts: {
       }
       if (status >= 200 && status < 300) {
         failures = 0;
+        rejected = false;
         continue;
       }
       if (status === 409 || status === 404) {
@@ -50,6 +52,7 @@ export function createSaveQueue(opts: {
         return;
       }
       if (status === 400 || status === 403) {
+        rejected = true;
         opts.onStatus({ kind: "error" }); // retrying the same payload cannot help
         continue;
       }

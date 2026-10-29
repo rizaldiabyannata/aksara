@@ -63,6 +63,19 @@ describe("createSaveQueue", () => {
     expect(q.pending()).toBe(false);
   });
 
+  it("a 400 ends in error, never saved, until a later save succeeds", async () => {
+    const send = vi.fn().mockResolvedValueOnce(res(400)).mockResolvedValue(res(200));
+    const seen: SaveStatus[] = [];
+    const q = createSaveQueue({ send, onStatus: (s) => seen.push(s) });
+    q.set("a", 1);
+    await q.flush();
+    expect(seen.map((s) => s.kind)).toEqual(["saving", "error", "error"]);
+    expect(send).toHaveBeenCalledTimes(1);
+    q.set("a", 2);
+    await q.flush();
+    expect(seen.at(-1)?.kind).toBe("saved");
+  });
+
   it("reports saving then saved once everything is sent", async () => {
     const seen: SaveStatus[] = [];
     const q = createSaveQueue({ send: async () => res(200), onStatus: (s) => seen.push(s) });
