@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { PageHeader } from "@/components/page-header";
 import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { requireTeacher } from "@/lib/auth/guard";
@@ -20,13 +22,17 @@ const selectClass =
 export default function QuestionsPage({ searchParams }: PageProps<"/teacher/questions">) {
   return (
     <section className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Bank soal</h1>
-        <Link href="/teacher/questions/new" className={buttonVariants({ className: "h-11" })}>
-          Soal baru
-        </Link>
-      </div>
-      <Suspense fallback={<p>Memuat…</p>}>
+      <PageHeader
+        eyebrow="Evaluasi pembelajaran"
+        title="Bank soal"
+        description="Kumpulan soal untuk latihan dan ulangan."
+        actions={
+          <Link href="/teacher/questions/new" className={buttonVariants()}>
+            Soal baru
+          </Link>
+        }
+      />
+      <Suspense fallback={<p className="text-base">Memuat…</p>}>
         <List searchParams={searchParams} />
       </Suspense>
     </section>
@@ -80,61 +86,72 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
     Object.entries(m).map(([k, l]) => <option key={k} value={k}>{l}</option>);
   return (
     <>
-      <details open={filtered} className="rounded-lg border p-3">
-        <summary className="flex min-h-11 cursor-pointer items-center font-medium">Saring soal</summary>
-        <form method="get" className="mt-3 grid gap-3 sm:grid-cols-3 sm:items-end">
-          {sel("subjectId", "Mapel", "Semua mapel", subjectId,
-            subjects.map((x) => <option key={x.id} value={x.id}>{x.name}</option>))}
-          {sel("chapterId", "Bab", "Semua bab", chapterId,
-            chapters.map((c) => <option key={c.id} value={c.id}>{c.label}</option>))}
-          {sel("subchapterId", "Subbab", "Semua subbab", subchapterId,
-            chapters.map((c) => (
-              <optgroup key={c.id} label={c.label}>
-                {c.subchapters.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-              </optgroup>
-            )))}
-          {sel("type", "Tipe", "Semua tipe", type, labels(TYPE_LABEL))}
-          {sel("difficulty", "Kesulitan", "Semua tingkat", difficulty, labels(DIFFICULTY_LABEL))}
-          {sel("status", "Status", "Semua status", status, labels(STATUS_LABEL))}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="f-q">Kata kunci</Label>
-            <Input id="f-q" name="q" defaultValue={q ?? ""} autoComplete="off" />
-          </div>
-          <Button type="submit">Terapkan</Button>
-        </form>
-      </details>
+      <Card size="sm" className="text-base!">
+        <CardContent>
+          <details open={filtered}>
+            <summary className="flex min-h-11 cursor-pointer items-center font-semibold">Saring soal</summary>
+            <form method="get" className="mt-3 grid gap-3 sm:grid-cols-3 sm:items-end">
+              {sel("subjectId", "Mapel", "Semua mapel", subjectId,
+                subjects.map((x) => <option key={x.id} value={x.id}>{x.name}</option>))}
+              {sel("chapterId", "Bab", "Semua bab", chapterId,
+                chapters.map((c) => <option key={c.id} value={c.id}>{c.label}</option>))}
+              {sel("subchapterId", "Subbab", "Semua subbab", subchapterId,
+                chapters.map((c) => (
+                  <optgroup key={c.id} label={c.label}>
+                    {c.subchapters.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                  </optgroup>
+                )))}
+              {sel("type", "Tipe", "Semua tipe", type, labels(TYPE_LABEL))}
+              {sel("difficulty", "Kesulitan", "Semua tingkat", difficulty, labels(DIFFICULTY_LABEL))}
+              {sel("status", "Status", "Semua status", status, labels(STATUS_LABEL))}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="f-q">Kata kunci</Label>
+                <Input id="f-q" name="q" defaultValue={q ?? ""} autoComplete="off" />
+              </div>
+              <Button type="submit">Terapkan</Button>
+            </form>
+          </details>
+        </CardContent>
+      </Card>
 
       {rows.length === 0 && (
-        <p className="text-muted-foreground">{filtered ? "Tidak ada soal yang cocok." : "Belum ada soal. Tekan Soal baru untuk menambah."}</p>
+        <p className="text-base text-muted-foreground">{filtered ? "Tidak ada soal yang cocok." : "Belum ada soal. Tekan Soal baru untuk menambah."}</p>
       )}
-      <ul className="flex flex-col gap-3">
-        {rows.map((r) => (
-          <li key={r.id} className="flex flex-col gap-3 rounded-lg border p-3">
-            <p className="font-medium">{snippet(r.prompt)}</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline">{TYPE_LABEL[r.type]}</Badge>
-              <Badge variant="outline">{DIFFICULTY_LABEL[r.difficulty]}</Badge>
-              <Status tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</Status>
-            </div>
-            <p className="text-sm text-muted-foreground">{r.subjectName} · {r.chapterTitle}</p>
-            <div className="flex flex-wrap items-start gap-2">
-              <Link href={`/teacher/questions/${r.id}`} className="inline-flex min-h-11 items-center underline">
-                Ubah<span className="sr-only"> soal: {snippet(r.prompt) || TYPE_LABEL[r.type]}</span>
-              </Link>
-              <Link href={`/teacher/questions/${r.id}/preview`} className="inline-flex min-h-11 items-center underline">
-                Pratinjau<span className="sr-only"> soal: {snippet(r.prompt) || TYPE_LABEL[r.type]}</span>
-              </Link>
-            </div>
-          </li>
-        ))}
+      <ul className="flex flex-col gap-4">
+        {rows.map((r) => {
+          const name = snippet(r.prompt) || TYPE_LABEL[r.type];
+          return (
+            <li key={r.id}>
+              <Card className="text-base!">
+                <CardContent className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="secondary" className="text-base!">{TYPE_LABEL[r.type]}</Badge>
+                    <Badge variant="outline" className="text-base!">{DIFFICULTY_LABEL[r.difficulty]}</Badge>
+                    <Status tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</Status>
+                  </div>
+                  <p className="text-lg font-semibold">{snippet(r.prompt)}</p>
+                  <p className="text-muted-foreground">{r.subjectName} · {r.chapterTitle}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={`/teacher/questions/${r.id}`} className={buttonVariants({ variant: "outline" })}>
+                      Ubah<span className="sr-only"> soal: {name}</span>
+                    </Link>
+                    <Link href={`/teacher/questions/${r.id}/preview`} className={buttonVariants({ variant: "ghost" })}>
+                      Pratinjau<span className="sr-only"> soal: {name}</span>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </li>
+          );
+        })}
       </ul>
       {(page > 1 || hasNext) && (
-        <nav aria-label="Halaman" className="flex gap-4">
+        <nav aria-label="Halaman" className="flex flex-wrap gap-3">
           {page > 1 && (
-            <Link href={pageHref(page - 1)} className="inline-flex min-h-11 items-center underline">Sebelumnya</Link>
+            <Link href={pageHref(page - 1)} className={buttonVariants({ variant: "ghost" })}>Sebelumnya</Link>
           )}
           {hasNext && (
-            <Link href={pageHref(page + 1)} className="inline-flex min-h-11 items-center underline">Berikutnya</Link>
+            <Link href={pageHref(page + 1)} className={buttonVariants({ variant: "ghost" })}>Berikutnya</Link>
           )}
         </nav>
       )}

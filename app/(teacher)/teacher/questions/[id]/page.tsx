@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { PageHeader } from "@/components/page-header";
 import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { requireTeacher } from "@/lib/auth/guard";
 import { formatWita } from "@/lib/format";
 import { extractImageIds } from "@/lib/images";
@@ -17,7 +19,7 @@ export const metadata: Metadata = { title: "Ubah soal" };
 
 export default function EditQuestionPage({ params }: PageProps<"/teacher/questions/[id]">) {
   return (
-    <Suspense fallback={<p>Memuat…</p>}>
+    <Suspense fallback={<p className="text-base">Memuat…</p>}>
       <Edit params={params} />
     </Suspense>
   );
@@ -33,20 +35,29 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
   );
   return (
     <section className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">Ubah soal</h1>
-        <Badge variant="outline">{TYPE_LABEL[q.type]}</Badge>
-        <Status tone={STATUS_TONE[q.status]}>{STATUS_LABEL[q.status]}</Status>
-      </div>
-      <p className="text-sm text-muted-foreground">
-        {q.subjectName} · {q.chapterTitle} · Diubah {formatWita(q.updatedAt)}
-      </p>
-      <div className="flex flex-wrap items-start gap-2">
-        <Link href={`/teacher/questions/${id}/preview`} className="inline-flex min-h-11 items-center underline">
-          Pratinjau
-        </Link>
-        <QuestionActions id={id} status={q.status} canDelete={q.status === "DRAFT"} />
-      </div>
+      <PageHeader
+        eyebrow="Bank soal"
+        title="Ubah soal"
+        description={
+          <span className="flex flex-col gap-2">
+            <span className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary" className="text-base!">{TYPE_LABEL[q.type]}</Badge>
+              <Status tone={STATUS_TONE[q.status]}>{STATUS_LABEL[q.status]}</Status>
+            </span>
+            <span className="text-base">
+              {q.subjectName} · {q.chapterTitle} · Diubah {formatWita(q.updatedAt)}
+            </span>
+          </span>
+        }
+        actions={
+          <>
+            <Link href={`/teacher/questions/${id}/preview`} className={buttonVariants({ variant: "outline" })}>
+              Pratinjau
+            </Link>
+            <QuestionActions id={id} status={q.status} canDelete={q.status === "DRAFT"} />
+          </>
+        }
+      />
       <QuestionForm chapters={chapters} type={q.type} question={{ id, defaults: toDefaults(q) }} />
       <section aria-labelledby="gambar-heading">
         <h2 id="gambar-heading" className="text-lg font-semibold">Gambar</h2>

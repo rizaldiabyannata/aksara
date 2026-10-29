@@ -5,6 +5,7 @@ import { ConfirmAction } from "@/components/confirm-action";
 import { Feedback } from "@/components/form-feedback";
 import { FormField, FormMessage } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import type { Difficulty, QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
 import {
@@ -32,7 +33,7 @@ const IMG_HINT = "Sisipkan gambar dengan kode dari panel Gambar (ada di halaman 
 
 function Err({ id, text }: { id: string; text?: string }) {
   return text ? (
-    <p id={id} className="text-sm text-destructive">
+    <p id={id} className="text-base text-destructive">
       {text}
     </p>
   ) : null;
@@ -88,7 +89,7 @@ function Area({
         name={name}
         rows={rows}
         required={required}
-        className={`${controlClass} min-h-32 py-2${mono ? " font-mono text-sm" : ""}`}
+        className={`${controlClass} min-h-32 py-2${mono ? " font-mono" : ""}`}
         defaultValue={v}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${name}-error` : undefined}
@@ -106,7 +107,7 @@ function KeyFields({
   const err = [e?.options, e?.answerKey].filter(Boolean) as string[];
   const correct = v("correct").split(",");
   const describedBy = err.length ? "key-error" : undefined;
-  const errors = err.length ? <p id="key-error" className="text-sm text-destructive">{err.join(" ")}</p> : null;
+  const errors = err.length ? <p id="key-error" className="text-base text-destructive">{err.join(" ")}</p> : null;
 
   if (type === "SINGLE_CHOICE" || type === "MULTIPLE_SELECT") {
     const slots = [...SLOTS].slice(0, type === "SINGLE_CHOICE" ? 6 : 8);
@@ -140,7 +141,7 @@ function KeyFields({
             </label>
           </div>
         ))}
-        <p className="text-sm text-muted-foreground">{IMG_HINT} {ALT_HINT}</p>
+        <p className="text-base text-muted-foreground">{IMG_HINT} {ALT_HINT}</p>
         {errors}
       </fieldset>
     );
@@ -216,40 +217,59 @@ export function QuestionForm({
   return (
     <form action={formAction} className="flex max-w-3xl flex-col gap-4">
       <input type="hidden" name="type" value={type} />
-      {sel("chapterId", "Bab", (
-        <>
-          <option value="">Pilih bab</option>
-          {chapters.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-        </>
-      ))}
-      {sel("subchapterId", "Subbab (opsional)", (
-        <>
-          <option value="">Tanpa subbab</option>
-          {chapters.map((c) => (
-            <optgroup key={c.id} label={c.label}>
-              {c.subchapters.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </optgroup>
+      <Card className="text-base!">
+        <CardContent className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Soal</h2>
+          {sel("chapterId", "Bab", (
+            <>
+              <option value="">Pilih bab</option>
+              {chapters.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+            </>
           ))}
-        </>
-      ), false)}
-      <div className="flex flex-col gap-2">
-        <Area name="prompt" label="Teks soal" rows={5} v={v("prompt")} error={e?.prompt} mono required />
-        <p className="text-sm text-muted-foreground">Bisa pakai Markdown. {IMG_HINT}</p>
-      </div>
-      <KeyFields type={type} v={v} e={e} />
-      <Area name="explanation" label="Pembahasan (opsional)" rows={4} v={v("explanation")} error={e?.explanation} mono />
-      <FormField id="defaultPoints" name="defaultPoints" label="Poin (1 sampai 100)" required inputMode="numeric" autoComplete="off" defaultValue={v("defaultPoints") || "1"} error={e?.defaultPoints} />
-      {sel("difficulty", "Kesulitan", (
-        <>
-          <option value="">Pilih tingkat</option>
-          {Object.entries(DIFFICULTY_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-        </>
-      ))}
-      <FormField id="sourceReference" name="sourceReference" label="Sumber (opsional)" autoComplete="off" defaultValue={v("sourceReference")} error={e?.sourceReference} />
-      <Area name="verificationNote" label="Catatan verifikasi (opsional)" rows={3} v={v("verificationNote")} error={e?.verificationNote} />
+          {sel("subchapterId", "Subbab (opsional)", (
+            <>
+              <option value="">Tanpa subbab</option>
+              {chapters.map((c) => (
+                <optgroup key={c.id} label={c.label}>
+                  {c.subchapters.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </optgroup>
+              ))}
+            </>
+          ), false)}
+          <div className="flex flex-col gap-2">
+            <Area name="prompt" label="Teks soal" rows={5} v={v("prompt")} error={e?.prompt} mono required />
+            <p className="text-base text-muted-foreground">Bisa pakai Markdown. {IMG_HINT}</p>
+          </div>
+          <FormField id="sourceReference" name="sourceReference" label="Sumber (opsional)" autoComplete="off" defaultValue={v("sourceReference")} error={e?.sourceReference} />
+        </CardContent>
+      </Card>
+      <Card className="text-base!">
+        <CardContent>
+          <KeyFields type={type} v={v} e={e} />
+        </CardContent>
+      </Card>
+      <Card className="text-base!">
+        <CardContent className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Parameter soal</h2>
+          <FormField id="defaultPoints" name="defaultPoints" label="Poin (1 sampai 100)" required inputMode="numeric" autoComplete="off" defaultValue={v("defaultPoints") || "1"} error={e?.defaultPoints} />
+          {sel("difficulty", "Kesulitan", (
+            <>
+              <option value="">Pilih tingkat</option>
+              {Object.entries(DIFFICULTY_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+            </>
+          ))}
+        </CardContent>
+      </Card>
+      <Card className="text-base!">
+        <CardContent className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Pembahasan dan verifikasi</h2>
+          <Area name="explanation" label="Pembahasan (opsional)" rows={4} v={v("explanation")} error={e?.explanation} mono />
+          <Area name="verificationNote" label="Catatan verifikasi (opsional)" rows={3} v={v("verificationNote")} error={e?.verificationNote} />
+        </CardContent>
+      </Card>
       <Feedback state={state} />
       <FormMessage message={e?.type} />
-      <Button type="submit" className="h-11 text-base" disabled={pending} aria-busy={pending}>
+      <Button type="submit" className="h-12 self-start" disabled={pending} aria-busy={pending}>
         {pending ? "Sedang menyimpan…" : question ? "Simpan soal" : "Buat soal"}
       </Button>
     </form>

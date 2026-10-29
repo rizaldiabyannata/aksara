@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { PageHeader } from "@/components/page-header";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { requireTeacher } from "@/lib/auth/guard";
 import type { QuestionType } from "@/lib/generated/prisma/enums";
 import { listChapterOptions } from "@/lib/subjects";
@@ -12,8 +16,8 @@ export const metadata: Metadata = { title: "Soal baru" };
 export default function NewQuestionPage({ searchParams }: PageProps<"/teacher/questions/new">) {
   return (
     <section className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Soal baru</h1>
-      <Suspense fallback={<p>Memuat…</p>}>
+      <PageHeader eyebrow="Bank soal" title="Soal baru" />
+      <Suspense fallback={<p className="text-base">Memuat…</p>}>
         <NewForm searchParams={searchParams} />
       </Suspense>
     </section>
@@ -24,24 +28,39 @@ async function NewForm({ searchParams }: { searchParams: Promise<Record<string, 
   await requireTeacher();
   const { type } = await searchParams;
   if (typeof type !== "string" || !Object.hasOwn(TYPE_LABEL, type)) {
+    // GET form: choosing a type reloads /teacher/questions/new?type=…, which renders the form.
     return (
-      <div className="flex flex-col gap-3">
-        <p>Pilih tipe soal.</p>
-        <ul className="flex flex-col gap-2">
-          {Object.entries(TYPE_LABEL).map(([k, label]) => (
-            <li key={k}>
-              <Link href={`/teacher/questions/new?type=${k}`} className="inline-flex min-h-11 items-center underline">
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Card className="text-base!">
+        <CardContent>
+          <form method="get" action="/teacher/questions/new" className="flex flex-col gap-5">
+            <fieldset className="flex flex-col gap-3">
+              <legend className="text-lg font-semibold">Pilih tipe soal</legend>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {Object.entries(TYPE_LABEL).map(([k, label]) => (
+                  <label
+                    key={k}
+                    className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border-2 border-input bg-card p-3 font-semibold has-[:checked]:border-primary has-[:checked]:bg-primary-soft"
+                  >
+                    <input type="radio" name="type" value={k} required className="size-5 accent-primary" />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <Button type="submit" className="self-start">Lanjut</Button>
+          </form>
+        </CardContent>
+      </Card>
     );
   }
   return (
     <>
-      <p className="font-medium">{TYPE_LABEL[type as QuestionType]}</p>
+      <div className="flex flex-wrap items-center gap-3">
+        <Badge variant="secondary" className="text-base!">{TYPE_LABEL[type as QuestionType]}</Badge>
+        <Link href="/teacher/questions/new" className={buttonVariants({ variant: "ghost" })}>
+          Ganti tipe
+        </Link>
+      </div>
       <QuestionForm chapters={await listChapterOptions()} type={type as QuestionType} />
     </>
   );
