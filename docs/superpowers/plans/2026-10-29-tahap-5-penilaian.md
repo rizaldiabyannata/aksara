@@ -1,6 +1,6 @@
 # Tahap 5 — Penilaian, Rilis Hasil, Ekspor
 
-> Status: dibangun di branch `tahap-5-penilaian` (2026-10-29). Belum diuji di browser.
+> Status: dibangun di branch `tahap-5-penilaian` (2026-10-29). Alur guru + siswa (kumpul → rilis ditolak → nilai uraian → rilis → hasil dengan kunci ditahan → remedial → rekap 75 → batal rilis → 404) lolos di Chrome desktop; 360 px dan membuka file .xlsx di Excel/LibreOffice belum.
 
 ## Context
 
