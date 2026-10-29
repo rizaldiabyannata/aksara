@@ -49,7 +49,7 @@ export function ConfirmAction({
         <AlertDialogTrigger
           render={
             <Button
-              variant={primary ? "default" : "outline"}
+              variant={primary ? "default" : destructive ? "destructive" : "outline"}
               size={primary ? "lg" : undefined}
               className={primary ? "aria-disabled:opacity-50" : "h-11 aria-disabled:opacity-50"}
               aria-disabled={pending || undefined}

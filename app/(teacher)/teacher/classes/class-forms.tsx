@@ -38,7 +38,7 @@ export function CreateClassForm() {
         error={state?.fieldErrors?.name}
       />
       <Feedback state={state} />
-      <Button type="submit" className="h-11 text-base" disabled={pending} aria-busy={pending}>
+      <Button type="submit" disabled={pending} aria-busy={pending}>
         {pending ? "Sedang menyimpan…" : "Buat kelas"}
       </Button>
     </form>

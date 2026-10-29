@@ -31,10 +31,18 @@ async function ClassList() {
   const classes = await listClasses();
   return (
     <>
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle>
+            <h2 className="text-xl font-semibold">Tambah kelas</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CreateClassForm />
+        </CardContent>
+      </Card>
       {classes.length === 0 && (
-        <p className="text-muted-foreground">
-          Belum ada kelas. Buat kelas pertama di bawah ini.
-        </p>
+        <p className="text-muted-foreground">Belum ada kelas. Buat kelas pertama di atas.</p>
       )}
       <ul className="grid gap-4 md:grid-cols-2">
         {classes.map((c) => (
@@ -65,11 +73,6 @@ async function ClassList() {
           </li>
         ))}
       </ul>
-      <Card className="max-w-sm">
-        <CardContent>
-          <CreateClassForm />
-        </CardContent>
-      </Card>
     </>
   );
 }
