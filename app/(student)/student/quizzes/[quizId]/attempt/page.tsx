@@ -12,7 +12,8 @@ const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 
 export default function AttemptPage({ params }: PageProps<"/student/quizzes/[quizId]/attempt">) {
   return (
-    <div className="flex flex-col gap-4">
+    // Marker outside Suspense: in the first HTML, so the layout's header is hidden by CSS before hydration.
+    <div data-attempt-page className="flex flex-col gap-4">
       <Suspense fallback={<p>Memuat…</p>}>
         <Attempt params={params} />
       </Suspense>

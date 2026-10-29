@@ -14,7 +14,8 @@ export function StudentNav({ pathname }: { pathname?: string }) {
   const home = pathname === "/student";
   const materi = !!pathname && (pathname === "/student/materials" || pathname.startsWith("/student/materials/"));
   return (
-    <header className="border-b">
+    // Hidden on the timed quiz page by CSS from the first paint (marker: data-attempt-page).
+    <header className="border-b [body:has([data-attempt-page])_&]:hidden">
       <nav aria-label="Menu siswa" className="mx-auto flex max-w-3xl items-center gap-1 px-4 py-2">
         <Link
           href="/student"
@@ -44,9 +45,6 @@ export function StudentNav({ pathname }: { pathname?: string }) {
   );
 }
 
-// Hidden on /attempt: the timed quiz screen has no navigation.
 export function StudentHeader() {
-  const pathname = usePathname();
-  if (pathname.endsWith("/attempt")) return null;
-  return <StudentNav pathname={pathname} />;
+  return <StudentNav pathname={usePathname()} />;
 }
