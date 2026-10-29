@@ -158,7 +158,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
       }
       submitted.current = false;
       setSubmitting(false);
-      setSubmitError("Gagal mengumpulkan. Coba lagi.");
+      setSubmitError("Jawabanmu belum terkumpul. Coba lagi, ya.");
     },
     [attemptId, quizId, queue, commitPending],
   );
@@ -299,7 +299,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
         <p aria-live="polite" className="min-h-6 text-sm text-muted-foreground">
           {status.kind === "saving" && "Menyimpan…"}
           {status.kind === "saved" && `Tersimpan ${hhmm(status.at)}`}
-          {status.kind === "error" && "Gagal menyimpan, mencoba lagi"}
+          {status.kind === "error" && "Jawabanmu belum tersimpan. Coba lagi, ya."}
         </p>
       </header>
 

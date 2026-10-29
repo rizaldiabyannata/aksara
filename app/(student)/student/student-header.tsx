@@ -14,12 +14,12 @@ export function StudentNav({ pathname }: { pathname?: string }) {
   const home = pathname === "/student";
   const materi = !!pathname && (pathname === "/student/materials" || pathname.startsWith("/student/materials/"));
   return (
-    // Hidden on the timed quiz page by CSS from the first paint (marker: data-attempt-page).
-    <header className="border-b [body:has([data-attempt-page])_&]:hidden">
+    // Hidden on the timed quiz page by HideStudentHeader (server-rendered style).
+    <header data-student-header className="border-b">
       <nav aria-label="Menu siswa" className="mx-auto flex max-w-3xl items-center gap-1 px-4 py-2">
         <Link
           href="/student"
-          className="mr-auto inline-flex min-h-12 items-center whitespace-nowrap rounded-4xl px-2 text-lg font-semibold focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none max-[420px]:sr-only"
+          className="mr-auto inline-flex min-h-12 items-center whitespace-nowrap rounded-4xl px-2 text-lg font-semibold focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none max-[420px]:hidden"
         >
           Aksara
         </Link>

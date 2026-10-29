@@ -5,6 +5,7 @@ import { Markdown } from "@/components/material-view";
 import { requireStudent } from "@/lib/auth/guard";
 import { getAttemptView } from "@/lib/attempts";
 import { AttemptClient } from "./attempt-client";
+import { HideStudentHeader } from "./hide-student-header";
 
 export const metadata: Metadata = { title: "Mengerjakan Ulangan" };
 
@@ -12,8 +13,9 @@ const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 
 export default function AttemptPage({ params }: PageProps<"/student/quizzes/[quizId]/attempt">) {
   return (
-    // Marker outside Suspense: in the first HTML, so the layout's header is hidden by CSS before hydration.
-    <div data-attempt-page className="flex flex-col gap-4">
+    // Outside Suspense: in the first HTML, so the header is hidden before hydration.
+    <div className="flex flex-col gap-4">
+      <HideStudentHeader />
       <Suspense fallback={<p>Memuat…</p>}>
         <Attempt params={params} />
       </Suspense>
