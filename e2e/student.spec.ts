@@ -8,7 +8,13 @@ test("student logs in, takes a quiz, submits, and waits for the result", async (
 
   await page.getByRole("button", { name: `Mulai ${title}` }).click();
   await page.waitForURL("**/attempt");
-  await page.getByLabel("5", { exact: true }).check();
+  await expect(page.locator("[data-student-header]")).toBeHidden();
+  await page.getByRole("radio", { name: "5", exact: true }).check();
+  const doubt = page.getByLabel("Ragu-ragu dengan nomor ini?");
+  await doubt.check();
+  await page.reload();
+  await expect(page.getByLabel("Ragu-ragu dengan nomor ini?")).toBeChecked();
+  await expect(page.getByRole("radio", { name: "5", exact: true })).toBeChecked();
   await page.getByRole("button", { name: "Berikutnya" }).click();
   await page.getByLabel("Jawaban soal 2").fill("Dua ditambah tiga sama dengan lima.");
   await page.getByRole("button", { name: "Kumpulkan jawaban" }).click();

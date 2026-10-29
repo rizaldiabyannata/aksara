@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert02Icon, CheckmarkCircle02Icon, Clock01Icon } from "@hugeicons/core-free-icons";
+import { Alert02Icon, CheckmarkCircle02Icon, Clock01Icon, Flag02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import type { StoredAnswer } from "@/lib/grading";
+import { readFlags, toggleFlag } from "./flag-store";
 import { createSaveQueue, remainingMs, type SaveStatus } from "./save-queue";
 
 type Q = {
@@ -30,10 +31,44 @@ type Props = { attemptId: string; quizId: string; quizTitle: string; deadlineAt:
 type Phase = "running" | "done" | "closed";
 
 const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
-const CHOICE = "flex min-h-12 cursor-pointer items-start gap-3 rounded-lg border p-3 has-[:checked]:border-2 has-[:checked]:font-medium has-[:focus-visible]:ring-2";
+const CHOICE =
+  "flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border-2 bg-card p-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:checked]:font-medium has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/30";
 const SESSION_ENDED_MSG = "Sesimu berakhir. Masuk lagi untuk melanjutkan.";
 const TEXT_DEBOUNCE_MS = 800;
 const FLUSH_TIMEOUT_MS = 5000;
+const CHIP = "rounded-full px-3 py-1 text-sm font-medium";
+const TYPE_LABEL = {
+  SINGLE_CHOICE: "Pilihan ganda",
+  MULTIPLE_SELECT: "Pilih lebih dari satu",
+  TRUE_FALSE: "Benar atau salah",
+  SHORT_ANSWER: "Isian singkat",
+  ESSAY: "Uraian",
+} as const;
+const safeLocalStorage = () => {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+};
+// Radio/checkbox stay real inputs (same name/value); only the wrapping label is styled.
+function Choice({ letter, checked, input, children }: { letter: string; checked: boolean; input: ReactNode; children: ReactNode }) {
+  return (
+    <label className={CHOICE}>
+      {input}
+      <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted text-base font-semibold">
+        {letter}
+      </span>
+      <span className="min-w-0 flex-1">{children}</span>
+      {checked ? (
+        <span aria-hidden className="flex shrink-0 items-center gap-1 font-medium text-primary">
+          <HugeiconsIcon icon={CheckmarkCircle02Icon} />
+          <span>Jawaban kamu saat ini</span>
+        </span>
+      ) : null}
+    </label>
+  );
+}
 
 const isAnswered = (a: StoredAnswer | null | undefined) => {
   if (!a) return false;
@@ -58,6 +93,18 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Doubt flags stay in this browser only; state is the source of truth, storage only persists it.
+  const [flags, setFlags] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is unavailable during SSR
+    setFlags(readFlags(safeLocalStorage(), attemptId));
+  }, [attemptId]);
+  const flip = (qid: string) => {
+    const next = new Set(flags);
+    if (!next.delete(qid)) next.add(qid);
+    setFlags(next);
+    toggleFlag(safeLocalStorage(), attemptId, qid);
+  };
 
   // Server-time anchor: remaining time never depends on the device clock (performance.now only measures elapsed).
   const anchor = useRef({ deadlineAt, serverNow, receivedAt: 0 });
@@ -279,16 +326,27 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
   const minutes = left / 60000;
   const warning = left <= 0 ? "" : minutes <= 1 ? "Sisa 1 menit." : minutes <= 5 ? "Sisa 5 menit." : "";
   const selected = a && "optionIds" in a ? a.optionIds : [];
+  const letter = (i: number) => String.fromCharCode(65 + i);
 
   return (
-    <section className="flex flex-col gap-4">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-xl font-semibold">{quizTitle}</h1>
-        <p className="flex items-center gap-2 font-medium">
-          <HugeiconsIcon icon={Clock01Icon} aria-hidden />
-          <span>Sisa waktu {clock(left)}</span>
-        </p>
-        <div aria-live="polite" className="min-h-6 text-sm">
+    <section className="flex flex-col gap-4 pb-24 md:pb-0">
+      <header className="flex flex-col gap-3 rounded-2xl bg-card p-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h1 className="text-xl font-semibold">{quizTitle}</h1>
+          <p aria-live="polite" className="min-h-6 text-sm text-muted-foreground">
+            {status.kind === "saving" && "Menyimpan…"}
+            {status.kind === "saved" && `Tersimpan ${hhmm(status.at)}`}
+            {status.kind === "error" && "Jawabanmu belum tersimpan. Coba lagi, ya."}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className={`flex items-center gap-2 rounded-xl border px-3 py-2 font-mono font-semibold ${warning ? "bg-warning-soft text-warning" : ""}`}>
+            <HugeiconsIcon icon={Clock01Icon} aria-hidden />
+            <span>Sisa waktu {clock(left)}</span>
+          </p>
+          <p className="font-medium">Terjawab {questions.length - unanswered}/{questions.length}</p>
+        </div>
+        <div aria-live="polite" className="min-h-6 text-sm md:basis-full">
           {warning ? (
             <p className="flex items-center gap-2 font-semibold">
               <HugeiconsIcon icon={Alert02Icon} aria-hidden />
@@ -296,79 +354,97 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
             </p>
           ) : null}
         </div>
-        <p aria-live="polite" className="min-h-6 text-sm text-muted-foreground">
-          {status.kind === "saving" && "Menyimpan…"}
-          {status.kind === "saved" && `Tersimpan ${hhmm(status.at)}`}
-          {status.kind === "error" && "Jawabanmu belum tersimpan. Coba lagi, ya."}
-        </p>
       </header>
 
-      <nav aria-label="Daftar soal">
+      <nav aria-label="Daftar soal" className="rounded-2xl bg-card p-4">
         <ul className="flex flex-wrap gap-2">
           {questions.map((x, i) => {
             const done = isAnswered(answers[x.id]);
+            const flagged = flags.has(x.id);
             return (
               <li key={x.id}>
-                <Button
-                  variant={i === index ? "default" : "outline"}
-                  className="h-11 min-w-11 gap-1"
+                <button
+                  type="button"
+                  className={`relative flex size-12 items-center justify-center gap-0.5 rounded-full border-2 font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/30 ${
+                    done ? "border-success bg-success text-primary-foreground" : "bg-card"
+                  } ${i === index ? "ring-[3px] ring-accent-decor" : ""}`}
                   aria-current={i === index ? "step" : undefined}
-                  aria-label={`Soal ${x.number}, ${done ? "sudah" : "belum"} dijawab`}
+                  aria-label={`Soal ${x.number}, ${done ? "sudah" : "belum"} dijawab${flagged ? ", ditandai ragu" : ""}`}
                   onClick={() => go(i)}
                 >
                   {x.number}
-                  {done ? <HugeiconsIcon icon={CheckmarkCircle02Icon} aria-hidden /> : null}
-                </Button>
+                  {done ? <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-4" aria-hidden /> : null}
+                  {flagged ? (
+                    <HugeiconsIcon icon={Flag02Icon} className="absolute -top-1 -right-1 size-5 rounded-full bg-card text-warning" aria-hidden />
+                  ) : null}
+                </button>
               </li>
             );
           })}
         </ul>
       </nav>
 
-      <fieldset key={q.id} className="flex min-w-0 flex-col gap-3">
-        <legend className="mb-2 font-semibold">Soal {q.number}</legend>
-        <div>{q.prompt}</div>
+      <fieldset key={q.id} className="flex min-w-0 flex-col gap-3 rounded-2xl bg-card p-4">
+        <legend className="sr-only">Soal {q.number}</legend>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`${CHIP} bg-primary text-primary-foreground`}>
+            Nomor {q.number} dari {questions.length}
+          </span>
+          <span className={`${CHIP} bg-primary-soft text-primary`}>{TYPE_LABEL[q.type]}</span>
+        </div>
+        <div className="text-base leading-relaxed">{q.prompt}</div>
         {q.type === "SINGLE_CHOICE" &&
-          q.options?.map((o) => (
-            <label key={o.id} className={CHOICE}>
-              <input
-                type="radio"
-                name={`q-${q.id}`}
-                className="mt-1 size-6"
-                checked={!!a && "optionId" in a && a.optionId === o.id}
-                onChange={() => choose(q.id, { optionId: o.id })}
-              />
-              <span className="min-w-0">{o.node}</span>
-            </label>
-          ))}
+          q.options?.map((o, i) => {
+            const checked = !!a && "optionId" in a && a.optionId === o.id;
+            return (
+              <Choice
+                key={o.id}
+                letter={letter(i)}
+                checked={checked}
+                input={<input type="radio" name={`q-${q.id}`} className="size-6 shrink-0" checked={checked} onChange={() => choose(q.id, { optionId: o.id })} />}
+              >
+                {o.node}
+              </Choice>
+            );
+          })}
         {q.type === "MULTIPLE_SELECT" &&
-          q.options?.map((o) => (
-            <label key={o.id} className={CHOICE}>
-              <input
-                type="checkbox"
-                className="mt-1 size-6"
-                checked={selected.includes(o.id)}
-                onChange={(e) => {
-                  const ids = e.target.checked ? [...selected, o.id] : selected.filter((id) => id !== o.id);
-                  choose(q.id, ids.length ? { optionIds: ids } : null);
-                }}
-              />
-              <span className="min-w-0">{o.node}</span>
-            </label>
-          ))}
+          q.options?.map((o, i) => {
+            const checked = selected.includes(o.id);
+            return (
+              <Choice
+                key={o.id}
+                letter={letter(i)}
+                checked={checked}
+                input={
+                  <input
+                    type="checkbox"
+                    className="size-6 shrink-0"
+                    checked={checked}
+                    onChange={(e) => {
+                      const ids = e.target.checked ? [...selected, o.id] : selected.filter((id) => id !== o.id);
+                      choose(q.id, ids.length ? { optionIds: ids } : null);
+                    }}
+                  />
+                }
+              >
+                {o.node}
+              </Choice>
+            );
+          })}
         {q.type === "TRUE_FALSE" &&
-          [true, false].map((v) => (
-            <label key={String(v)} className={CHOICE}>
-              <input
-                type="radio"
-                name={`q-${q.id}`}
-                className="mt-1 size-6"
-                checked={!!a && "value" in a && a.value === v}
-                onChange={() => choose(q.id, { value: v })}
-              />
-              <span>{v ? "Benar" : "Salah"}</span>
-            </label>
-          ))}
+          [true, false].map((v, i) => {
+            const checked = !!a && "value" in a && a.value === v;
+            return (
+              <Choice
+                key={String(v)}
+                letter={letter(i)}
+                checked={checked}
+                input={<input type="radio" name={`q-${q.id}`} className="size-6 shrink-0" checked={checked} onChange={() => choose(q.id, { value: v })} />}
+              >
+                {v ? "Benar" : "Salah"}
+              </Choice>
+            );
+          })}
         {q.type === "SHORT_ANSWER" && (
           <input
             type="text"
@@ -391,16 +467,20 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
             onBlur={() => commitPending()}
           />
         )}
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 font-medium">
+          <input type="checkbox" className="size-6" checked={flags.has(q.id)} onChange={() => flip(q.id)} />
+          Ragu-ragu dengan nomor ini?
+        </label>
       </fieldset>
 
-      <div className="flex flex-wrap gap-2">
-        <Button variant="outline" disabled={index === 0} onClick={() => go(index - 1)}>
+      <div className="fixed inset-x-0 bottom-0 z-10 flex flex-wrap gap-2 border-t bg-card p-3 md:static md:border-0 md:bg-transparent md:p-0">
+        <Button variant="outline" className="h-12 flex-1 md:flex-none" disabled={index === 0} onClick={() => go(index - 1)}>
           Sebelumnya
         </Button>
-        <Button variant="outline" disabled={index === questions.length - 1} onClick={() => go(index + 1)}>
+        <Button variant="outline" className="h-12 flex-1 md:flex-none" disabled={index === questions.length - 1} onClick={() => go(index + 1)}>
           Berikutnya
         </Button>
-        <Button size="lg" disabled={submitting} onClick={() => { commitPending(); setConfirmOpen(true); }}>
+        <Button size="lg" className="h-12 flex-1 md:flex-none" disabled={submitting} onClick={() => { commitPending(); setConfirmOpen(true); }}>
           Kumpulkan jawaban
         </Button>
       </div>
