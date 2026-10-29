@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { LogoutButton } from "@/components/logout-button";
 import { requireStudent } from "@/lib/auth/guard";
 import { listStudentQuizzes } from "@/lib/attempts";
 
@@ -11,11 +10,11 @@ const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 
 export default function StudentDashboardPage() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4">
       <Suspense fallback={<p>Memuat…</p>}>
         <Dashboard />
       </Suspense>
-    </main>
+    </div>
   );
 }
 
@@ -40,9 +39,6 @@ async function Dashboard() {
           </Link>
         </li>
       </ul>
-      <div>
-        <LogoutButton />
-      </div>
     </section>
   );
 }

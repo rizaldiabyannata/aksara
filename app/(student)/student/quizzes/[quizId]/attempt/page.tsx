@@ -12,11 +12,11 @@ const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 
 export default function AttemptPage({ params }: PageProps<"/student/quizzes/[quizId]/attempt">) {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4">
       <Suspense fallback={<p>Memuat…</p>}>
         <Attempt params={params} />
       </Suspense>
-    </main>
+    </div>
   );
 }
 

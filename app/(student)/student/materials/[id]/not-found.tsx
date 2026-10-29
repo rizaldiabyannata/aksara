@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function StudentMaterialNotFound() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Materi ini sedang diperbarui guru.</h1>
       <div>
         <Link
@@ -12,6 +12,6 @@ export default function StudentMaterialNotFound() {
           Kembali ke daftar materi
         </Link>
       </div>
-    </main>
+    </div>
   );
 }

@@ -10,11 +10,11 @@ const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 
 export default function StudentMaterialsPage() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4">
       <Suspense fallback={<p>Memuat…</p>}>
         <Tree />
       </Suspense>
-    </main>
+    </div>
   );
 }
 
@@ -49,11 +49,6 @@ async function Tree() {
           </div>
         ))
       )}
-      <div>
-        <Link href="/student" className={LINK}>
-          Kembali ke beranda
-        </Link>
-      </div>
     </section>
   );
 }

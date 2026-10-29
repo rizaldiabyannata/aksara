@@ -14,11 +14,11 @@ export const metadata: Metadata = { title: "Hasil ulangan" };
 
 export default function ResultPage({ params }: PageProps<"/student/quizzes/[quizId]/result">) {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 p-4">
+    <div className="flex flex-col gap-6">
       <Suspense fallback={<p>Memuat…</p>}>
         <Result params={params} />
       </Suspense>
-    </main>
+    </div>
   );
 }
 
@@ -41,9 +41,6 @@ async function Result({ params }: { params: Promise<{ quizId: string }> }) {
   }
   return (
     <>
-      <Link href="/student/quizzes" className="inline-flex min-h-11 items-center self-start underline underline-offset-4">
-        Kembali ke daftar ulangan
-      </Link>
       <section className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold">Hasil: {r.quizTitle}</h1>
         {r.recap === null ? (
