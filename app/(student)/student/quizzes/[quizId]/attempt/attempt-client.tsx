@@ -262,7 +262,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
         {phase === "closed" && closedMsg ? <p className="font-semibold">{closedMsg}</p> : null}
         <p className="flex items-center gap-2">
           <HugeiconsIcon icon={CheckmarkCircle02Icon} aria-hidden />
-          Jawabanmu sudah dikumpulkan. Nilai muncul setelah guru merilis hasil.
+          Jawabanmu sudah dikumpulkan. Nilaimu akan muncul setelah gurumu membagikannya.
         </p>
         <div>
           <Link href="/student" className={LINK}>

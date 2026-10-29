@@ -13,6 +13,7 @@ test("student logs in, takes a quiz, submits, and waits for the result", async (
   await page.getByLabel("Jawaban soal 2").fill("Dua ditambah tiga sama dengan lima.");
   await page.getByRole("button", { name: "Kumpulkan jawaban" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Kumpulkan" }).click();
+  await expect(page.getByText("Jawabanmu sudah dikumpulkan.").first()).toBeVisible();
 
   await page.goto("/student");
   await expect(page.getByText("Nilaimu akan muncul setelah gurumu membagikannya").first()).toBeVisible();

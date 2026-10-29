@@ -28,10 +28,10 @@ function StateStatus({ row, now }: { row: RecapRow; now: Date }) {
 
 function Scores({ row, quiz }: { row: RecapRow; quiz: QuizRecap["quiz"] }) {
   const { recap, highest, final } = row.recap;
-  if (recap === null) return <span aria-label="Belum ada nilai">—</span>;
+  if (recap === null) return <p className="text-muted-foreground">Belum ada nilai</p>;
   return (
     <div className="flex flex-col">
-      <span className="font-medium">{final ? "" : "Sementara "}{formatScore(recap)}</span>
+      <span className="font-medium">Nilai {final ? "" : "sementara "}{formatScore(recap)}</span>
       {quiz.scoringPolicy === "REMEDIAL" && highest !== null && highest > recap && (
         <span className="text-sm text-muted-foreground">Nilai asli {formatScore(highest)}</span>
       )}
@@ -41,7 +41,8 @@ function Scores({ row, quiz }: { row: RecapRow; quiz: QuizRecap["quiz"] }) {
 
 function Tuntas({ row, kkm }: { row: RecapRow; kkm: number | null }) {
   // A provisional score (ungraded essays) must not claim passed or not.
-  if (kkm === null || row.recap.passed === null || !row.recap.final) return <span aria-label="Belum ada ketuntasan">—</span>;
+  if (kkm === null) return null;
+  if (row.recap.passed === null || !row.recap.final) return <p className="text-muted-foreground">Ketuntasan belum ada</p>;
   return row.recap.passed ? <Status tone="success">Tuntas</Status> : <Status tone="warning">Belum tuntas</Status>;
 }
 
@@ -89,11 +90,15 @@ export function MonitorList({ recap, quizId, classFilter }: { recap: QuizRecap; 
   return (
     <div className="flex flex-col gap-4">
       <ul className="flex flex-wrap gap-2" aria-label="Ringkasan status siswa">
-        {(Object.keys(STATE) as RecapState[]).map((st) => (
-          <li key={st}>
-            <Status tone={STATE[st].tone}>{STATE[st].label}: {rows.filter((r) => r.state === st).length}</Status>
-          </li>
-        ))}
+        {(Object.keys(STATE) as RecapState[]).map((st) => {
+          const n = rows.filter((r) => r.state === st).length;
+          // A zero count is not news; a yellow "0" only draws the eye for nothing.
+          return n > 0 && (
+            <li key={st}>
+              <Status tone={STATE[st].tone}>{STATE[st].label}: {n}</Status>
+            </li>
+          );
+        })}
       </ul>
       {quiz.classes.length > 1 && (
         <form method="get" className="flex flex-wrap items-end gap-3">

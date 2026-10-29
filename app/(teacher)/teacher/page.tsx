@@ -69,8 +69,8 @@ async function Dashboard() {
           <Status tone="success">Tidak ada yang perlu dikerjakan sekarang.</Status>
         ) : (
           <ul className="flex flex-col gap-3">
-            {tasks.map((task, i) => (
-              <TaskItem key={i} task={task} />
+            {tasks.map((task) => (
+              <TaskItem key={`${task.kind}-${"quizId" in task ? task.quizId : ""}`} task={task} />
             ))}
           </ul>
         )}
@@ -87,7 +87,7 @@ function TaskItem({ task }: { task: TeacherTask }) {
         <HugeiconsIcon icon={icon} aria-hidden="true" className="mt-1 shrink-0" />
         <span>{text}</span>
       </p>
-      <Link href={href} className={buttonVariants({ size: "sm" })}>
+      <Link href={href} className={buttonVariants()}>
         {action}
       </Link>
     </li>
