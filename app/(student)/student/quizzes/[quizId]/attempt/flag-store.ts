@@ -15,18 +15,10 @@ export function readFlags(storage: FlagStorage | null, attemptId: string): Set<s
   }
 }
 
-export function toggleFlag(
-  storage: FlagStorage | null,
-  attemptId: string,
-  questionId: string,
-): Set<string> {
-  const flags = readFlags(storage, attemptId);
-  if (flags.has(questionId)) flags.delete(questionId);
-  else flags.add(questionId);
+export function writeFlags(storage: FlagStorage | null, attemptId: string, flags: Set<string>): void {
   try {
     storage?.setItem(key(attemptId), JSON.stringify([...flags]));
   } catch {
-    // Storage full or blocked: the in-memory result still reflects the toggle.
+    // Storage full or blocked: the on-screen flags still work for this page load.
   }
-  return flags;
 }

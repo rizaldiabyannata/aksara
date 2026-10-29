@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/components/logout-button";
 
 const LINK =
-  "inline-flex min-h-12 items-center gap-1 whitespace-nowrap rounded-xl px-3 text-base font-medium hover:bg-secondary focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none";
+  "inline-flex min-h-12 items-center gap-1 whitespace-nowrap rounded-xl px-3 text-base font-medium focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none";
 
 // No hook here, so the layout's Suspense fallback can render it before the pathname is known (no active link yet).
 export function StudentNav({ pathname }: { pathname?: string }) {
@@ -26,7 +26,7 @@ export function StudentNav({ pathname }: { pathname?: string }) {
         <Link
           href="/student"
           aria-current={home ? "page" : undefined}
-          className={`${LINK} ${home ? "bg-primary text-primary-foreground hover:bg-primary" : ""}`}
+          className={`${LINK} ${home ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}
         >
           <HugeiconsIcon icon={Home01Icon} aria-hidden="true" className="size-5" />
           Beranda
@@ -34,7 +34,7 @@ export function StudentNav({ pathname }: { pathname?: string }) {
         <Link
           href="/student/materials"
           aria-current={materi ? "page" : undefined}
-          className={`${LINK} ${materi ? "bg-primary text-primary-foreground hover:bg-primary" : ""}`}
+          className={`${LINK} ${materi ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}
         >
           <HugeiconsIcon icon={BookOpen01Icon} aria-hidden="true" className="size-5" />
           Materi

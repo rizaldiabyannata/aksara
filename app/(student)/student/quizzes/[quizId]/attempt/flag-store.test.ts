@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFlags, toggleFlag, type FlagStorage } from "./flag-store";
+import { readFlags, writeFlags, type FlagStorage } from "./flag-store";
 
 const memoryStorage = (): FlagStorage & { map: Map<string, string> } => {
   const map = new Map<string, string>();
@@ -20,30 +20,29 @@ const broken: FlagStorage = {
 };
 
 describe("flag-store", () => {
-  it("toggling the same question twice leaves no flag", () => {
+  it("writing an empty set clears the flags", () => {
     const s = memoryStorage();
-    toggleFlag(s, "A", "q1");
-    toggleFlag(s, "A", "q1");
+    writeFlags(s, "A", new Set(["q1"]));
+    writeFlags(s, "A", new Set());
     expect(readFlags(s, "A").size).toBe(0);
   });
 
   it("flags are scoped per attempt", () => {
     const s = memoryStorage();
-    toggleFlag(s, "A", "q1");
+    writeFlags(s, "A", new Set(["q1"]));
     expect(readFlags(s, "A")).toEqual(new Set(["q1"]));
     expect(readFlags(s, "B")).toEqual(new Set());
   });
 
-  it("with null storage, toggleFlag still returns the new set", () => {
-    expect(toggleFlag(null, "A", "q1")).toEqual(new Set(["q1"]));
+  it("with null storage, writeFlags is a no-op", () => {
+    expect(() => writeFlags(null, "A", new Set(["q1"]))).not.toThrow();
     expect(readFlags(null, "A")).toEqual(new Set());
   });
 
   it("never throws when storage throws, and readFlags returns empty", () => {
     expect(() => readFlags(broken, "A")).not.toThrow();
     expect(readFlags(broken, "A")).toEqual(new Set());
-    expect(() => toggleFlag(broken, "A", "q1")).not.toThrow();
-    expect(toggleFlag(broken, "A", "q1")).toEqual(new Set(["q1"]));
+    expect(() => writeFlags(broken, "A", new Set(["q1"]))).not.toThrow();
   });
 
   it("corrupt JSON in storage reads as empty", () => {
@@ -54,8 +53,7 @@ describe("flag-store", () => {
 
   it("stores a JSON array under aksara:flags:<attemptId>", () => {
     const s = memoryStorage();
-    toggleFlag(s, "A", "q1");
-    toggleFlag(s, "A", "q2");
+    writeFlags(s, "A", new Set(["q1", "q2"]));
     expect(JSON.parse(s.map.get("aksara:flags:A") ?? "null")).toEqual(["q1", "q2"]);
   });
 

@@ -17,7 +17,7 @@ import { DIFFICULTY_LABEL, STATUS_LABEL, STATUS_TONE, TYPE_LABEL } from "./label
 export const metadata: Metadata = { title: "Bank soal" };
 
 const selectClass =
-  "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30";
+  "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring";
 
 export default function QuestionsPage({ searchParams }: PageProps<"/teacher/questions">) {
   return (

@@ -57,7 +57,7 @@ async function Result({ params }: { params: Promise<{ quizId: string }> }) {
           <p className="rounded-2xl bg-primary-soft p-4 text-lg">Nilaimu belum final. Gurumu masih memeriksa jawaban uraian.</p>
         ) : (
           <div className="w-full max-w-sm">
-            <StatCard label="Nilaimu" value={formatScore(r.recap)} icon={Award01Icon} tone="success" />
+            <StatCard label="Nilaimu" value={formatScore(r.recap)} icon={Award01Icon} tone={r.passed !== false ? "success" : "primary"} />
           </div>
         )}
         {r.kkm !== null && r.passed !== null && (

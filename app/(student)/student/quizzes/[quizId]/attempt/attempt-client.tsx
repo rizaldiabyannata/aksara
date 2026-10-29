@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import type { StoredAnswer } from "@/lib/grading";
-import { readFlags, toggleFlag } from "./flag-store";
+import { readFlags, writeFlags } from "./flag-store";
 import { createSaveQueue, remainingMs, type SaveStatus } from "./save-queue";
 
 type Q = {
@@ -32,7 +32,7 @@ type Phase = "running" | "done" | "closed";
 
 const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 const CHOICE =
-  "flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border-2 bg-card p-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:checked]:font-medium has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/30";
+  "flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border-2 bg-card p-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:checked]:font-medium has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring";
 const SESSION_ENDED_MSG = "Sesimu berakhir. Masuk lagi untuk melanjutkan.";
 const TEXT_DEBOUNCE_MS = 800;
 const FLUSH_TIMEOUT_MS = 5000;
@@ -61,7 +61,7 @@ function Choice({ letter, checked, input, children }: { letter: string; checked:
       </span>
       <span className="min-w-0 flex-1">{children}</span>
       {checked ? (
-        <span aria-hidden className="flex shrink-0 items-center gap-1 font-medium text-primary">
+        <span aria-hidden className="flex shrink-0 items-center gap-1 font-medium text-primary-strong">
           <HugeiconsIcon icon={CheckmarkCircle02Icon} />
           <span>Jawaban kamu saat ini</span>
         </span>
@@ -103,7 +103,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
     const next = new Set(flags);
     if (!next.delete(qid)) next.add(qid);
     setFlags(next);
-    toggleFlag(safeLocalStorage(), attemptId, qid);
+    writeFlags(safeLocalStorage(), attemptId, next);
   };
 
   // Server-time anchor: remaining time never depends on the device clock (performance.now only measures elapsed).
@@ -329,7 +329,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
   const letter = (i: number) => String.fromCharCode(65 + i);
 
   return (
-    <section className="flex flex-col gap-4 pb-24 md:pb-0">
+    <section className="flex flex-col gap-4 pb-40 md:pb-0">
       <header className="flex flex-col gap-3 rounded-2xl bg-card p-4 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 flex-col gap-1">
           <h1 className="text-xl font-semibold">{quizTitle}</h1>
@@ -365,9 +365,9 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
               <li key={x.id}>
                 <button
                   type="button"
-                  className={`relative flex size-12 items-center justify-center gap-0.5 rounded-full border-2 font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/30 ${
+                  className={`relative flex size-12 items-center justify-center gap-0.5 rounded-full border-2 font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     done ? "border-success bg-success text-primary-foreground" : "bg-card"
-                  } ${i === index ? "ring-[3px] ring-accent-decor" : ""}`}
+                  } ${i === index ? "ring-[3px] ring-primary-strong" : ""}`}
                   aria-current={i === index ? "step" : undefined}
                   aria-label={`Soal ${x.number}, ${done ? "sudah" : "belum"} dijawab${flagged ? ", ditandai ragu" : ""}`}
                   onClick={() => go(i)}
@@ -390,7 +390,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
           <span className={`${CHIP} bg-primary text-primary-foreground`}>
             Nomor {q.number} dari {questions.length}
           </span>
-          <span className={`${CHIP} bg-primary-soft text-primary`}>{TYPE_LABEL[q.type]}</span>
+          <span className={`${CHIP} bg-primary-soft text-primary-strong`}>{TYPE_LABEL[q.type]}</span>
         </div>
         <div className="text-base leading-relaxed">{q.prompt}</div>
         {q.type === "SINGLE_CHOICE" &&
@@ -449,7 +449,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
           <input
             type="text"
             aria-label={`Jawaban soal ${q.number}`}
-            className="h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30"
+            className="h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring"
             maxLength={200}
             autoComplete="off"
             value={a && "text" in a ? a.text : ""}
@@ -460,7 +460,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
         {q.type === "ESSAY" && (
           <textarea
             aria-label={`Jawaban soal ${q.number}`}
-            className="min-h-40 w-full py-2 rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30"
+            className="min-h-40 w-full py-2 rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring"
             maxLength={5000}
             value={a && "text" in a ? a.text : ""}
             onChange={(e) => typeText(q.id, e.target.value)}
@@ -480,7 +480,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
         <Button variant="outline" className="h-12 flex-1 md:flex-none" disabled={index === questions.length - 1} onClick={() => go(index + 1)}>
           Berikutnya
         </Button>
-        <Button size="lg" className="h-12 flex-1 md:flex-none" disabled={submitting} onClick={() => { commitPending(); setConfirmOpen(true); }}>
+        <Button className="h-12 flex-1 md:flex-none" disabled={submitting} onClick={() => { commitPending(); setConfirmOpen(true); }}>
           Kumpulkan jawaban
         </Button>
       </div>

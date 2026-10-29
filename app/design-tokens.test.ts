@@ -63,4 +63,18 @@ describe("design tokens", () => {
     );
     expect(hits).toEqual([]);
   });
+
+  // primary on primary-soft is 4.02:1, so it is a usage guard, not a contrast check.
+  it("primary is never text on primary-soft", () => {
+    const hits = ["app", "components"].flatMap((d) =>
+      (readdirSync(d, { recursive: true }) as string[])
+        .filter((f) => f.endsWith(".tsx"))
+        .filter((f) =>
+          [...readFileSync(`${d}/${f}`, "utf8").matchAll(/(["'`])((?:(?!\1)[^\n])*)\1/g)].some(
+            ([, , c]) => /(?<![\w-])text-primary(?![\w-])/.test(c) && /(?<![\w-])bg-primary-soft(?![\w-])/.test(c),
+          ),
+        ),
+    );
+    expect(hits).toEqual([]);
+  });
 });

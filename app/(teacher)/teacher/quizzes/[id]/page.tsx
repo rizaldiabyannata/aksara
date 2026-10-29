@@ -43,7 +43,7 @@ const snippet = (s: string) => {
   return t.length > 120 ? `${t.slice(0, 120)}…` : t;
 };
 const selectClass =
-  "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30";
+  "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring";
 
 async function Detail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<SP> }) {
   await requireTeacher();
@@ -125,7 +125,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
         }
       />
       <nav aria-label="Bagian halaman" className="flex flex-wrap gap-2">
-        {[...(recap ? [["#pemantauan", "Pemantauan & Nilai"]] : []), ["#soal", "Soal & Kunci"], ["#setelan", "Setelan"]].map(([href, label]) => (
+        {[...(recap ? [["#pemantauan", "Pemantauan & Nilai"]] : []), [recap ? "#detail" : "#soal", "Soal & Kunci"], [recap ? "#detail" : "#setelan", "Setelan"]].map(([href, label]) => (
           <a key={href} href={href} className={buttonVariants({ variant: "outline", className: "h-11" })}>{label}</a>
         ))}
       </nav>
@@ -146,7 +146,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
             <Results quizId={id} recap={recap} open={!quiz.endsAt || quiz.endsAt > new Date()} />
           </section>
 
-          <details className="flex flex-col gap-8 rounded-2xl border bg-card p-4 shadow-card">
+          <details id="detail" className="scroll-mt-4 flex flex-col gap-8 rounded-2xl border bg-card p-4 shadow-card">
             <summary className="flex min-h-11 cursor-pointer items-center text-lg font-semibold">Lihat setelan ulangan</summary>
             <div className="mt-3 flex flex-col gap-8">
               {setelan}
@@ -183,7 +183,7 @@ function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boo
   const counted = count("FINAL") + count("NEEDS_GRADING");
   const ready = counted > 0 && (absent === 0 || !open);
   return (
-    <Card aria-labelledby="langkah" role="region" className="gap-3 border-2! border-primary/40! px-(--card-spacing)">
+    <Card aria-labelledby="langkah" role="region" className="gap-3! border-2! border-primary/40! px-(--card-spacing)">
       <h2 id="langkah" className="text-xl font-semibold">Langkah berikutnya</h2>
       {running > 0 ? (
         <p>{running} siswa sedang mengerjakan.</p>
@@ -207,9 +207,10 @@ function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boo
 
 function Summary({ recap }: { recap: QuizRecap }) {
   const n = (st: RecapState) => recap.rows.filter((r) => r.state === st).length;
+  const notStarted = n("NOT_STARTED") + n("WAITING_REPLACEMENT");
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <StatCard label="Belum mulai" value={n("NOT_STARTED")} hint="siswa" icon={HourglassIcon} tone="info" />
+      <StatCard label="Belum mulai" value={notStarted} hint="siswa" icon={HourglassIcon} tone="info" />
       <StatCard label="Sedang mengerjakan" value={n("IN_PROGRESS")} hint="siswa" icon={PlayCircleIcon} tone="primary" />
       <StatCard label="Perlu dinilai" value={n("NEEDS_GRADING")} hint="siswa" icon={Edit02Icon} tone="warning" />
       <StatCard label="Selesai" value={n("FINAL")} hint="siswa" icon={CheckmarkCircle02Icon} tone="success" />
@@ -224,7 +225,7 @@ function Results({ quizId, recap, open }: { quizId: string; recap: QuizRecap; op
   // Not offered in "Langkah berikutnya" yet: keep release reachable, but not as the main action.
   const early = !resultsReleasedAt && counted > 0 && absent > 0 && open;
   return (
-    <Card className="gap-3 px-(--card-spacing)">
+    <Card className="gap-3! px-(--card-spacing)">
       <p>
         {resultsReleasedAt ? `Dirilis ${formatWita(resultsReleasedAt)}.` : "Belum dirilis. Siswa belum bisa melihat nilai."}
       </p>

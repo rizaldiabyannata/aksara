@@ -56,7 +56,7 @@ async function Detail({ params }: { params: Promise<{ id: string; attemptId: str
           const essay = q.question.type === "ESSAY";
           return (
             <li key={q.quizQuestionId}>
-             <Card className="gap-3 px-(--card-spacing)">
+             <Card className="gap-3! px-(--card-spacing)">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-bold">Soal {q.number} · {TYPE_LABEL[q.question.type]} · {q.points} poin</h2>
                 {essay ? (

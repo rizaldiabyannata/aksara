@@ -17,7 +17,7 @@ import {
 import { POLICY_LABEL } from "./labels";
 
 const controlClass =
-  "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring/30 aria-invalid:border-destructive disabled:opacity-50";
+  "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive disabled:opacity-50";
 
 export function CreateQuizForm({ subjects }: { subjects: { id: string; name: string }[] }) {
   const [state, action, pending] = useActionState(createQuizAction, undefined);
