@@ -68,6 +68,13 @@ async function QuizList() {
                     </p>
                     {r.instructions ? <Markdown source={r.instructions} images={[]} /> : null}
                     {label ? <StartButton quizId={r.quizId} title={r.title} label={label} /> : null}
+                    {r.hasAttempts && r.state !== "IN_PROGRESS" && (r.resultsReleased ? (
+                      <Link href={`/student/quizzes/${r.quizId}/result`} className={LINK} aria-label={`Lihat hasil ${r.title}`}>
+                        Lihat hasil
+                      </Link>
+                    ) : (
+                      <p className="text-sm">Sudah dikumpulkan. Tunggu gurumu merilis hasil.</p>
+                    ))}
                   </CardContent>
                 </Card>
               </li>

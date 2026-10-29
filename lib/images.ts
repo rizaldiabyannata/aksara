@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
 import { GRACE_MS } from "@/lib/attempts";
+import { studentMaySeeKey } from "@/lib/results";
 import { deleteImage, presignGet, putImage } from "@/lib/storage";
 import type { SessionUser } from "@/lib/auth/session";
 import type { MaterialStatus } from "@/lib/generated/prisma/enums";
@@ -222,28 +223,32 @@ export async function imageRedirectTarget(user: SessionUser, id: string, now: Da
   });
   if (!img) return null;
   if (!canStudentViewImage({ role: user.role, materialStatus: img.material?.status ?? null })) {
-    // Not a visible material image: a student may still see a frozen QUESTION image of a quiz they are taking.
-    // No finalize here: the deadline + grace is checked in the query itself.
-    const frozen = await prisma.quizQuestionImage.findFirst({
+    // Not a visible material image: a student may still see a frozen image of a quiz they are (a) taking or
+    // (b) have submitted after release. No finalize here: the deadline + grace is checked in the query itself.
+    const frozen = await prisma.quizQuestionImage.findMany({
       where: {
         imageId: id,
-        visibility: "QUESTION",
         quizQuestion: {
           quiz: {
             attempts: {
               some: {
                 studentId: user.id,
-                status: "IN_PROGRESS",
                 replacementGrantedAt: null,
-                deadlineAt: { gt: new Date(now.getTime() - GRACE_MS) },
+                OR: [
+                  { status: "IN_PROGRESS", deadlineAt: { gt: new Date(now.getTime() - GRACE_MS) } },
+                  { status: "SUBMITTED", quiz: { resultsReleasedAt: { not: null } } },
+                ],
               },
             },
           },
         },
       },
-      select: { imageId: true },
+      select: { visibility: true, quizQuestion: { select: { quizId: true } } },
     });
-    if (!frozen) return null;
+    let allowed = frozen.some((f) => f.visibility === "QUESTION");
+    // An explanation image follows the key on the result page (D6), never the attempt in progress.
+    for (const f of frozen) allowed ||= await studentMaySeeKey(user.id, f.quizQuestion.quizId);
+    if (!allowed) return null;
   }
   return presignGet(img.storageKey);
 }

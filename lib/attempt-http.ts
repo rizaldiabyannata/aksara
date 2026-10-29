@@ -2,7 +2,8 @@
 const MSG: Record<string, string> = {
   NOT_FOUND: "Ulangan tidak ditemukan.",
   ATTEMPT_LIMIT: "Kesempatan mengerjakan ulangan ini sudah habis.",
-  REMEDIAL_NOT_AVAILABLE: "Remedial belum bisa dimulai. Tunggu guru merilis hasil.",
+  REMEDIAL_NOT_AVAILABLE: "Remedial belum bisa dimulai untukmu.",
+  RESULTS_RELEASED: "Hasil ulangan ini sudah dirilis, jadi tidak bisa diulang lagi.",
   DEADLINE_PASSED: "Waktu habis, jawabanmu sudah dikumpulkan.",
   ATTEMPT_CLOSED: "Jawabanmu sudah dikumpulkan.",
   INVALID: "Jawaban tidak valid.",

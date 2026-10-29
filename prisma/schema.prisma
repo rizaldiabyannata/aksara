@@ -74,29 +74,31 @@ enum ImageVisibility {
 }
 
 model User {
-  id                  String        @id @default(cuid())
+  id                  String          @id @default(cuid())
   role                Role
-  username            String?       @unique
+  username            String?         @unique
   passwordHash        String?
-  mustChangePassword  Boolean       @default(false)
+  mustChangePassword  Boolean         @default(false)
   displayName         String
   loginName           String?
-  nis                 String?       @unique
+  nis                 String?         @unique
   classId             String?
-  class               Class?        @relation(fields: [classId], references: [id])
-  isActive            Boolean       @default(true)
-  createdAt           DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime      @updatedAt @db.Timestamptz(3)
+  class               Class?          @relation(fields: [classId], references: [id])
+  isActive            Boolean         @default(true)
+  createdAt           DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime        @updatedAt @db.Timestamptz(3)
   sessions            Session[]
   auditLogs           AuditLog[]
-  materialsCreated    Material[]    @relation("MaterialCreatedBy")
-  materialsUpdated    Material[]    @relation("MaterialUpdatedBy")
+  materialsCreated    Material[]      @relation("MaterialCreatedBy")
+  materialsUpdated    Material[]      @relation("MaterialUpdatedBy")
   imagesCreated       Image[]
-  questionsCreated    Question[]    @relation("QuestionCreatedBy")
-  questionsUpdated    Question[]    @relation("QuestionUpdatedBy")
-  quizzesCreated      Quiz[]        @relation("QuizCreatedBy")
-  quizAttempts        QuizAttempt[] @relation("AttemptStudent")
-  replacementsGranted QuizAttempt[] @relation("AttemptReplacementGrantedBy")
+  questionsCreated    Question[]      @relation("QuestionCreatedBy")
+  questionsUpdated    Question[]      @relation("QuestionUpdatedBy")
+  quizzesCreated      Quiz[]          @relation("QuizCreatedBy")
+  quizAttempts        QuizAttempt[]   @relation("AttemptStudent")
+  replacementsGranted QuizAttempt[]   @relation("AttemptReplacementGrantedBy")
+  answersGraded       AttemptAnswer[] @relation("AnswerGradedBy")
+  resultsReleased     Quiz[]          @relation("QuizResultsReleasedBy")
 
   @@unique([classId, loginName])
   @@index([classId])
@@ -295,6 +297,8 @@ model Quiz {
   kkm                      Int?
   status                   QuizStatus     @default(DRAFT)
   resultsReleasedAt        DateTime?      @db.Timestamptz(3)
+  resultsReleasedById      String?
+  resultsReleasedBy        User?          @relation("QuizResultsReleasedBy", fields: [resultsReleasedById], references: [id], onDelete: Restrict)
   createdById              String
   createdBy                User           @relation("QuizCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   publishedAt              DateTime?      @db.Timestamptz(3)
@@ -387,7 +391,13 @@ model AttemptAnswer {
   quizQuestion    QuizQuestion @relation(fields: [quizQuestionId], references: [id], onDelete: Restrict)
   answer          Json?
   objectivePoints Int?
+  manualPoints    Decimal?     @db.Decimal(5, 2)
+  teacherFeedback String?
+  gradedById      String?
+  gradedBy        User?        @relation("AnswerGradedBy", fields: [gradedById], references: [id], onDelete: Restrict)
+  gradedAt        DateTime?    @db.Timestamptz(3)
   savedAt         DateTime     @default(now()) @db.Timestamptz(3)
 
   @@unique([attemptId, quizQuestionId])
+  @@index([gradedById])
 }

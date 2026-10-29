@@ -26,7 +26,11 @@ export type AuditAction =
   | "QUIZ_PUBLISHED"
   | "QUIZ_UNPUBLISHED"
   | "QUIZ_SCORING_CHANGED"
-  | "ATTEMPT_REPLACEMENT_GRANTED";
+  | "ATTEMPT_REPLACEMENT_GRANTED"
+  | "MANUAL_SCORE_SET"
+  | "RESULTS_RELEASED"
+  | "RESULTS_UNRELEASED"
+  | "EXPORT_DOWNLOADED";
 
 /** Thin insert. Callers must never put secrets (passwords, tokens, class codes) in metadata. */
 export async function writeAudit(

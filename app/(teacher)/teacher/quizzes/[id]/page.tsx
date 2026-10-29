@@ -3,20 +3,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { requireTeacher } from "@/lib/auth/guard";
 import { listClasses } from "@/lib/classes";
 import type { Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
 import { listQuizAttempts } from "@/lib/attempts";
-import { formatWita, toWitaInput } from "@/lib/format";
+import { formatScore, formatWita, toWitaInput } from "@/lib/format";
 import { listQuestions } from "@/lib/questions";
 import { getQuizForTeacher } from "@/lib/quizzes";
+import { getQuizRecap } from "@/lib/results";
 import { listChapterOptions } from "@/lib/subjects";
 import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
 import { AttemptsTable } from "./attempts-table";
 import { STATUS_LABEL } from "../labels";
-import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, SettingsForm } from "../quiz-forms";
+import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, ResultsControls, SettingsForm } from "../quiz-forms";
 
 export const metadata: Metadata = { title: "Ulangan" };
 
@@ -122,6 +123,13 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
           <Monitor quizId={id} />
         </section>
       )}
+
+      {published && (
+        <section aria-labelledby="hasil" className="flex flex-col gap-3">
+          <h2 id="hasil" className="text-xl font-semibold">Hasil</h2>
+          <Results quizId={id} endsAt={quiz.endsAt} />
+        </section>
+      )}
     </section>
   );
 }
@@ -137,8 +145,62 @@ async function Monitor({ quizId }: { quizId: string }) {
       : r.status === "IN_PROGRESS" ? ATTEMPT_LABEL.running
       : r.submitReason === "TIMEOUT" ? ATTEMPT_LABEL.timeout : ATTEMPT_LABEL.done,
     startedAt: formatWita(r.startedAt), submittedAt: r.submittedAt ? formatWita(r.submittedAt) : "",
+    score: r.score === null || r.replaced ? ""
+      : r.pendingEssays > 0 ? `Sementara ${formatScore(r.score)}: ${r.pendingEssays} uraian belum dinilai`
+      : formatScore(r.score),
+    href: `/teacher/quizzes/${quizId}/attempts/${r.attemptId}`,
   }));
   return <AttemptsTable rows={rows} />;
+}
+
+const dash = (n: number | null) => (n === null ? "-" : formatScore(n));
+
+// Same rows as the "Rekap Nilai" sheet, so the app and the Excel file always agree.
+async function Results({ quizId, endsAt }: { quizId: string; endsAt: Date | null }) {
+  const recap = await getQuizRecap(quizId);
+  if (!recap) return null;
+  const { resultsReleasedAt, kkm } = recap.quiz;
+  return (
+    <>
+      <p>
+        {resultsReleasedAt ? `Dirilis ${formatWita(resultsReleasedAt)}.` : "Belum dirilis. Siswa belum bisa melihat nilai."}
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <ResultsControls id={quizId} released={!!resultsReleasedAt} open={!endsAt || endsAt > new Date()} />
+        <a href={`/api/exports/${quizId}`} download className={buttonVariants({ variant: "outline", className: "h-11" })}>
+          Unduh Excel
+        </a>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <caption className="sr-only">Rekap nilai per siswa</caption>
+          <thead>
+            <tr className="border-b">
+              {["Siswa", "Kelas", "Percobaan", "Nilai utama", "Tertinggi asli", "Nilai rekap", "Ketuntasan", "Status"].map((h) => (
+                <th key={h} scope="col" className="p-2 font-medium">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {recap.rows.map((r) => (
+              <tr key={r.studentId} className="border-b">
+                <th scope="row" className="p-2 font-medium">{r.name}</th>
+                <td className="p-2">{r.className}</td>
+                <td className="p-2">{r.attemptsUsed}</td>
+                <td className="p-2">{dash(r.recap.primary)}</td>
+                <td className="p-2">{dash(r.recap.highest)}</td>
+                <td className="p-2">{r.recap.recap === null ? "-" : `${r.recap.final ? "" : "Sementara "}${formatScore(r.recap.recap)}`}</td>
+                <td className="p-2">
+                  {kkm === null || r.recap.passed === null || !r.recap.final ? "-" : r.recap.passed ? "Tuntas" : "Belum tuntas"}
+                </td>
+                <td className="p-2">{r.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
 }
 
 async function AddPanel({

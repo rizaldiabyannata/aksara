@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
-import { publishQuiz, unpublishQuiz } from "@/lib/quizzes";
+import { unpublishQuiz } from "@/lib/quizzes";
 import {
   GRACE_MS,
   finalizeExpiredAttempts,
   getAttemptView,
+  gradeEssay,
   grantReplacement,
   listQuizAttempts,
   listStudentQuizzes,
@@ -12,55 +13,12 @@ import {
   startAttempt,
   submitAttempt,
 } from "@/lib/attempts";
-import { makeChapter, makeClass, makeQuestion, makeQuiz, makeQuizQuestion, makeStudent, makeTeacher } from "../tests/factories";
+import { releaseResults } from "@/lib/results";
+import { makeClass, makeStudent } from "../tests/factories";
+import { DUR, at, attemptRow, min, setup, started, t0 } from "../tests/quiz-setup";
 
 vi.mock("@/lib/storage", () => import("../tests/storage-fake").then((m) => m.storageMock()));
 
-const t0 = new Date("2030-01-01T00:00:00.000Z");
-const min = (m: number) => m * 60_000;
-const at = (ms: number) => new Date(t0.getTime() + ms);
-const DUR = 30;
-
-type QOpts = { type?: "SINGLE_CHOICE" | "ESSAY" | "MULTIPLE_SELECT"; points?: number };
-
-async function setup(
-  quizOver: Record<string, unknown> = {},
-  questions: QOpts[] = [{}],
-  publish = true,
-) {
-  const { user } = await makeTeacher();
-  const chapter = await makeChapter();
-  const cls = await makeClass();
-  const quiz = await makeQuiz(chapter.subjectId, user.id, { durationMinutes: DUR, ...quizOver });
-  await prisma.quizClass.create({ data: { quizId: quiz.id, classId: cls.id } });
-  const qqs = [];
-  for (const [i, o] of questions.entries()) {
-    const base =
-      o.type === "ESSAY"
-        ? { type: "ESSAY" as const, answerKey: { rubric: "RUBRIK-RAHASIA" } }
-        : o.type === "MULTIPLE_SELECT"
-          ? {
-              type: "MULTIPLE_SELECT" as const,
-              options: [{ id: "a", text: "A" }, { id: "b", text: "B" }, { id: "c", text: "C" }],
-              answerKey: { optionIds: ["a", "b"] },
-            }
-          : { answerKey: { optionId: "a" } };
-    const q = await makeQuestion(chapter.id, user.id, {
-      status: "ACTIVE", prompt: `Soal ${i + 1}`, explanation: "PEMBAHASAN-RAHASIA", ...(base as object),
-    } as never);
-    qqs.push(await makeQuizQuestion(quiz.id, q.id, { position: i + 1, points: o.points ?? 1 }));
-  }
-  const student = await makeStudent(cls.id);
-  if (publish) expect(await publishQuiz(user.id, quiz.id, t0)).toEqual({ ok: true });
-  return { teacher: user, chapter, cls, quiz, qqs, student, stu: { id: student.id, classId: cls.id } };
-}
-
-const started = async (s: Awaited<ReturnType<typeof setup>>, now = t0) => {
-  const r = await startAttempt(s.stu, s.quiz.id, now);
-  if (!r.ok) throw new Error("start failed " + r.error);
-  return r.attemptId;
-};
-const attemptRow = (id: string) => prisma.quizAttempt.findUniqueOrThrow({ where: { id } });
 
 describe("startAttempt", () => {
   it("deadline = start + duration; endsAt earlier wins", async () => {
@@ -476,5 +434,116 @@ describe("listQuizAttempts", () => {
     expect(rows[0]).toMatchObject({ attemptId: a1, studentName: s.student.displayName, className: s.cls.name, attemptNumber: 1, slot: 1, status: "SUBMITTED", submitReason: "TIMEOUT", replaced: false });
     await grantReplacement(s.teacher.id, a1, "Alasan sah", at(min(DUR) + GRACE_MS));
     expect((await listQuizAttempts(s.quiz.id))[0].replaced).toBe(true);
+  });
+});
+
+const essayRow = (attemptId: string, quizQuestionId: string) =>
+  prisma.attemptAnswer.findUniqueOrThrow({ where: { attemptId_quizQuestionId: { attemptId, quizQuestionId } } });
+
+describe("essay grading", () => {
+  const graded = async () => {
+    const s = await setup({}, [{}, { type: "ESSAY", points: 4 }]);
+    const id = await started(s);
+    await submitAttempt(s.student.id, s.quiz.id, id, at(1000));
+    return { s, id, ans: await essayRow(id, s.qqs[1].id) };
+  };
+
+  it("submit adds a blank row for an unanswered essay only; attempt is pending", async () => {
+    const { s, id, ans } = await graded();
+    expect(ans.answer).toBeNull();
+    expect(await prisma.attemptAnswer.count({ where: { attemptId: id } })).toBe(1);
+    expect((await attemptRow(id)).gradingStatus).toBe("PENDING_MANUAL_GRADING");
+    expect((await listQuizAttempts(s.quiz.id, at(2000)))[0]).toMatchObject({ score: 0, pendingEssays: 1 });
+  });
+
+  it("validates points 0..max with up to 2 decimals", async () => {
+    const { s, id, ans } = await graded();
+    for (const points of ["2,555", "-1", "4,01", "abc", "", "1e2"]) {
+      expect(await gradeEssay(s.teacher.id, ans.id, { points }, at(2000))).toMatchObject({ error: "INVALID" });
+    }
+    expect((await attemptRow(id)).gradingStatus).toBe("PENDING_MANUAL_GRADING");
+    expect(await gradeEssay(s.teacher.id, ans.id, { points: "2,5", feedback: "UMPAN-BALIK" }, at(2000))).toEqual({ ok: true });
+    const row = await essayRow(id, s.qqs[1].id);
+    expect([row.manualPoints?.toNumber(), row.teacherFeedback, row.gradedById]).toEqual([2.5, "UMPAN-BALIK", s.teacher.id]);
+    expect((await attemptRow(id)).gradingStatus).toBe("FINAL");
+    expect((await listQuizAttempts(s.quiz.id, at(3000)))[0]).toMatchObject({ score: 50, pendingEssays: 0 });
+  });
+
+  it("audits each change once, without the feedback; stays FINAL", async () => {
+    const { s, id, ans } = await graded();
+    await gradeEssay(s.teacher.id, ans.id, { points: "0" }, at(2000));
+    await gradeEssay(s.teacher.id, ans.id, { points: "4", feedback: "UMPAN-BALIK" }, at(3000));
+    await gradeEssay(s.teacher.id, ans.id, { points: "4.00", feedback: "lain" }, at(4000));
+    const logs = await prisma.auditLog.findMany({ where: { action: "MANUAL_SCORE_SET" }, orderBy: { createdAt: "asc" } });
+    expect(logs.map((l) => l.metadata)).toEqual([
+      { attemptId: id, quizQuestionId: s.qqs[1].id, from: null, to: 0 },
+      { attemptId: id, quizQuestionId: s.qqs[1].id, from: 0, to: 4 },
+    ]);
+    expect(JSON.stringify(logs)).not.toContain("UMPAN-BALIK");
+    expect((await attemptRow(id)).gradingStatus).toBe("FINAL");
+  });
+
+  it("not gradable: running attempt, objective row, replaced attempt; unknown id NOT_FOUND", async () => {
+    const s = await setup({ maxAttempts: 2 }, [{}, { type: "ESSAY" }]);
+    const id = await started(s);
+    await saveAnswer(s.student.id, id, { quizQuestionId: s.qqs[1].id, answer: { text: "jawab" } }, at(10));
+    await saveAnswer(s.student.id, id, { quizQuestionId: s.qqs[0].id, answer: { optionId: "a" } }, at(10));
+    const essay = await essayRow(id, s.qqs[1].id);
+    const objective = await essayRow(id, s.qqs[0].id);
+    const no = { ok: false, error: "NOT_GRADABLE" };
+    expect(await gradeEssay(s.teacher.id, essay.id, { points: "1" })).toEqual(no);
+    await submitAttempt(s.student.id, s.quiz.id, id, at(20));
+    expect(await gradeEssay(s.teacher.id, objective.id, { points: "1" })).toEqual(no);
+    await grantReplacement(s.teacher.id, id, "Gangguan jaringan", at(30));
+    expect(await gradeEssay(s.teacher.id, essay.id, { points: "1" })).toEqual(no);
+    expect(await gradeEssay(s.teacher.id, "nope", { points: "1" })).toEqual({ ok: false, error: "NOT_FOUND" });
+  });
+
+  it("two essays graded at once still end FINAL", async () => {
+    const s = await setup({}, [{ type: "ESSAY" }, { type: "ESSAY" }]);
+    const id = await started(s);
+    await submitAttempt(s.student.id, s.quiz.id, id, at(1000));
+    const [a, b] = await Promise.all(s.qqs.map((q) => essayRow(id, q.id)));
+    await Promise.all([gradeEssay(s.teacher.id, a.id, { points: "1" }), gradeEssay(s.teacher.id, b.id, { points: "1" })]);
+    expect((await attemptRow(id)).gradingStatus).toBe("FINAL");
+  });
+});
+
+describe("retakes after release", () => {
+  it("HIGHEST: no new attempt once results are released", async () => {
+    const s = await setup({ maxAttempts: 3 });
+    await submitAttempt(s.student.id, s.quiz.id, await started(s), at(1000));
+    expect(await releaseResults(s.teacher.id, s.quiz.id, at(2000))).toEqual({ ok: true });
+    expect(await startAttempt(s.stu, s.quiz.id, at(3000))).toEqual({ ok: false, error: "RESULTS_RELEASED" });
+    expect((await listStudentQuizzes(s.stu, at(3000)))[0]).toMatchObject({ state: "DONE", resultsReleased: true });
+  });
+
+  it("REMEDIAL: opens below KKM after release, closes once a remedial reaches it", async () => {
+    const s = await setup({ scoringPolicy: "REMEDIAL", kkm: 70, maxAttempts: 3 });
+    await submitAttempt(s.student.id, s.quiz.id, await started(s), at(1000)); // unanswered: 0
+    await releaseResults(s.teacher.id, s.quiz.id, at(2000));
+    expect((await listStudentQuizzes(s.stu, at(2500)))[0]).toMatchObject({ state: "AVAILABLE" });
+    const r1 = await started(s, at(3000));
+    await saveAnswer(s.student.id, r1, { quizQuestionId: s.qqs[0].id, answer: { optionId: "a" } }, at(3100));
+    await submitAttempt(s.student.id, s.quiz.id, r1, at(3200)); // 100
+    expect(await startAttempt(s.stu, s.quiz.id, at(4000))).toEqual({ ok: false, error: "REMEDIAL_NOT_AVAILABLE" });
+  });
+
+  it("REMEDIAL: primary at or above KKM never opens a remedial", async () => {
+    const s = await setup({ scoringPolicy: "REMEDIAL", kkm: 70, maxAttempts: 2 });
+    const id = await started(s);
+    await saveAnswer(s.student.id, id, { quizQuestionId: s.qqs[0].id, answer: { optionId: "a" } }, at(100));
+    await submitAttempt(s.student.id, s.quiz.id, id, at(1000));
+    await releaseResults(s.teacher.id, s.quiz.id, at(2000));
+    expect(await startAttempt(s.stu, s.quiz.id, at(3000))).toEqual({ ok: false, error: "REMEDIAL_NOT_AVAILABLE" });
+  });
+
+  it("no replacement while results are released", async () => {
+    const s = await setup({ maxAttempts: 2 });
+    const id = await started(s);
+    await submitAttempt(s.student.id, s.quiz.id, id, at(1000));
+    await releaseResults(s.teacher.id, s.quiz.id, at(2000));
+    expect(await grantReplacement(s.teacher.id, id, "Gangguan jaringan", at(3000))).toEqual({ ok: false, error: "RESULTS_RELEASED" });
+    expect((await attemptRow(id)).replacementGrantedAt).toBeNull();
   });
 });

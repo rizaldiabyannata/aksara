@@ -19,3 +19,7 @@ export function parseWitaInput(s: string): Date | null {
 export function toWitaInput(d: Date): string {
   return new Date(d.getTime() + 8 * 3600_000).toISOString().slice(0, 16);
 }
+
+/** Scores always show 2 decimals, Indonesian style: 66,67. */
+export const formatScore = (n: number): string =>
+  n.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

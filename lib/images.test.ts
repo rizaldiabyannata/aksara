@@ -356,7 +356,7 @@ describe("student access to frozen quiz images", () => {
     expect(await imageRedirectTarget(c.asStudent, c.img.id, at(d + 61_000))).toBeNull();
   });
 
-  it("EXPLANATION is never served to students", async () => {
+  it("EXPLANATION is never served during an attempt", async () => {
     const c = await qz("EXPLANATION");
     await c.attempt();
     expect(await imageRedirectTarget(c.asStudent, c.img.id, at(1000))).toBeNull();
@@ -376,5 +376,36 @@ describe("student access to frozen quiz images", () => {
     await c.attempt();
     expect(await imageRedirectTarget(c.asStudent, c.img.id, at(1000))).toBe(c.url);
     expect(await imageRedirectTarget({ id: c.user.id, role: "TEACHER" } as never, c.img.id, at(1000))).toBe(c.url);
+  });
+
+  const submitted = { status: "SUBMITTED", submitReason: "MANUAL", submittedAt: at(2000), gradingStatus: "FINAL", objectiveScore: 1 };
+  const release = (quizId: string, data: object = {}) =>
+    prisma.quiz.update({ where: { id: quizId }, data: { resultsReleasedAt: at(2500), ...data } });
+
+  it("(b) QUESTION image after release; gone after unrelease or when replaced", async () => {
+    const c = await qz();
+    await c.attempt(submitted);
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBeNull();
+    await release(c.quiz.id);
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBe(c.url);
+    await release(c.quiz.id, { resultsReleasedAt: null });
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBeNull();
+    await release(c.quiz.id);
+    await prisma.quizAttempt.updateMany({ where: { quizId: c.quiz.id }, data: { replacementGrantedAt: T } });
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBeNull();
+  });
+
+  it("(b) EXPLANATION follows the key: switch off or remedial still open → null", async () => {
+    const c = await qz("EXPLANATION");
+    const a = await c.attempt(submitted);
+    await release(c.quiz.id);
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBe(c.url);
+    await release(c.quiz.id, { showFeedbackAfterRelease: false });
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBeNull();
+    await release(c.quiz.id, { showFeedbackAfterRelease: true, scoringPolicy: "REMEDIAL", kkm: 70, maxAttempts: 2 });
+    await prisma.quizAttempt.update({ where: { id: a.id }, data: { objectiveScore: 0 } });
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBeNull();
+    await prisma.quizAttempt.update({ where: { id: a.id }, data: { objectiveScore: 1 } });
+    expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBe(c.url);
   });
 });

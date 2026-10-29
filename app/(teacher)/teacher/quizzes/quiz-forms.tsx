@@ -10,8 +10,8 @@ import type { FormState } from "@/lib/form-state";
 import type { QuizDetail } from "@/lib/quizzes";
 import {
   addQuizQuestionAction, createQuizAction, moveQuizQuestionAction, publishQuizAction,
-  removeQuizQuestionAction, setQuizClassesAction, setQuizQuestionPointsAction, unpublishQuizAction,
-  updateQuizAction,
+  releaseResultsAction, removeQuizQuestionAction, setQuizClassesAction, setQuizQuestionPointsAction,
+  unpublishQuizAction, unreleaseResultsAction, updateQuizAction,
 } from "./actions";
 import { POLICY_LABEL } from "./labels";
 
@@ -212,6 +212,29 @@ export function PublishControls({ id, published }: { id: string; published: bool
       title="Terbitkan ulangan?"
       description="Soal, poin, dan sebagian setelan terkunci setelah terbit."
       confirm="Terbitkan"
+    />
+  );
+}
+
+export function ResultsControls({ id, released, open }: { id: string; released: boolean; open: boolean }) {
+  return released ? (
+    <ConfirmAction
+      action={unreleaseResultsAction.bind(null, id)}
+      trigger="Batalkan rilis"
+      title="Batalkan rilis hasil?"
+      description="Siswa tidak bisa lagi melihat nilai dan pembahasan, dan remedial baru tidak bisa dimulai."
+      confirm="Batalkan rilis"
+    />
+  ) : (
+    <ConfirmAction
+      action={releaseResultsAction.bind(null, id)}
+      trigger="Rilis hasil"
+      title="Rilis hasil ke siswa?"
+      description={
+        "Siswa bisa melihat nilai, jawaban, dan (bila diizinkan) kunci serta pembahasan." +
+        (open ? " Jadwal belum berakhir: siswa yang belum mengerjakan masih bisa mulai, padahal temannya sudah melihat kunci." : "")
+      }
+      confirm="Rilis hasil"
     />
   );
 }

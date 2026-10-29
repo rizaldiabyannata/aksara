@@ -9,7 +9,7 @@ import { deleteQuestionAction } from "../questions/actions";
 import {
   addQuizQuestionAction, createQuizAction, moveQuizQuestionAction, publishQuizAction,
   removeQuizQuestionAction, setQuizClassesAction, setQuizQuestionPointsAction, unpublishQuizAction,
-  grantReplacementAction, updateQuizAction,
+  grantReplacementAction, updateQuizAction, releaseResultsAction, unreleaseResultsAction, gradeEssayAction,
 } from "./actions";
 
 vi.mock("next/headers", () => import("../../../../tests/next-mocks").then((m) => m.nextHeadersMock()));
@@ -59,6 +59,9 @@ const calls: [string, (w: Awaited<ReturnType<typeof world>>) => Promise<unknown>
       return grantReplacementAction(a.id, undefined, form({ reason: "Koneksi putus saat ujian" }));
     },
   ],
+  ["releaseResultsAction", (w) => releaseResultsAction(w.quiz.id)],
+  ["unreleaseResultsAction", (w) => unreleaseResultsAction(w.quiz.id)],
+  ["gradeEssayAction", () => gradeEssayAction("any", undefined, form({ points: "1" }))],
 ];
 
 describe.each(calls)("%s authz", (_n, call) => {
@@ -208,5 +211,21 @@ describe("grantReplacementAction", () => {
     const again = await grantReplacementAction(attempt.id, undefined, form({ reason: "Koneksi putus" }));
     expect(again).toMatchObject({ message: "Percobaan ini sudah diganti." });
     expect(again?.ok).toBeFalsy();
+  });
+});
+
+describe("result actions", () => {
+  it("release refusal and replacement-after-release come back as messages", async () => {
+    const w = await world();
+    await signIn(w.user);
+    await prisma.quiz.update({ where: { id: w.quiz.id }, data: { status: "PUBLISHED" } });
+    const a = await makeAttempt(w.quiz.id, (await makeStudent((await makeClass()).id)).id);
+    expect(await releaseResultsAction(w.quiz.id)).toEqual({ message: "Hasil belum bisa dirilis: 1 siswa masih mengerjakan." });
+    await prisma.quizAttempt.update({ where: { id: a.id }, data: { status: "SUBMITTED", gradingStatus: "FINAL", objectiveScore: 0 } });
+    expect(await releaseResultsAction(w.quiz.id)).toEqual({ message: "Hasil dirilis.", ok: true });
+    expect(await grantReplacementAction(a.id, undefined, form({ reason: "Koneksi putus saat ujian" }))).toMatchObject({
+      message: "Hasil sudah dirilis. Batalkan rilis dulu.",
+    });
+    expect(await unreleaseResultsAction(w.quiz.id)).toEqual({ message: "Rilis hasil dibatalkan.", ok: true });
   });
 });

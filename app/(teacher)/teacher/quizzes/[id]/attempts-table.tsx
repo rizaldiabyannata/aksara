@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Feedback } from "@/components/form-feedback";
 import { FormField } from "@/components/form-field";
@@ -11,7 +12,7 @@ import { grantReplacementAction } from "../actions";
 
 export type MonitorRow = {
   attemptId: string; studentName: string; className: string; attemptNumber: number;
-  status: string; replaced: boolean; startedAt: string; submittedAt: string;
+  status: string; replaced: boolean; startedAt: string; submittedAt: string; score: string; href: string;
 };
 
 function ReplaceButton({ row }: { row: MonitorRow }) {
@@ -58,7 +59,7 @@ export function AttemptsTable({ rows }: { rows: MonitorRow[] }) {
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b">
-            {["Siswa", "Kelas", "Percobaan", "Status", "Mulai", "Selesai", "Aksi"].map((h) => (
+            {["Siswa", "Kelas", "Percobaan", "Status", "Mulai", "Selesai", "Nilai", "Aksi"].map((h) => (
               <th key={h} scope="col" className="p-2 font-medium">{h}</th>
             ))}
           </tr>
@@ -72,7 +73,14 @@ export function AttemptsTable({ rows }: { rows: MonitorRow[] }) {
               <td className="p-2">{r.status}</td>
               <td className="p-2">{r.startedAt}</td>
               <td className="p-2">{r.submittedAt || "-"}</td>
-              <td className="p-2">{r.replaced ? null : <ReplaceButton row={r} />}</td>
+              <td className="p-2">{r.score || "-"}</td>
+              <td className="flex flex-wrap gap-2 p-2">
+                <Link href={r.href} className="inline-flex min-h-11 items-center underline"
+                  aria-label={`Lihat dan nilai jawaban ${r.studentName}, percobaan ${r.attemptNumber}`}>
+                  Lihat jawaban
+                </Link>
+                {r.replaced ? null : <ReplaceButton row={r} />}
+              </td>
             </tr>
           ))}
         </tbody>

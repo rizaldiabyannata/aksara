@@ -4,14 +4,15 @@ import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
-import type { AttemptStatus, QuestionType, SubmitReason } from "@/lib/generated/prisma/enums";
+import type { AttemptStatus, GradingStatus, QuestionType, SubmitReason } from "@/lib/generated/prisma/enums";
 import { gradeObjective, parseAnswer, type ObjectiveQuestion, type StoredAnswer } from "@/lib/grading";
 import type { ImageView } from "@/lib/materials";
 import type { Option } from "@/lib/questions";
 import { lockQuiz, type AnswerKeySnapshot, type QuestionSnapshot } from "@/lib/quizzes";
+import { attemptScore, retakeOpen, type ScoredAttempt } from "@/lib/scoring";
 import { uniqueViolation } from "@/lib/unique-violation";
 import { writeAudit } from "@/lib/audit";
-import { parse, type Invalid, type NotFound } from "@/lib/validation";
+import { optional, parse, type Invalid, type NotFound } from "@/lib/validation";
 
 export const GRACE_MS = 60_000;
 
@@ -27,7 +28,20 @@ export type AttemptQuestion = {
 export type AttemptView =
   | { status: "IN_PROGRESS"; attemptId: string; quizId: string; quizTitle: string; deadlineAt: string; serverNow: string; questions: AttemptQuestion[] }
   | { status: "SUBMITTED"; attemptId: string; quizId: string; quizTitle: string };
-type StartError = "ATTEMPT_LIMIT" | "REMEDIAL_NOT_AVAILABLE";
+type StartError = "ATTEMPT_LIMIT" | "REMEDIAL_NOT_AVAILABLE" | "RESULTS_RELEASED";
+
+/** Select + mapper for lib/scoring: manual points enter as hundredths. */
+export const SCORED_SELECT = {
+  slot: true, replacementGrantedAt: true, status: true, gradingStatus: true, maxPoints: true, objectiveScore: true,
+  answers: { where: { manualPoints: { not: null } }, select: { manualPoints: true } },
+} as const;
+export function toScored(a: Prisma.QuizAttemptGetPayload<{ select: typeof SCORED_SELECT }>): ScoredAttempt {
+  return {
+    slot: a.slot, replaced: a.replacementGrantedAt !== null, status: a.status, gradingStatus: a.gradingStatus,
+    maxPoints: a.maxPoints,
+    earnedCenti: (a.objectiveScore ?? 0) * 100 + a.answers.reduce((s, x) => s + (x.manualPoints?.mul(100).toNumber() ?? 0), 0),
+  };
+}
 
 const NOT_FOUND: NotFound = { ok: false, error: "NOT_FOUND" };
 const ATTEMPT_INDEXES = {
@@ -85,7 +99,7 @@ async function startInTx(
     where: { id: quizId },
     select: {
       status: true, startsAt: true, endsAt: true, durationMinutes: true, maxAttempts: true,
-      shuffleQuestions: true, shuffleOptions: true, scoringPolicy: true, resultsReleasedAt: true,
+      shuffleQuestions: true, shuffleOptions: true, scoringPolicy: true, kkm: true, resultsReleasedAt: true,
       classes: { where: { classId: student.classId ?? "" }, select: { classId: true } },
       questions: { orderBy: { position: "asc" }, select: { id: true, points: true, questionSnapshot: true } },
     },
@@ -104,14 +118,15 @@ async function startInTx(
     orderBy: { attemptNumber: "asc" },
     select: { id: true, slot: true },
   });
-  const total = await tx.quizAttempt.count({ where: mine });
+  const all = await tx.quizAttempt.findMany({ where: mine, select: SCORED_SELECT });
+  const total = all.length;
   let slot: number;
   if (pending) slot = pending.slot;
   else {
-    const used = await tx.quizAttempt.count({ where: { ...mine, replacementGrantedAt: null } });
+    const used = all.filter((a) => !a.replacementGrantedAt).length;
     if (used >= quiz.maxAttempts) return { ok: false, error: "ATTEMPT_LIMIT" };
-    if (quiz.scoringPolicy === "REMEDIAL" && used >= 1 && !quiz.resultsReleasedAt) {
-      return { ok: false, error: "REMEDIAL_NOT_AVAILABLE" };
+    if (used >= 1 && !retakeOpen(all.map(toScored), quiz)) {
+      return { ok: false, error: quiz.scoringPolicy === "REMEDIAL" ? "REMEDIAL_NOT_AVAILABLE" : "RESULTS_RELEASED" };
     }
     slot = used + 1;
   }
@@ -304,7 +319,14 @@ async function gradeAttempt(tx: Prisma.TransactionClient, attemptId: string): Pr
     },
   });
   const qs = new Map(attempt.quiz.questions.map((q) => [q.id, q]));
-  const hasEssay = attempt.quiz.questions.some((q) => (q.questionSnapshot as QuestionSnapshot).type === "ESSAY");
+  const essays = attempt.quiz.questions.filter((q) => (q.questionSnapshot as QuestionSnapshot).type === "ESSAY");
+  const hasEssay = essays.length > 0;
+  // An unanswered essay still waits for the teacher (Q-06), so it gets a row to grade.
+  const answered = new Set(attempt.answers.map((a) => a.quizQuestionId));
+  await tx.attemptAnswer.createMany({
+    data: essays.filter((q) => !answered.has(q.id)).map((q) => ({ attemptId, quizQuestionId: q.id, answer: Prisma.DbNull })),
+    skipDuplicates: true,
+  });
   let score = 0;
   for (const a of attempt.answers) {
     const q = qs.get(a.quizQuestionId);
@@ -326,7 +348,7 @@ export type StudentQuizState = "AVAILABLE" | "SCHEDULED" | "IN_PROGRESS" | "REPL
 export type StudentQuizRow = {
   quizId: string; title: string; instructions: string | null; subjectName: string; durationMinutes: number;
   questionCount: number; startsAt: Date | null; endsAt: Date | null; remainingAttempts: number;
-  state: StudentQuizState; hasAttempts: boolean;
+  state: StudentQuizState; hasAttempts: boolean; resultsReleased: boolean;
 };
 
 export async function listStudentQuizzes(
@@ -340,12 +362,12 @@ export async function listStudentQuizzes(
     orderBy: [{ startsAt: "desc" }, { createdAt: "desc" }],
     select: {
       id: true, title: true, instructions: true, durationMinutes: true, startsAt: true, endsAt: true,
-      maxAttempts: true, scoringPolicy: true, resultsReleasedAt: true,
+      maxAttempts: true, scoringPolicy: true, kkm: true, resultsReleasedAt: true,
       subject: { select: { name: true } },
       _count: { select: { questions: true } },
       attempts: {
         where: { studentId: student.id },
-        select: { status: true, replacementGrantedAt: true, replacedBy: { select: { id: true } } },
+        select: { ...SCORED_SELECT, replacedBy: { select: { id: true } } },
       },
     },
   });
@@ -354,7 +376,7 @@ export async function listStudentQuizzes(
     const pending = q.attempts.some((a) => a.replacementGrantedAt && !a.replacedBy);
     const running = q.attempts.some((a) => a.status === "IN_PROGRESS");
     const remainingAttempts = Math.max(0, q.maxAttempts - used);
-    const locked = q.scoringPolicy === "REMEDIAL" && used >= 1 && !q.resultsReleasedAt;
+    const locked = used >= 1 && !retakeOpen(q.attempts.map(toScored), q);
     let state: StudentQuizState;
     if (running) state = "IN_PROGRESS";
     else if (q.startsAt && now < q.startsAt) state = "SCHEDULED";
@@ -365,7 +387,7 @@ export async function listStudentQuizzes(
     return {
       quizId: q.id, title: q.title, instructions: q.instructions, subjectName: q.subject.name,
       durationMinutes: q.durationMinutes, questionCount: q._count.questions, startsAt: q.startsAt, endsAt: q.endsAt,
-      remainingAttempts, state, hasAttempts: q.attempts.length > 0,
+      remainingAttempts, state, hasAttempts: q.attempts.length > 0, resultsReleased: q.resultsReleasedAt !== null,
     };
   });
 }
@@ -373,7 +395,11 @@ export async function listStudentQuizzes(
 export type AttemptRow = {
   attemptId: string; studentName: string; className: string; attemptNumber: number; slot: number;
   status: AttemptStatus; submitReason: SubmitReason | null; replaced: boolean; startedAt: Date; submittedAt: Date | null;
+  score: number | null; gradingStatus: GradingStatus | null; pendingEssays: number;
 };
+
+// After gradeAttempt every objective row has objectivePoints, so these are exactly the essays still to grade.
+export const UNGRADED = { objectivePoints: null, manualPoints: null } as const;
 
 export async function listQuizAttempts(quizId: string, now: Date = new Date()): Promise<AttemptRow[]> {
   await finalizeExpiredAttempts({ quizId }, now);
@@ -381,16 +407,24 @@ export async function listQuizAttempts(quizId: string, now: Date = new Date()): 
     where: { quizId },
     orderBy: [{ student: { displayName: "asc" } }, { attemptNumber: "asc" }],
     select: {
-      id: true, attemptNumber: true, slot: true, status: true, submitReason: true, replacementGrantedAt: true,
-      startedAt: true, submittedAt: true,
+      ...SCORED_SELECT,
+      id: true, attemptNumber: true, submitReason: true, startedAt: true, submittedAt: true,
       student: { select: { displayName: true, class: { select: { name: true } } } },
+      _count: { select: { answers: { where: UNGRADED } } },
     },
   });
-  return rows.map((r) => ({
-    attemptId: r.id, studentName: r.student.displayName, className: r.student.class?.name ?? "",
-    attemptNumber: r.attemptNumber, slot: r.slot, status: r.status, submitReason: r.submitReason,
-    replaced: r.replacementGrantedAt !== null, startedAt: r.startedAt, submittedAt: r.submittedAt,
-  }));
+  return rows.map((r) => {
+    const sc = toScored(r);
+    const submitted = r.status === "SUBMITTED";
+    return {
+      attemptId: r.id, studentName: r.student.displayName, className: r.student.class?.name ?? "",
+      attemptNumber: r.attemptNumber, slot: r.slot, status: r.status, submitReason: r.submitReason,
+      replaced: r.replacementGrantedAt !== null, startedAt: r.startedAt, submittedAt: r.submittedAt,
+      score: submitted ? attemptScore(sc.earnedCenti, sc.maxPoints) : null,
+      gradingStatus: r.gradingStatus,
+      pendingEssays: submitted ? r._count.answers : 0,
+    };
+  });
 }
 
 const REASON_MSG = "Alasan wajib diisi, 5 sampai 300 huruf.";
@@ -404,10 +438,16 @@ export async function grantReplacement(
   attemptId: string,
   reason: unknown,
   now: Date = new Date(),
-): Promise<{ ok: true } | Invalid | NotFound | { ok: false; error: "ALREADY_REPLACED" }> {
+): Promise<{ ok: true } | Invalid | NotFound | { ok: false; error: "ALREADY_REPLACED" | "RESULTS_RELEASED" }> {
   const p = parse(reasonSchema, { reason });
   if (!p.ok) return p;
   return prisma.$transaction(async (tx) => {
+    const own = await tx.quizAttempt.findUnique({ where: { id: attemptId }, select: { quizId: true } });
+    if (!own) return NOT_FOUND;
+    // Shared lock orders this grant against a concurrent release: a student who saw the key gets no fresh attempt.
+    await lockQuiz(tx, own.quizId, "SHARE");
+    const quiz = await tx.quiz.findUniqueOrThrow({ where: { id: own.quizId }, select: { resultsReleasedAt: true } });
+    if (quiz.resultsReleasedAt) return { ok: false, error: "RESULTS_RELEASED" } as const;
     const r = await tx.quizAttempt.updateMany({
       where: { id: attemptId, replacementGrantedAt: null },
       data: { replacementGrantedAt: now, replacementGrantedById: actorId, replacementReason: p.data.reason },
@@ -427,4 +467,130 @@ export async function grantReplacement(
     });
     return { ok: true } as const;
   });
+}
+
+const POINTS_MSG = "Nilai harus angka 0 sampai poin soal, paling banyak 2 angka di belakang koma.";
+const gradeSchema = z.object({
+  points: z.string({ error: POINTS_MSG }).trim()
+    .regex(/^\d{1,3}([.,]\d{1,2})?$/, { error: POINTS_MSG })
+    .transform((v) => Math.round(Number(v.replace(",", ".")) * 100)),
+  feedback: optional(2000, "Umpan balik paling banyak 2.000 huruf."),
+});
+
+/** Sets or changes one essay score (Q-07: up to 2 decimals) and settles the attempt's gradingStatus. */
+export async function gradeEssay(
+  actorId: string,
+  answerId: string,
+  input: unknown,
+  now: Date = new Date(),
+): Promise<{ ok: true } | Invalid | NotFound | { ok: false; error: "NOT_GRADABLE" }> {
+  const p = parse(gradeSchema, input);
+  if (!p.ok) return p;
+  return prisma.$transaction(async (tx) => {
+    const own = await tx.attemptAnswer.findUnique({ where: { id: answerId }, select: { attemptId: true } });
+    if (!own) return NOT_FOUND;
+    const { attemptId } = own;
+    // Two essays of one attempt graded at once must not both see the other as ungraded.
+    await tx.$queryRaw`SELECT "id" FROM "QuizAttempt" WHERE "id" = ${attemptId} FOR UPDATE`;
+    const a = await tx.attemptAnswer.findUniqueOrThrow({
+      where: { id: answerId },
+      select: {
+        manualPoints: true, quizQuestionId: true,
+        quizQuestion: { select: { points: true, questionSnapshot: true } },
+        attempt: { select: { status: true, replacementGrantedAt: true } },
+      },
+    });
+    if (
+      a.attempt.status !== "SUBMITTED" || a.attempt.replacementGrantedAt ||
+      (a.quizQuestion.questionSnapshot as QuestionSnapshot).type !== "ESSAY"
+    ) return { ok: false, error: "NOT_GRADABLE" } as const;
+    if (p.data.points > a.quizQuestion.points * 100) {
+      return { ok: false, error: "INVALID", fieldErrors: { points: POINTS_MSG } } as const;
+    }
+    const from = a.manualPoints?.toNumber() ?? null;
+    const to = p.data.points / 100;
+    await tx.attemptAnswer.update({
+      where: { id: answerId },
+      data: { manualPoints: to.toFixed(2), teacherFeedback: p.data.feedback, gradedById: actorId, gradedAt: now },
+    });
+    if (from !== to) {
+      await writeAudit(tx, {
+        actorUserId: actorId, action: "MANUAL_SCORE_SET", entityType: "QuizAttempt", entityId: attemptId,
+        metadata: { attemptId, quizQuestionId: a.quizQuestionId, from, to },
+      });
+    }
+    const pending = await tx.attemptAnswer.count({ where: { attemptId, ...UNGRADED } });
+    await tx.quizAttempt.update({
+      where: { id: attemptId },
+      data: { gradingStatus: pending === 0 ? "FINAL" : "PENDING_MANUAL_GRADING" },
+    });
+    return { ok: true } as const;
+  });
+}
+
+export type TeacherQuestion = {
+  quizQuestionId: string; number: number; points: number;
+  question: QuestionSnapshot & { id: string };
+  answerKey: AnswerKeySnapshot["answerKey"]; explanation: string | null; explanationImages: ImageView[];
+  answerId: string | null; answer: StoredAnswer | null;
+  objectivePoints: number | null; manualPoints: number | null; feedback: string | null;
+};
+export type TeacherAttempt = {
+  attemptId: string; quizId: string; quizTitle: string; studentName: string; className: string;
+  attemptNumber: number; slot: number; status: AttemptStatus; submitReason: SubmitReason | null;
+  replaced: boolean; replacementReason: string | null; submittedAt: Date | null;
+  maxPoints: number; score: number | null; gradingStatus: GradingStatus | null;
+  questions: TeacherQuestion[];
+};
+
+export const IMAGE_VIEW = { id: true, altText: true, caption: true, sourceReference: true, width: true, height: true } as const;
+
+/** Teacher-only: every question in original order with key, answer, and points. */
+export async function getAttemptForTeacher(quizId: string, attemptId: string, now: Date = new Date()): Promise<TeacherAttempt | null> {
+  await finalizeExpiredAttempts({ quizId }, now);
+  const a = await prisma.quizAttempt.findFirst({
+    where: { id: attemptId, quizId },
+    select: {
+      ...SCORED_SELECT,
+      id: true, attemptNumber: true, submitReason: true, replacementReason: true, submittedAt: true,
+      answers: { select: { id: true, quizQuestionId: true, answer: true, objectivePoints: true, manualPoints: true, teacherFeedback: true } },
+      student: { select: { displayName: true, class: { select: { name: true } } } },
+      quiz: {
+        select: {
+          title: true,
+          questions: {
+            orderBy: { position: "asc" },
+            select: {
+              id: true, points: true, questionSnapshot: true, answerKeySnapshot: true,
+              images: { where: { visibility: "EXPLANATION" }, select: { image: { select: IMAGE_VIEW } } },
+            },
+          },
+        },
+      },
+    },
+  });
+  if (!a) return null;
+  const sc = toScored(a);
+  const byQ = new Map(a.answers.map((x) => [x.quizQuestionId, x]));
+  return {
+    attemptId: a.id, quizId, quizTitle: a.quiz.title, studentName: a.student.displayName,
+    className: a.student.class?.name ?? "", attemptNumber: a.attemptNumber, slot: a.slot, status: a.status,
+    submitReason: a.submitReason, replaced: a.replacementGrantedAt !== null, replacementReason: a.replacementReason,
+    submittedAt: a.submittedAt, maxPoints: a.maxPoints,
+    score: a.status === "SUBMITTED" ? attemptScore(sc.earnedCenti, sc.maxPoints) : null,
+    gradingStatus: a.gradingStatus,
+    questions: a.quiz.questions.map((q, i) => {
+      const key = q.answerKeySnapshot as AnswerKeySnapshot;
+      const ans = byQ.get(q.id);
+      return {
+        quizQuestionId: q.id, number: i + 1, points: q.points,
+        question: { ...(q.questionSnapshot as QuestionSnapshot), id: q.id },
+        answerKey: key.answerKey, explanation: key.explanation,
+        explanationImages: q.images.map((x) => x.image),
+        answerId: ans?.id ?? null, answer: (ans?.answer as StoredAnswer | null) ?? null,
+        objectivePoints: ans?.objectivePoints ?? null, manualPoints: ans?.manualPoints?.toNumber() ?? null,
+        feedback: ans?.teacherFeedback ?? null,
+      };
+    }),
+  };
 }

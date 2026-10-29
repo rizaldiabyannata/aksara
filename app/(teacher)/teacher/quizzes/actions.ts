@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireTeacher } from "@/lib/auth/guard";
 import { field, type FormState } from "@/lib/form-state";
-import { grantReplacement } from "@/lib/attempts";
+import { gradeEssay, grantReplacement } from "@/lib/attempts";
+import { releaseResults, unreleaseResults } from "@/lib/results";
 import {
   addQuizQuestion, createQuiz, moveQuizQuestion, publishQuiz, removeQuizQuestion,
   setQuizClasses, setQuizQuestionPoints, unpublishQuiz, updateQuiz,
@@ -14,12 +15,18 @@ const UNEXPECTED = "Ada masalah. Coba lagi sebentar lagi.";
 const NOT_FOUND = "Ulangan tidak ditemukan. Muat ulang halaman.";
 const ALREADY_REPLACED = "Percobaan ini sudah diganti.";
 const HAS_ATTEMPTS = "Ulangan ini sudah dikerjakan siswa, jadi tidak bisa dikembalikan ke draf.";
+const MESSAGES: Record<string, string> = {
+  HAS_ATTEMPTS,
+  ALREADY_REPLACED,
+  RESULTS_RELEASED: "Hasil sudah dirilis. Batalkan rilis dulu.",
+  NOT_GRADABLE: "Jawaban ini tidak bisa dinilai.",
+};
 
 type Result =
   | { ok: true; id?: string }
   | { ok: false; error: "INVALID"; fieldErrors: Record<string, string> }
   | { ok: false; error: "INVALID_PUBLISH"; reasons: string[] }
-  | { ok: false; error: "NOT_FOUND" | "HAS_ATTEMPTS" | "ALREADY_REPLACED" };
+  | { ok: false; error: "NOT_FOUND" | "HAS_ATTEMPTS" | "ALREADY_REPLACED" | "RESULTS_RELEASED" | "NOT_GRADABLE" };
 
 /** Only the domain call is inside try. `flat`: no form to show field errors on, so they become one message. */
 async function run(
@@ -41,9 +48,7 @@ async function run(
         : { fieldErrors: r.fieldErrors, values };
     }
     if (r.error === "INVALID_PUBLISH") return { message: r.reasons.join("\n") };
-    const message =
-      r.error === "HAS_ATTEMPTS" ? HAS_ATTEMPTS : r.error === "ALREADY_REPLACED" ? ALREADY_REPLACED : NOT_FOUND;
-    return { message, values };
+    return { message: MESSAGES[r.error] ?? NOT_FOUND, values };
   }
   revalidatePath("/teacher/quizzes", "layout");
   return { message: success, ok: true };
@@ -144,4 +149,20 @@ export async function grantReplacementAction(attemptId: string, _prev: FormState
   return run(() => grantReplacement(user.id, attemptId, reason), "Percobaan pengganti dibuka.", {
     values: { reason },
   });
+}
+
+export async function releaseResultsAction(id: string): Promise<FormState> {
+  const user = await requireTeacher();
+  return run(() => releaseResults(user.id, id), "Hasil dirilis.", { flat: true });
+}
+
+export async function unreleaseResultsAction(id: string): Promise<FormState> {
+  const user = await requireTeacher();
+  return run(() => unreleaseResults(user.id, id), "Rilis hasil dibatalkan.");
+}
+
+export async function gradeEssayAction(answerId: string, _prev: FormState, fd: FormData): Promise<FormState> {
+  const user = await requireTeacher();
+  const values = { points: field(fd, "points"), feedback: field(fd, "feedback") };
+  return run(() => gradeEssay(user.id, answerId, values), "Nilai disimpan.", { values });
 }
