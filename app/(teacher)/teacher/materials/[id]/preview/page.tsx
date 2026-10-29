@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { MaterialView } from "@/components/material-view";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { requireTeacher } from "@/lib/auth/guard";
 import { getMaterialForTeacher } from "@/lib/materials";
 import { STATUS_LABEL } from "../../status-label";
@@ -24,13 +26,17 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
   if (!material) notFound();
   return (
     <div className="flex flex-col gap-6">
-      <div role="note" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted p-3">
-        <p className="font-medium">Pratinjau. Status: {STATUS_LABEL[material.status]}</p>
-        <Link href={`/teacher/materials/${id}`} className="inline-flex min-h-11 items-center underline">
+      <div role="note" className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-secondary p-4">
+        <p className="font-semibold text-primary-strong">Pratinjau. Status: {STATUS_LABEL[material.status]}</p>
+        <Link href={`/teacher/materials/${id}`} className={buttonVariants({ variant: "outline", className: "h-11" })}>
           Kembali ke ubah materi
         </Link>
       </div>
-      <MaterialView material={material} />
+      <Card>
+        <CardContent className="mx-auto w-full max-w-[70ch]">
+          <MaterialView material={material} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

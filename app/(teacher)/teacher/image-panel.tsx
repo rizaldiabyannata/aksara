@@ -108,7 +108,7 @@ function ImageCard({ owner, image, referenced }: { owner: Owner; image: ImageVie
   }
 
   return (
-    <li className="flex flex-col gap-4 rounded-lg border p-4">
+    <li className="flex flex-col gap-4 rounded-xl bg-secondary p-4">
       {/* eslint-disable-next-line @next/next/no-img-element -- authorized redirect route; next/image cannot optimize it */}
       <img
         src={`/api/images/${image.id}`}
@@ -118,7 +118,7 @@ function ImageCard({ owner, image, referenced }: { owner: Owner; image: ImageVie
         className="h-auto max-w-40"
       />
       <div className="flex flex-col gap-2">
-        <code className="break-all rounded bg-muted px-2 py-1 text-sm">{code}</code>
+        <code className="rounded-lg bg-card px-2 py-1 font-mono text-sm break-all">{code}</code>
         <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button"

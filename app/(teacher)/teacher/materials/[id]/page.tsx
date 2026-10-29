@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { PageHeader } from "@/components/page-header";
 import { Status } from "@/components/status";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireTeacher } from "@/lib/auth/guard";
 import { extractImageIds } from "@/lib/images";
 import { formatWita } from "@/lib/format";
@@ -32,30 +35,49 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
   );
   return (
     <section className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">Ubah materi</h1>
-        <Status tone={STATUS_TONE[material.status]}>{STATUS_LABEL[material.status]}</Status>
+      <PageHeader
+        title="Ubah materi"
+        description={`${material.subjectName} · ${material.chapterTitle} · Diubah ${formatWita(material.updatedAt)}`}
+      />
+      <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:items-start">
+        <MaterialForm chapters={chapters} material={material} />
+        <div className="flex flex-col gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <h2 className="text-xl font-bold">Status</h2>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div>
+                <Status tone={STATUS_TONE[material.status]}>{STATUS_LABEL[material.status]}</Status>
+              </div>
+              <Link href={`/teacher/materials/${id}/preview`} className={buttonVariants({ variant: "outline", className: "h-11 self-start" })}>
+                Pratinjau
+              </Link>
+              <StatusButtons
+                id={id}
+                status={material.status}
+                targets={(["REVIEWED", "PUBLISHED", "DRAFT"] as const).filter((to) =>
+                  canTransition(material.status, to),
+                )}
+              />
+            </CardContent>
+          </Card>
+          <section aria-labelledby="gambar-heading">
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <h2 id="gambar-heading" className="text-xl font-bold">Gambar</h2>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ImagePanel owner="materialId" ownerId={id} images={material.images} referencedIds={referencedIds} />
+              </CardContent>
+            </Card>
+          </section>
+        </div>
       </div>
-      <p className="text-sm text-muted-foreground">
-        {material.subjectName} · {material.chapterTitle} · Diubah {formatWita(material.updatedAt)}
-      </p>
-      <div className="flex flex-wrap items-start gap-2">
-        <Link href={`/teacher/materials/${id}/preview`} className="inline-flex min-h-11 items-center underline">
-          Pratinjau
-        </Link>
-        <StatusButtons
-          id={id}
-          status={material.status}
-          targets={(["REVIEWED", "PUBLISHED", "DRAFT"] as const).filter((to) =>
-            canTransition(material.status, to),
-          )}
-        />
-      </div>
-      <MaterialForm chapters={chapters} material={material} />
-      <section aria-labelledby="gambar-heading">
-        <h2 id="gambar-heading" className="text-lg font-semibold">Gambar</h2>
-        <ImagePanel owner="materialId" ownerId={id} images={material.images} referencedIds={referencedIds} />
-      </section>
       {material.status === "DRAFT" && (
         <div>
           <DeleteMaterialButton id={id} title={material.title} />

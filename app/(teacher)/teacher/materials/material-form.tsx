@@ -5,6 +5,7 @@ import { ConfirmAction } from "@/components/confirm-action";
 import { Feedback } from "@/components/form-feedback";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import type { FormState } from "@/lib/form-state";
 import type { MaterialStatus } from "@/lib/generated/prisma/enums";
@@ -66,7 +67,9 @@ export function MaterialForm({
     ["exercises", "Latihan (opsional)", false, 6],
   ] as const;
   return (
-    <form action={formAction} className="flex max-w-3xl flex-col gap-4">
+    <form action={formAction} className="flex w-full max-w-3xl flex-col gap-4">
+      <Card>
+      <CardContent className="flex flex-col gap-4">
       <FormField id="title" name="title" label="Judul" required autoComplete="off" defaultValue={v("title")} error={e?.title} />
       <div className="flex flex-col gap-2">
         <Label htmlFor="summary">Ringkasan</Label>
@@ -146,8 +149,10 @@ export function MaterialForm({
       ))}
       <FormField id="sourceReference" name="sourceReference" label="Sumber (nama buku)" required autoComplete="off" defaultValue={v("sourceReference")} error={e?.sourceReference} />
       <FormField id="sourcePages" name="sourcePages" label="Halaman sumber (opsional)" autoComplete="off" defaultValue={v("sourcePages")} error={e?.sourcePages} />
+      </CardContent>
+      </Card>
       <Feedback state={state} />
-      <Button type="submit" className="h-11 text-base" disabled={pending} aria-busy={pending}>
+      <Button type="submit" className="h-12 self-start px-6 text-base" disabled={pending} aria-busy={pending}>
         {pending ? "Sedang menyimpan…" : material ? "Simpan materi" : "Buat materi"}
       </Button>
     </form>
