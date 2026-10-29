@@ -129,7 +129,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
 
           <section aria-labelledby="hasil" className="flex flex-col gap-3">
             <h2 id="hasil" className="text-xl font-semibold">Hasil</h2>
-            <Results quizId={id} recap={recap} />
+            <Results quizId={id} recap={recap} open={!quiz.endsAt || quiz.endsAt > new Date()} />
           </section>
 
           <details className="flex flex-col gap-8 rounded-lg border p-3">
@@ -165,6 +165,9 @@ function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boo
   const essays = pending.reduce((n, a) => n + a.pendingEssays, 0);
   const first = pending.find((a) => a.pendingEssays > 0);
   const released = !!recap.quiz.resultsReleasedAt;
+  const absent = count("NOT_STARTED");
+  const counted = count("FINAL") + count("NEEDS_GRADING");
+  const ready = counted > 0 && (absent === 0 || !open);
   return (
     <section aria-labelledby="langkah" className="flex flex-col gap-3 rounded-lg border-2 p-4">
       <h2 id="langkah" className="text-xl font-semibold">Langkah berikutnya</h2>
@@ -178,21 +181,28 @@ function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boo
         <p>{waiting} siswa belum mengerjakan percobaan pengganti.</p>
       ) : released ? (
         <p>Hasil sudah dibagikan.</p>
-      ) : (
+      ) : ready ? (
         <ResultsControls id={id} released={false} open={open} />
+      ) : (
+        <p>{absent} siswa belum mengerjakan.</p>
       )}
       {released && <ResultsControls id={id} released open={open} />}
     </section>
   );
 }
 
-function Results({ quizId, recap }: { quizId: string; recap: QuizRecap }) {
+function Results({ quizId, recap, open }: { quizId: string; recap: QuizRecap; open: boolean }) {
   const { resultsReleasedAt } = recap.quiz;
+  const absent = recap.rows.filter((r) => r.state === "NOT_STARTED").length;
+  const counted = recap.rows.filter((r) => r.state === "FINAL" || r.state === "NEEDS_GRADING").length;
+  // Not offered in "Langkah berikutnya" yet: keep release reachable, but not as the main action.
+  const early = !resultsReleasedAt && counted > 0 && absent > 0 && open;
   return (
     <>
       <p>
         {resultsReleasedAt ? `Dirilis ${formatWita(resultsReleasedAt)}.` : "Belum dirilis. Siswa belum bisa melihat nilai."}
       </p>
+      {early ? <ResultsControls id={quizId} released={false} open={open} primary={false} /> : null}
       <a href={`/api/exports/${quizId}`} download className={buttonVariants({ variant: "outline", className: "h-11 self-start" })}>
         Unduh Excel
       </a>

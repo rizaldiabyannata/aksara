@@ -218,7 +218,7 @@ export function PublishControls({ id, published }: { id: string; published: bool
   );
 }
 
-export function ResultsControls({ id, released, open }: { id: string; released: boolean; open: boolean }) {
+export function ResultsControls({ id, released, open, primary = true }: { id: string; released: boolean; open: boolean; primary?: boolean }) {
   return released ? (
     <ConfirmAction
       action={unreleaseResultsAction.bind(null, id)}
@@ -231,7 +231,7 @@ export function ResultsControls({ id, released, open }: { id: string; released: 
     <ConfirmAction
       action={releaseResultsAction.bind(null, id)}
       trigger="Rilis hasil"
-      primary
+      primary={primary}
       title="Rilis hasil ke siswa?"
       description={
         "Siswa bisa melihat nilai, jawaban, dan (bila diizinkan) kunci serta pembahasan." +

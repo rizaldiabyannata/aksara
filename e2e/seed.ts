@@ -60,6 +60,8 @@ const started = await startAttempt(dua, forTeacher.quiz.id);
 if (!started.ok) throw new Error("seed start");
 await saveAnswer(dua.id, started.attemptId, { quizQuestionId: forTeacher.qqs[0].id, answer: { text: "Hasilnya 5." } });
 await submitAttempt(dua.id, forTeacher.quiz.id, started.attemptId);
+// Window over, so the dashboard promotes release even if other students never start.
+await prisma.quiz.update({ where: { id: forTeacher.quiz.id }, data: { endsAt: new Date(Date.now() - 60_000) } });
 
 writeFileSync(
   "e2e/.auth.json",

@@ -17,7 +17,8 @@ export async function getTeacherDashboard(now: Date = new Date()) {
     where: { status: "PUBLISHED", attempts: { some: {} } },
     orderBy: [{ title: "asc" }, { id: "asc" }],
     select: {
-      id: true, title: true, resultsReleasedAt: true,
+      id: true, title: true, resultsReleasedAt: true, endsAt: true,
+      classes: { select: { classId: true } },
       attempts: {
         select: {
           status: true, studentId: true, replacementGrantedAt: true, replacedBy: { select: { id: true } },
@@ -36,7 +37,13 @@ export async function getTeacherDashboard(now: Date = new Date()) {
     if (inProgress) running.push({ kind: "RUNNING", quizId: q.id, title: q.title, inProgress });
     if (essays) grade.push({ kind: "GRADE", quizId: q.id, title: q.title, essays });
     if (!q.resultsReleasedAt && !inProgress && !essays && !pendingReplacement && counted.length) {
-      release.push({ kind: "RELEASE", quizId: q.id, title: q.title, students: new Set(counted.map((a) => a.studentId)).size });
+      const done = new Set(counted.map((a) => a.studentId));
+      // Promote only when the window is over or everyone in the target classes has finished.
+      const windowOver = !!q.endsAt && q.endsAt <= now;
+      const missing = windowOver ? 0 : await prisma.user.count({
+        where: { role: "STUDENT", isActive: true, classId: { in: q.classes.map((c) => c.classId) }, id: { notIn: [...done] } },
+      });
+      if (!missing) release.push({ kind: "RELEASE", quizId: q.id, title: q.title, students: done.size });
     }
   }
 

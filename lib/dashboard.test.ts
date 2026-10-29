@@ -33,6 +33,17 @@ describe("getTeacherDashboard", () => {
     expect((await getTeacherDashboard(at(40))).tasks).toEqual([]);
   });
 
+  it("no RELEASE while another active student has not started; RELEASE once the window ended", async () => {
+    const s = await setup({}, [{}]);
+    await makeStudent(s.cls.id);
+    await submitAttempt(s.student.id, s.quiz.id, await started(s), at(10));
+    expect((await getTeacherDashboard(at(20))).tasks).toEqual([]);
+    await prisma.quiz.update({ where: { id: s.quiz.id }, data: { endsAt: at(15) } });
+    expect((await getTeacherDashboard(at(20))).tasks).toEqual([
+      { kind: "RELEASE", quizId: s.quiz.id, title: s.quiz.title, students: 1 },
+    ]);
+  });
+
   it("no RELEASE while an essay is ungraded or a replacement is unstarted", async () => {
     const e = await setup({}, [{ type: "ESSAY" }]);
     await submitAttempt(e.student.id, e.quiz.id, await started(e), at(10));
