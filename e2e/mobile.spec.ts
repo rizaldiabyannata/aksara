@@ -12,7 +12,7 @@ async function smallTargets(page: Page) {
       const target = el.matches("input[type=checkbox],input[type=radio]") ? (el.closest("label") ?? el) : el;
       const r = target.getBoundingClientRect();
       if (r.width <= 1 || r.height <= 1) continue; // sr-only
-      if (r.height < 44) bad.push(`${el.tagName.toLowerCase()} "${(el.textContent ?? "").trim().slice(0, 30)}" ${Math.round(r.height)}px`);
+      if (r.height < 44 || r.width < 44) bad.push(`${el.tagName.toLowerCase()} "${(el.textContent ?? "").trim().slice(0, 30)}" ${Math.round(r.width)}x${Math.round(r.height)}px`);
     }
     return bad;
   });
@@ -28,23 +28,38 @@ async function check(page: Page, path: string, primary: Primary) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth), `${path} scrolls sideways`).toBeLessThanOrEqual(width);
   expect(await smallTargets(page), `${path} small targets`).toEqual([]);
 
-  // Tab until the main action has focus, and every stop on the way shows a focus indicator.
+  // Tab until the main action has focus, then up to 15 more stops (or until focus leaves <main>); every stop needs a real focus indicator.
   const target =
     primary === "main"
       ? page.locator("main").locator(":is(a,button,input:not([type=hidden]),select,textarea,summary):visible").first()
       : page.getByRole(primary.role, { name: primary.name }).first();
-  for (let i = 0; i < 40; i++) {
-    await page.keyboard.press("Tab");
-    const visible = await page.evaluate(() => {
+  // transition-all animates the ring in; read settled values.
+  await page.addStyleTag({ content: "*,*::before,*::after{transition:none!important}" });
+  const indicator = () =>
+    page.evaluate(() => {
       const a = document.activeElement as HTMLElement | null;
-      if (!a || a === document.body) return true;
-      const cs = getComputedStyle(a);
-      return cs.outlineStyle !== "none" || cs.boxShadow !== "none";
+      if (!a || a === document.body) return { ok: true, inMain: true, desc: "body" };
+      const read = () => {
+        const cs = getComputedStyle(a);
+        return { style: cs.outlineStyle, width: parseFloat(cs.outlineWidth), shadow: cs.boxShadow };
+      };
+      const on = read();
+      a.blur();
+      const off = read();
+      a.focus();
+      const ok = (on.style !== "none" && on.width > 0) || on.shadow !== off.shadow;
+      return { ok, inMain: !!a.closest("main"), desc: `${a.tagName} ${(a.textContent ?? "").trim().slice(0, 20)} ${a.className.toString().slice(0, 80)} on=${JSON.stringify(on)} off=${JSON.stringify(off)}` };
     });
-    expect(visible, `${path} focus indicator at tab stop ${i + 1}`).toBe(true);
-    if (await target.evaluate((el) => el === document.activeElement)) return;
+  let reached = false;
+  let extra = 0;
+  for (let i = 0; i < 60; i++) {
+    await page.keyboard.press("Tab");
+    const { ok, inMain, desc } = await indicator();
+    expect(ok, `${path} focus indicator at tab stop ${i + 1}: ${desc}`).toBe(true);
+    if (!reached && (await target.evaluate((el) => el === document.activeElement))) reached = true;
+    else if (reached && (++extra >= 15 || !inMain)) return;
   }
-  throw new Error(`${path}: Tab never reached ${primary === "main" ? "main" : String(primary.name)}`);
+  if (!reached) throw new Error(`${path}: Tab never reached ${primary === "main" ? "main" : String(primary.name)}`);
 }
 
 for (const width of [360, 1280]) {
@@ -64,6 +79,11 @@ for (const width of [360, 1280]) {
         await page.getByRole("button", { name: `Mulai ${s.studentQuiz.title}` }).click();
         await page.waitForURL("**/attempt");
         await check(page, page.url().replace(/^https?:\/\/[^/]+/, ""), { role: "button", name: "Berikutnya" });
+        // The fixed bottom bar must not cover the last row (the "Ragu-ragu" flag).
+        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+        const flag = (await page.getByText("Ragu-ragu dengan nomor ini?").boundingBox())!;
+        const bar = (await page.getByRole("button", { name: "Kumpulkan jawaban" }).boundingBox())!;
+        expect(flag.y + flag.height, "flag row hidden by bottom bar").toBeLessThanOrEqual(bar.y);
       }
     });
 
@@ -76,7 +96,9 @@ for (const width of [360, 1280]) {
       await check(page, "/teacher/classes", { role: "button", name: "Buat kelas" });
       await check(page, "/teacher/students", { role: "button", name: "Cari" });
       // The long seeded name must wrap, not widen the page (checked inside check()).
-      await expect(page.getByText("Siswa Dengan Nama Yang Sangat Panjang Sekali").first()).toBeVisible();
+      const name = page.getByText("Siswa Dengan Nama Yang Sangat Panjang Sekali").first();
+      await expect(name).toBeVisible();
+      expect(await name.evaluate((el) => el.scrollWidth <= el.clientWidth), "long name is clipped").toBe(true);
       for (const path of [
         "/teacher/subjects",
         "/teacher/materials",

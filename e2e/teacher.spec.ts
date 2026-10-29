@@ -37,7 +37,16 @@ test("class code dialog", async ({ page }) => {
   await expect(dialog).toBeVisible();
   expect((await dialog.innerText()).replace(/\s+/g, "")).toContain(seed().classCode);
   await page.setViewportSize({ width: 360, height: 780 });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+  // Fixed popups do not widen the document, so measure the dialog and the code itself.
+  const box = (await dialog.boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(360);
+  const codeFits = await dialog.evaluate((d, code) => {
+    const els = [...d.querySelectorAll<HTMLElement>("*")].filter((e) => (e.textContent ?? "").replace(/\s+/g, "").includes(code));
+    const el = els[els.length - 1];
+    return !!el && el.scrollWidth <= el.clientWidth;
+  }, seed().classCode);
+  expect(codeFits, "class code is clipped").toBe(true);
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
 });
