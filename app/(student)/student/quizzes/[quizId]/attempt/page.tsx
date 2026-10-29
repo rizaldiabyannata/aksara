@@ -23,7 +23,7 @@ export default function AttemptPage({ params }: PageProps<"/student/quizzes/[qui
 
 function BackLink() {
   return (
-    <Link href="/student/quizzes" className={LINK}>
+    <Link href="/student" className={LINK}>
       Kembali ke daftar ulangan
     </Link>
   );

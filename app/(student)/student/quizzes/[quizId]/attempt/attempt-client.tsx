@@ -265,7 +265,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
           Jawabanmu sudah dikumpulkan. Nilai muncul setelah guru merilis hasil.
         </p>
         <div>
-          <Link href="/student/quizzes" className={LINK}>
+          <Link href="/student" className={LINK}>
             Kembali ke daftar ulangan
           </Link>
         </div>

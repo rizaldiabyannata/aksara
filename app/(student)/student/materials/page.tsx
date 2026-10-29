@@ -28,7 +28,7 @@ async function Tree() {
         <p className="text-muted-foreground">Belum ada materi. Tunggu gurumu menerbitkannya.</p>
       ) : (
         subjects.map((s) => (
-          <div key={s.id} className="flex flex-col gap-4">
+          <div key={s.id} id={s.id} className="flex scroll-mt-20 flex-col gap-4">
             <h2 className="text-xl font-semibold">{s.name}</h2>
             {s.chapters.map((c) => (
               <div key={c.id} className="flex flex-col gap-1">

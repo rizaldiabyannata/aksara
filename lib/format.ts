@@ -23,3 +23,6 @@ export function toWitaInput(d: Date): string {
 /** Scores always show 2 decimals, Indonesian style: 66,67. */
 export const formatScore = (n: number): string =>
   n.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const witaTime = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Makassar", timeStyle: "short" });
+export const formatWitaTime = (d: Date): string => witaTime.format(d);
