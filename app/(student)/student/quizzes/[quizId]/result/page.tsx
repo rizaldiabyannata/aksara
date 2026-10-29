@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Markdown } from "@/components/material-view";
 import { QuestionView } from "@/components/question-view";
+import { Status } from "@/components/status";
+import { buttonVariants } from "@/components/ui/button";
 import { requireStudent } from "@/lib/auth/guard";
 import { readable } from "@/lib/export";
 import { formatScore, formatWita } from "@/lib/format";
@@ -26,7 +27,18 @@ async function Result({ params }: { params: Promise<{ quizId: string }> }) {
   const user = await requireStudent();
   const { quizId } = await params;
   const r = await getStudentResult(user.id, quizId);
-  if (!r) notFound();
+  if (!r) {
+    return (
+      <section className="flex flex-col items-start gap-3">
+        <h1 className="text-2xl font-semibold">Hasil ulangan</h1>
+        <Status tone="info">Nilaimu belum keluar</Status>
+        <p>Nilaimu akan muncul setelah gurumu membagikannya.</p>
+        <Link href="/student" className={buttonVariants({ size: "lg" })}>
+          Kembali ke beranda
+        </Link>
+      </section>
+    );
+  }
   return (
     <>
       <Link href="/student/quizzes" className="inline-flex min-h-11 items-center self-start underline underline-offset-4">

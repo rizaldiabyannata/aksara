@@ -63,6 +63,13 @@ describe("getStudentResult", () => {
     expect(await getStudentResult(other.id, s.quiz.id, at(40))).toBeNull();
   });
 
+  it("unknown quiz and unreleased quiz are indistinguishable", async () => {
+    const s = await setup({}, [{}]);
+    await submitAttempt(s.student.id, s.quiz.id, await started(s), at(10));
+    expect(await getStudentResult(s.student.id, s.quiz.id, at(20))).toBeNull();
+    expect(await getStudentResult(s.student.id, "tidak-ada", at(20))).toBeNull();
+  });
+
   it("switch off: score and own answers, no key, explanation, or feedback; rubric never", async () => {
     const s = await setup({ showFeedbackAfterRelease: false }, [{}, { type: "ESSAY", points: 2 }]);
     const id = await started(s);
