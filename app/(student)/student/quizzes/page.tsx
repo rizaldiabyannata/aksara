@@ -1,0 +1,85 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
+import { Markdown } from "@/components/material-view";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { requireStudent } from "@/lib/auth/guard";
+import { listStudentQuizzes, type StudentQuizRow } from "@/lib/attempts";
+import { formatWita } from "@/lib/format";
+import { StartButton } from "./start-button";
+
+export const metadata: Metadata = { title: "Ulangan" };
+
+const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
+
+export default function StudentQuizzesPage() {
+  return (
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4">
+      <Suspense fallback={<p>Memuat…</p>}>
+        <QuizList />
+      </Suspense>
+    </main>
+  );
+}
+
+function stateText(r: StudentQuizRow) {
+  switch (r.state) {
+    case "AVAILABLE": return "Tersedia";
+    case "SCHEDULED": return `Terjadwal, mulai ${r.startsAt ? formatWita(r.startsAt) : ""}`.trim();
+    case "IN_PROGRESS": return "Sedang dikerjakan";
+    case "REPLACEMENT": return "Guru membukakan percobaan pengganti untukmu";
+    case "DONE": return "Selesai";
+    case "CLOSED": return "Ditutup";
+  }
+}
+
+function startLabel(r: StudentQuizRow) {
+  if (r.state === "IN_PROGRESS") return "Lanjutkan";
+  if (r.state === "AVAILABLE" || r.state === "REPLACEMENT") return r.hasAttempts ? "Ulangi" : "Mulai";
+  return null;
+}
+
+async function QuizList() {
+  const user = await requireStudent();
+  const rows = await listStudentQuizzes({ id: user.id, classId: user.classId });
+  return (
+    <section className="flex flex-col gap-4">
+      <h1 className="text-2xl font-semibold">Ulangan</h1>
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground">Belum ada ulangan untukmu.</p>
+      ) : (
+        <ul className="flex flex-col gap-4">
+          {rows.map((r) => {
+            const label = startLabel(r);
+            return (
+              <li key={r.quizId}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{r.title}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{r.subjectName}</p>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-3">
+                    <div>
+                      <Badge variant="secondary">{stateText(r)}</Badge>
+                    </div>
+                    <p className="text-sm">
+                      Durasi {r.durationMinutes} menit · {r.questionCount} soal · Sisa percobaan {r.remainingAttempts}
+                    </p>
+                    {r.instructions ? <Markdown source={r.instructions} images={[]} /> : null}
+                    {label ? <StartButton quizId={r.quizId} title={r.title} label={label} /> : null}
+                  </CardContent>
+                </Card>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <div>
+        <Link href="/student" className={LINK}>
+          Kembali ke beranda
+        </Link>
+      </div>
+    </section>
+  );
+}

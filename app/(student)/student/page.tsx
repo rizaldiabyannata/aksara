@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { LogoutButton } from "@/components/logout-button";
 import { requireStudent } from "@/lib/auth/guard";
+import { listStudentQuizzes } from "@/lib/attempts";
 
 export const metadata: Metadata = { title: "Beranda" };
 
@@ -20,6 +21,9 @@ export default function StudentDashboardPage() {
 
 async function Dashboard() {
   const user = await requireStudent();
+  const open = (await listStudentQuizzes({ id: user.id, classId: user.classId })).filter((r) =>
+    (["AVAILABLE", "IN_PROGRESS", "REPLACEMENT"] as string[]).includes(r.state),
+  ).length;
   return (
     <section className="flex flex-col gap-3">
       <h1 className="text-2xl font-semibold">Halo, {user.displayName}</h1>
@@ -28,6 +32,11 @@ async function Dashboard() {
         <li>
           <Link href="/student/materials" className={LINK}>
             Materi pelajaran
+          </Link>
+        </li>
+        <li>
+          <Link href="/student/quizzes" className={LINK}>
+            Ulangan{open > 0 ? ` (${open} bisa dikerjakan)` : ""}
           </Link>
         </li>
       </ul>
