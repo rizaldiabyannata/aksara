@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Book02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Markdown } from "@/components/material-view";
+import { PageHeader } from "@/components/page-header";
 import { Status, type StatusTone } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,9 +76,9 @@ function Row({ r }: { r: StudentQuizRow }) {
   }
   return (
     <li>
-      <Card className={rk === 1 ? "border-2 border-primary" : undefined}>
+      <Card className={rk === 1 ? "border-2! border-primary! text-base! shadow-raised!" : "text-base!"}>
         <CardHeader>
-          {rk === 1 ? <p className="font-semibold">Lanjutkan ulangan</p> : null}
+          {rk === 1 ? <p className="font-semibold text-primary-strong">Lanjutkan ulangan</p> : null}
           <CardTitle>{r.title}</CardTitle>
           <p className="text-sm text-muted-foreground">{r.subjectName}</p>
         </CardHeader>
@@ -105,9 +108,14 @@ async function Dashboard() {
   const sorted = rows.map((r) => ({ r, k: rank(r) })).sort((a, b) => a.k - b.k).map((x) => x.r); // stable
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Halo, {user.displayName}</h1>
+      <div className="rounded-2xl bg-primary-soft p-6">
+        <PageHeader title={`Halo, ${user.displayName}`} description="Ini ulangan dan materimu." />
+      </div>
       <section aria-labelledby="ulangan" className="flex flex-col gap-3">
-        <h2 id="ulangan" className="text-xl font-semibold">Ulangan</h2>
+        <h2 id="ulangan" className="flex items-center gap-3 text-xl font-bold">
+          <span aria-hidden="true" className="h-6 w-1.5 rounded-full bg-accent-decor" />
+          Ulangan
+        </h2>
         {sorted.length === 0 ? (
           <p className="text-muted-foreground">Belum ada ulangan. Sambil menunggu, baca materi dulu.</p>
         ) : (
@@ -120,10 +128,20 @@ async function Dashboard() {
       </section>
       {subjects.length > 0 ? (
         <section aria-labelledby="materi" className="flex flex-col gap-3">
-          <h2 id="materi" className="text-xl font-semibold">Materi</h2>
-          <div className="flex flex-wrap gap-3">
+          <h2 id="materi" className="flex items-center gap-3 text-xl font-bold">
+            <span aria-hidden="true" className="h-6 w-1.5 rounded-full bg-accent-decor" />
+            Materi
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
             {subjects.map((s) => (
-              <Link key={s.id} href={`/student/materials#${s.id}`} className={buttonVariants({ size: "lg", variant: "outline" })}>
+              <Link
+                key={s.id}
+                href={`/student/materials#${s.id}`}
+                className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-card p-4 text-lg font-semibold shadow-card hover:bg-secondary focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none"
+              >
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-info-soft text-info">
+                  <HugeiconsIcon icon={Book02Icon} aria-hidden="true" />
+                </span>
                 {s.name}
               </Link>
             ))}

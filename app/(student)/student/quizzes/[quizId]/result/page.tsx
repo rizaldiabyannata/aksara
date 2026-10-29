@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Award01Icon } from "@hugeicons/core-free-icons";
 import { Markdown } from "@/components/material-view";
+import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
 import { QuestionView } from "@/components/question-view";
 import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
@@ -30,8 +33,8 @@ async function Result({ params }: { params: Promise<{ quizId: string }> }) {
   const r = await getStudentResult(user.id, quizId);
   if (!r) {
     return (
-      <section className="flex flex-col items-start gap-3">
-        <h1 className="text-2xl font-semibold">Hasil ulangan</h1>
+      <section className="flex flex-col items-start gap-4 rounded-2xl border border-border bg-card p-6 shadow-card">
+        <PageHeader title="Hasil ulangan" />
         <Status tone="info">Nilaimu belum keluar</Status>
         <p>Nilaimu akan muncul setelah gurumu membagikannya.</p>
         <Link href="/student" className={buttonVariants({ size: "lg" })}>
@@ -48,15 +51,14 @@ async function Result({ params }: { params: Promise<{ quizId: string }> }) {
     );
   return (
     <>
-      <section className="flex flex-col items-start gap-3">
-        <h1 className="text-2xl font-semibold">Hasil: {r.quizTitle}</h1>
+      <section className="flex flex-col items-start gap-4">
+        <PageHeader title={`Hasil: ${r.quizTitle}`} />
         {r.recap === null ? (
-          <p className="text-lg">Nilaimu belum final. Gurumu masih memeriksa jawaban uraian.</p>
+          <p className="rounded-2xl bg-primary-soft p-4 text-lg">Nilaimu belum final. Gurumu masih memeriksa jawaban uraian.</p>
         ) : (
-          <p className="flex flex-col">
-            <span className="text-muted-foreground">Nilaimu</span>
-            <span className="text-5xl font-bold">{formatScore(r.recap)}</span>
-          </p>
+          <div className="w-full max-w-sm">
+            <StatCard label="Nilaimu" value={formatScore(r.recap)} icon={Award01Icon} tone="success" />
+          </div>
         )}
         {r.kkm !== null && r.passed !== null && (
           r.passed ? (
@@ -75,15 +77,18 @@ async function Result({ params }: { params: Promise<{ quizId: string }> }) {
       </section>
       {r.attempts.map((a) => (
         <section key={a.label} aria-label={a.label} className="flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">{a.label}</h2>
+          <h2 className="flex items-center gap-3 text-xl font-bold">
+            <span aria-hidden="true" className="h-6 w-1.5 rounded-full bg-accent-decor" />
+            {a.label}
+          </h2>
           <p>
             {a.submittedAt && `Dikumpulkan ${formatWita(a.submittedAt)} · `}
             {a.score === null ? "Nilai belum final" : `Nilai ${formatScore(a.score)}`}
           </p>
           <ol className="flex flex-col gap-4">
             {a.answers.map((x) => (
-              <li key={x.question.id} className="flex flex-col gap-3 rounded-lg border p-3">
-                <h3 className="font-medium">Soal {x.number}</h3>
+              <li key={x.question.id} className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-card sm:p-6">
+                <h3 className="w-fit rounded-full bg-primary-soft px-3 py-1 font-semibold text-primary-strong">Soal {x.number}</h3>
                 <QuestionView question={x.question} />
                 <p className="whitespace-pre-wrap"><span className="font-medium">Jawabanmu:</span> {readable(x.question, x.answer)}</p>
                 {x.correct === null ? (

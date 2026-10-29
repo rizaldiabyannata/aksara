@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { MaterialView } from "@/components/material-view";
+import { Card, CardContent } from "@/components/ui/card";
 import { requireStudent } from "@/lib/auth/guard";
 import { getPublishedMaterial } from "@/lib/materials";
 
@@ -22,5 +23,11 @@ async function Read({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const material = await getPublishedMaterial(id);
   if (!material) notFound();
-  return <MaterialView material={material} />;
+  return (
+    <Card className="mx-auto w-full max-w-3xl text-base!">
+      <CardContent>
+        <MaterialView material={material} />
+      </CardContent>
+    </Card>
+  );
 }
