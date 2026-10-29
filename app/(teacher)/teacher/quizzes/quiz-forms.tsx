@@ -16,7 +16,7 @@ import {
 import { POLICY_LABEL } from "./labels";
 
 const controlClass =
-  "h-11 w-full rounded-lg border border-input bg-transparent px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive disabled:opacity-50";
+  "h-12 w-full rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive disabled:opacity-50";
 
 export function CreateQuizForm({ subjects }: { subjects: { id: string; name: string }[] }) {
   const [state, action, pending] = useActionState(createQuizAction, undefined);
@@ -81,7 +81,7 @@ export function SettingsForm({ id, q }: { id: string; q: Settings }) {
         <Label htmlFor="instructions">Petunjuk</Label>
         <textarea id="instructions" name="instructions" rows={4} maxLength={5000}
           defaultValue={text("instructions", q.instructions ?? "")}
-          className={`${controlClass} h-auto py-2`} aria-invalid={e?.instructions ? true : undefined}
+          className={`${controlClass} h-auto min-h-32 py-2`} aria-invalid={e?.instructions ? true : undefined}
           aria-describedby={e?.instructions ? "instructions-error" : undefined} />
         {e?.instructions && <p id="instructions-error" className="text-sm text-destructive">{e.instructions}</p>}
       </div>

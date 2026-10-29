@@ -35,7 +35,7 @@ type Defaults = {
 };
 
 const controlClass =
-  "w-full rounded-lg border border-input bg-transparent px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive";
+  "w-full rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive";
 const HELP =
   "Bisa pakai Markdown: **tebal**, *miring*, daftar dengan -, tabel. Sisipkan gambar dengan kode dari panel Gambar.";
 
@@ -75,7 +75,7 @@ export function MaterialForm({
           name="summary"
           required
           rows={3}
-          className={`${controlClass} py-2`}
+          className={`${controlClass} min-h-32 py-2`}
           defaultValue={v("summary")}
           aria-invalid={e?.summary ? true : undefined}
           aria-describedby={e?.summary ? "summary-error" : undefined}

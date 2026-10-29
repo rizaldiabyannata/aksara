@@ -25,7 +25,7 @@ export type ChapterOption = {
 export type Defaults = Record<string, string>;
 
 const controlClass =
-  "w-full rounded-lg border border-input bg-transparent px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive";
+  "w-full rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive";
 const SLOTS = "abcdefgh";
 const ALT_HINT = "Teks alternatif jangan membocorkan jawaban. Tulis mis. “Gambar A”.";
 const IMG_HINT = "Sisipkan gambar dengan kode dari panel Gambar (ada di halaman ubah soal).";
@@ -88,7 +88,7 @@ function Area({
         name={name}
         rows={rows}
         required={required}
-        className={`${controlClass} py-2${mono ? " font-mono text-sm" : ""}`}
+        className={`${controlClass} min-h-32 py-2${mono ? " font-mono text-sm" : ""}`}
         defaultValue={v}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${name}-error` : undefined}
@@ -203,7 +203,7 @@ export function QuestionForm({
         id={name}
         name={name}
         required={required}
-        className={`${controlClass} h-11`}
+        className={`${controlClass} h-12`}
         defaultValue={v(name)}
         aria-invalid={e?.[name] ? true : undefined}
         aria-describedby={e?.[name] ? `${name}-error` : undefined}
