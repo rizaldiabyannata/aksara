@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Status } from "@/components/status";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { requireTeacher } from "@/lib/auth/guard";
@@ -9,7 +9,7 @@ import type { MaterialStatus } from "@/lib/generated/prisma/enums";
 import { listMaterials } from "@/lib/materials";
 import { getSubjectTree, listChapterOptions } from "@/lib/subjects";
 import { MoveButtons } from "./material-form";
-import { STATUS_LABEL } from "./status-label";
+import { STATUS_LABEL, STATUS_TONE } from "./status-label";
 
 export const metadata: Metadata = { title: "Materi" };
 
@@ -88,9 +88,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
             <li key={m.id} className="flex flex-col gap-3 rounded-lg border p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="font-semibold">{m.title}</h2>
-                <Badge variant={m.status === "PUBLISHED" ? "default" : "secondary"}>
-                  {STATUS_LABEL[m.status]}
-                </Badge>
+                <Status tone={STATUS_TONE[m.status]}>{STATUS_LABEL[m.status]}</Status>
               </div>
               <p className="text-sm text-muted-foreground">{m.subjectName} · {m.chapterTitle}</p>
               <div className="flex flex-wrap items-start gap-2">

@@ -1,3 +1,4 @@
+import type { StatusTone } from "@/components/status";
 import type { Difficulty, QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
 
 export const TYPE_LABEL: Record<QuestionType, string> = {
@@ -15,3 +16,5 @@ export const DIFFICULTY_LABEL: Record<Difficulty, string> = {
   MEDIUM: "Sedang",
   HARD: "Sulit",
 };
+
+export const STATUS_TONE: Record<QuestionStatus, StatusTone> = { DRAFT: "neutral", ACTIVE: "success" };

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -85,9 +86,7 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
               <CardContent className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-lg font-semibold">{s.displayName}</h2>
-                  <Badge variant={s.isActive ? "default" : "secondary"}>
-                    {s.isActive ? "Aktif" : "Nonaktif"}
-                  </Badge>
+                  <Status tone={s.isActive ? "success" : "neutral"}>{s.isActive ? "Aktif" : "Nonaktif"}</Status>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Kelas {s.className} · NIS {s.nis ?? "-"}

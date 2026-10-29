@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Markdown } from "@/components/material-view";
-import { Badge } from "@/components/ui/badge";
+import { Status, type StatusTone } from "@/components/status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireStudent } from "@/lib/auth/guard";
 import { listStudentQuizzes, type StudentQuizRow } from "@/lib/attempts";
@@ -22,6 +22,10 @@ export default function StudentQuizzesPage() {
     </main>
   );
 }
+
+const STATE_TONE: Record<StudentQuizRow["state"], StatusTone> = {
+  AVAILABLE: "info", REPLACEMENT: "info", IN_PROGRESS: "warning", SCHEDULED: "neutral", DONE: "success", CLOSED: "neutral",
+};
 
 function stateText(r: StudentQuizRow) {
   switch (r.state) {
@@ -61,7 +65,7 @@ async function QuizList() {
                   </CardHeader>
                   <CardContent className="flex flex-col gap-3">
                     <div>
-                      <Badge variant="secondary">{stateText(r)}</Badge>
+                      <Status tone={STATE_TONE[r.state]}>{stateText(r)}</Status>
                     </div>
                     <p className="text-sm">
                       Durasi {r.durationMinutes} menit · {r.questionCount} soal · Sisa percobaan {r.remainingAttempts}

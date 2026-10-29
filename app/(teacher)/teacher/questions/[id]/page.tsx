@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
 import { requireTeacher } from "@/lib/auth/guard";
 import { formatWita } from "@/lib/format";
@@ -9,7 +10,7 @@ import { extractImageIds } from "@/lib/images";
 import { getQuestionForTeacher } from "@/lib/questions";
 import { listChapterOptions } from "@/lib/subjects";
 import { ImagePanel } from "../../image-panel";
-import { STATUS_LABEL, TYPE_LABEL } from "../labels";
+import { STATUS_LABEL, STATUS_TONE, TYPE_LABEL } from "../labels";
 import { QuestionActions, QuestionForm, toDefaults } from "../question-form";
 
 export const metadata: Metadata = { title: "Ubah soal" };
@@ -35,7 +36,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-semibold">Ubah soal</h1>
         <Badge variant="outline">{TYPE_LABEL[q.type]}</Badge>
-        <Badge variant={q.status === "ACTIVE" ? "default" : "secondary"}>{STATUS_LABEL[q.status]}</Badge>
+        <Status tone={STATUS_TONE[q.status]}>{STATUS_LABEL[q.status]}</Status>
       </div>
       <p className="text-sm text-muted-foreground">
         {q.subjectName} · {q.chapterTitle} · Diubah {formatWita(q.updatedAt)}

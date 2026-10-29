@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Status } from "@/components/status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireTeacher } from "@/lib/auth/guard";
 import { listClasses } from "@/lib/classes";
@@ -43,9 +43,7 @@ async function ClassList() {
               <CardHeader>
                 <CardTitle className="flex flex-wrap items-center gap-2">
                   <h2 className="text-lg font-semibold">{c.name}</h2>
-                  <Badge variant={c.isActive ? "default" : "secondary"}>
-                    {c.isActive ? "Aktif" : "Nonaktif"}
-                  </Badge>
+                  <Status tone={c.isActive ? "success" : "neutral"}>{c.isActive ? "Aktif" : "Nonaktif"}</Status>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">{c.studentCount} siswa</p>
               </CardHeader>

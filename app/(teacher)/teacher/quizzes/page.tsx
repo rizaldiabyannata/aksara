@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { requireTeacher } from "@/lib/auth/guard";
 import { formatWita } from "@/lib/format";
 import { listQuizzes } from "@/lib/quizzes";
-import { STATUS_LABEL } from "./labels";
+import { STATUS_LABEL, STATUS_TONE } from "./labels";
 
 export const metadata: Metadata = { title: "Ulangan" };
 
@@ -36,7 +37,7 @@ async function List() {
             {r.title}
           </Link>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={r.status === "PUBLISHED" ? "default" : "secondary"}>{STATUS_LABEL[r.status]}</Badge>
+            <Status tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</Status>
             <Badge variant="outline">{r.subjectName}</Badge>
           </div>
           <p className="text-sm text-muted-foreground">

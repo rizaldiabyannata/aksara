@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Status } from "@/components/status";
 import { requireTeacher } from "@/lib/auth/guard";
 import { extractImageIds } from "@/lib/images";
 import { formatWita } from "@/lib/format";
@@ -10,7 +10,7 @@ import { canTransition, getMaterialForTeacher } from "@/lib/materials";
 import { listChapterOptions } from "@/lib/subjects";
 import { ImagePanel } from "../../image-panel";
 import { DeleteMaterialButton, MaterialForm, StatusButtons } from "../material-form";
-import { STATUS_LABEL } from "../status-label";
+import { STATUS_LABEL, STATUS_TONE } from "../status-label";
 
 export const metadata: Metadata = { title: "Ubah materi" };
 
@@ -34,9 +34,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
     <section className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-semibold">Ubah materi</h1>
-        <Badge variant={material.status === "PUBLISHED" ? "default" : "secondary"}>
-          {STATUS_LABEL[material.status]}
-        </Badge>
+        <Status tone={STATUS_TONE[material.status]}>{STATUS_LABEL[material.status]}</Status>
       </div>
       <p className="text-sm text-muted-foreground">
         {material.subjectName} · {material.chapterTitle} · Diubah {formatWita(material.updatedAt)}

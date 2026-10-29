@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,7 +17,7 @@ import { getQuizRecap } from "@/lib/results";
 import { listChapterOptions } from "@/lib/subjects";
 import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
 import { AttemptsTable } from "./attempts-table";
-import { STATUS_LABEL } from "../labels";
+import { STATUS_LABEL, STATUS_TONE } from "../labels";
 import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, ResultsControls, SettingsForm } from "../quiz-forms";
 
 export const metadata: Metadata = { title: "Ulangan" };
@@ -54,7 +55,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
     <section className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-semibold">{quiz.title}</h1>
-        <Badge variant={published ? "default" : "secondary"}>{STATUS_LABEL[quiz.status]}</Badge>
+        <Status tone={STATUS_TONE[quiz.status]}>{STATUS_LABEL[quiz.status]}</Status>
         <Badge variant="outline">{quiz.subjectName}</Badge>
       </div>
 

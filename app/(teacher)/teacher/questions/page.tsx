@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { requireTeacher } from "@/lib/auth/guard";
 import type { Difficulty, QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
 import { listQuestions } from "@/lib/questions";
 import { getSubjectTree, listChapterOptions } from "@/lib/subjects";
-import { DIFFICULTY_LABEL, STATUS_LABEL, TYPE_LABEL } from "./labels";
+import { DIFFICULTY_LABEL, STATUS_LABEL, STATUS_TONE, TYPE_LABEL } from "./labels";
 
 export const metadata: Metadata = { title: "Bank soal" };
 
@@ -110,7 +111,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">{TYPE_LABEL[r.type]}</Badge>
               <Badge variant="outline">{DIFFICULTY_LABEL[r.difficulty]}</Badge>
-              <Badge variant={r.status === "ACTIVE" ? "default" : "secondary"}>{STATUS_LABEL[r.status]}</Badge>
+              <Status tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</Status>
             </div>
             <p className="text-sm text-muted-foreground">{r.subjectName} · {r.chapterTitle}</p>
             <div className="flex flex-wrap items-start gap-2">
