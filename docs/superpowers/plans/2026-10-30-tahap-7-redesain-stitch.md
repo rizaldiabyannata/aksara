@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> Status: direncanakan di branch `tahap-7-redesain` (2026-10-30).
+> Status: dibangun di branch `tahap-7-redesain` (2026-10-30). Vitest 619/1, E2E 7/7 (alur siswa, alur guru, dialog kode, sapuan 360 + 1280 px), lint/tsc/build bersih. Task 15–18 dikerjakan langsung oleh controller dan review per task dilakukan inline, karena classifier auto mode menolak sebagian dispatch subagent. Belum ada review akhir independen.
 
 **Goal:** Seluruh UI Aksara memakai dunia visual Stitch "Ruang Kelas yang Hangat", tanpa mengubah perilaku domain atau invarian apa pun.
 
