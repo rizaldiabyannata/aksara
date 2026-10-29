@@ -1,6 +1,8 @@
 "use client";
 
 import { startTransition, useActionState } from "react";
+import { ArrowDown01Icon, ArrowUp01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { ConfirmAction } from "@/components/confirm-action";
 import { Feedback } from "@/components/form-feedback";
 import { FormField } from "@/components/form-field";
@@ -167,22 +169,22 @@ export function MoveButtons({
         <Button
           type="button"
           variant="outline"
-          className="h-11"
+          size="icon"
           disabled={isFirst || pending}
           aria-label={`Naikkan ${kind} ${title}`}
           onClick={() => startTransition(() => dispatch("up"))}
         >
-          Naik
+          <HugeiconsIcon icon={ArrowUp01Icon} aria-hidden="true" />
         </Button>
         <Button
           type="button"
           variant="outline"
-          className="h-11"
+          size="icon"
           disabled={isLast || pending}
           aria-label={`Turunkan ${kind} ${title}`}
           onClick={() => startTransition(() => dispatch("down"))}
         >
-          Turun
+          <HugeiconsIcon icon={ArrowDown01Icon} aria-hidden="true" />
         </Button>
       </div>
       <Feedback state={state} />
