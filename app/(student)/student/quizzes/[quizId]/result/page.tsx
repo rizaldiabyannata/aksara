@@ -5,6 +5,7 @@ import { Markdown } from "@/components/material-view";
 import { QuestionView } from "@/components/question-view";
 import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
+import { listStudentQuizzes } from "@/lib/attempts";
 import { requireStudent } from "@/lib/auth/guard";
 import { readable } from "@/lib/export";
 import { formatScore, formatWita } from "@/lib/format";
@@ -39,20 +40,37 @@ async function Result({ params }: { params: Promise<{ quizId: string }> }) {
       </section>
     );
   }
+  // Same rule the dashboard uses for "Kamu bisa mencoba lagi": an open retake on the student's own row.
+  const retake =
+    r.passed === false &&
+    (await listStudentQuizzes({ id: user.id, classId: user.classId })).some(
+      (q) => q.quizId === quizId && q.state === "AVAILABLE" && q.hasAttempts,
+    );
   return (
     <>
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col items-start gap-3">
         <h1 className="text-2xl font-semibold">Hasil: {r.quizTitle}</h1>
         {r.recap === null ? (
           <p className="text-lg">Nilaimu belum final. Gurumu masih memeriksa jawaban uraian.</p>
         ) : (
-          <p className="text-lg font-medium">Nilaimu {formatScore(r.recap)}</p>
-        )}
-        {r.kkm !== null && (
-          <p>
-            KKM {r.kkm}
-            {r.passed !== null && ` · ${r.passed ? "Tuntas" : "Belum tuntas"}`}
+          <p className="flex flex-col">
+            <span className="text-muted-foreground">Nilaimu</span>
+            <span className="text-5xl font-bold">{formatScore(r.recap)}</span>
           </p>
+        )}
+        {r.kkm !== null && r.passed !== null && (
+          r.passed ? (
+            <Status tone="success">Kamu tuntas</Status>
+          ) : retake ? (
+            <Status tone="info">Kamu bisa mencoba lagi</Status>
+          ) : (
+            <Status tone="neutral">Belum mencapai KKM {r.kkm}</Status>
+          )
+        )}
+        {retake && (
+          <Link href="/student" className={buttonVariants({ size: "lg" })}>
+            Coba lagi dari beranda
+          </Link>
         )}
       </section>
       {r.attempts.map((a) => (
@@ -68,11 +86,16 @@ async function Result({ params }: { params: Promise<{ quizId: string }> }) {
                 <h3 className="font-medium">Soal {x.number}</h3>
                 <QuestionView question={x.question} />
                 <p className="whitespace-pre-wrap"><span className="font-medium">Jawabanmu:</span> {readable(x.question, x.answer)}</p>
-                <p>
-                  {x.correct === null
-                    ? x.earned === null ? "Belum dinilai guru" : `Poin ${formatScore(x.earned)} dari ${x.points}`
-                    : `${x.correct ? "Benar" : "Salah"} · poin ${x.earned} dari ${x.points}`}
-                </p>
+                {x.correct === null ? (
+                  <p>{x.earned === null ? "Belum dinilai guru" : `Poin ${formatScore(x.earned)} dari ${x.points}`}</p>
+                ) : (
+                  <p className="flex flex-wrap items-center gap-2">
+                    <Status tone={x.correct ? "success" : "warning"}>{x.correct ? "Benar" : "Belum tepat"}</Status>
+                    <span>
+                      Poin {x.earned} dari {x.points}
+                    </span>
+                  </p>
+                )}
                 {x.answerKey && <p><span className="font-medium">Jawaban benar:</span> {readable(x.question, x.answerKey)}</p>}
                 {x.explanation && (
                   <div className="flex flex-col gap-1">
