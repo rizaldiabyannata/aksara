@@ -348,7 +348,7 @@ export type StudentQuizState = "AVAILABLE" | "SCHEDULED" | "IN_PROGRESS" | "REPL
 export type StudentQuizRow = {
   quizId: string; title: string; instructions: string | null; subjectName: string; durationMinutes: number;
   questionCount: number; startsAt: Date | null; endsAt: Date | null; remainingAttempts: number;
-  state: StudentQuizState; hasAttempts: boolean; resultsReleased: boolean;
+  state: StudentQuizState; hasAttempts: boolean; resultsReleased: boolean; deadlineAt: Date | null;
 };
 
 export async function listStudentQuizzes(
@@ -367,7 +367,7 @@ export async function listStudentQuizzes(
       _count: { select: { questions: true } },
       attempts: {
         where: { studentId: student.id },
-        select: { ...SCORED_SELECT, replacedBy: { select: { id: true } } },
+        select: { ...SCORED_SELECT, deadlineAt: true, replacedBy: { select: { id: true } } },
       },
     },
   });
@@ -388,6 +388,7 @@ export async function listStudentQuizzes(
       quizId: q.id, title: q.title, instructions: q.instructions, subjectName: q.subject.name,
       durationMinutes: q.durationMinutes, questionCount: q._count.questions, startsAt: q.startsAt, endsAt: q.endsAt,
       remainingAttempts, state, hasAttempts: q.attempts.length > 0, resultsReleased: q.resultsReleasedAt !== null,
+      deadlineAt: q.attempts.find((a) => a.status === "IN_PROGRESS")?.deadlineAt ?? null,
     };
   });
 }

@@ -400,6 +400,20 @@ describe("listStudentQuizzes", () => {
     for (const bad of [s.cls.code, "points", "score", "Ulang saja", "replacementReason"]) expect(json).not.toContain(bad);
   });
 
+  it("deadlineAt only for own running attempt; payload has no other student or secrets", async () => {
+    const s = await setup({}, [{ type: "ESSAY" }]);
+    const other = await makeStudent(s.cls.id, { displayName: "TEMAN-RAHASIA", nis: "777777" });
+    await startAttempt({ id: other.id, classId: s.cls.id }, s.quiz.id, at(0));
+    expect((await listStudentQuizzes(s.stu, at(1)))[0].deadlineAt).toBeNull();
+    await started(s, at(2));
+    const rows = await listStudentQuizzes(s.stu, at(3));
+    expect(rows[0].deadlineAt).toEqual(at(2 + min(DUR)));
+    const json = JSON.stringify(rows);
+    for (const secret of ["TEMAN-RAHASIA", "777777", "RUBRIK-RAHASIA", "PEMBAHASAN-RAHASIA", "answerKey", "score"])
+      expect(json).not.toContain(secret);
+    expect(await listStudentQuizzes({ id: s.student.id, classId: null }, at(4))).toEqual([]);
+  });
+
   it("REMEDIAL unreleased with a used attempt is DONE; finalizes expired first", async () => {
     const s = await setup({ scoringPolicy: "REMEDIAL", kkm: 70, maxAttempts: 2 });
     await started(s);
