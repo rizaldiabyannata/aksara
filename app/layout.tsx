@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Figtree } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
+const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
 });
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={cn("h-full", "antialiased", geistMono.variable, "font-sans", figtree.variable)}
+      className={cn("h-full", "antialiased", jetbrainsMono.variable, "font-sans", jakarta.variable)}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
