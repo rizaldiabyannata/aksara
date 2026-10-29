@@ -508,6 +508,13 @@ export async function listQuizzes(): Promise<QuizRow[]> {
   }));
 }
 
+export async function countQuizzesByStatus(): Promise<Record<QuizStatus, number>> {
+  const out: Record<QuizStatus, number> = { DRAFT: 0, PUBLISHED: 0 };
+  const g = await prisma.quiz.groupBy({ by: ["status"], _count: { _all: true } });
+  for (const r of g) out[r.status] = r._count._all;
+  return out;
+}
+
 export async function getQuizForTeacher(id: string): Promise<QuizDetail | null> {
   const r = await prisma.quiz.findUnique({
     where: { id },

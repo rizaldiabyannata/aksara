@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import {
   addQuizQuestion,
+  countQuizzesByStatus,
   createQuiz,
   getQuizForTeacher,
   listQuizzes,
@@ -436,6 +437,16 @@ describe("updateQuiz", () => {
       expect(fe(await updateQuiz(actor, quiz.id, pubSetting({ maxAttempts: "1" })))).toEqual({ maxAttempts: MAXA });
       expect(await updateQuiz(actor, quiz.id, pubSetting({ maxAttempts: "3" }))).toEqual({ ok: true });
     });
+  });
+});
+
+describe("countQuizzesByStatus", () => {
+  it("counts DRAFT and PUBLISHED quizzes, zero when none", async () => {
+    const { actor, subjectId } = await setup();
+    expect(await countQuizzesByStatus()).toEqual({ DRAFT: 0, PUBLISHED: 0 });
+    await makeQuiz(subjectId, actor);
+    await makeQuiz(subjectId, actor, { status: "PUBLISHED" });
+    expect(await countQuizzesByStatus()).toEqual({ DRAFT: 1, PUBLISHED: 1 });
   });
 });
 

@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireTeacher } from "@/lib/auth/guard";
 import { countMaterialsByStatus } from "@/lib/materials";
 import { countQuestionsByStatus } from "@/lib/questions";
+import { countQuizzesByStatus } from "@/lib/quizzes";
 import { STATUS_LABEL } from "./materials/status-label";
 import { STATUS_LABEL as QUESTION_STATUS_LABEL } from "./questions/labels";
+import { STATUS_LABEL as QUIZ_STATUS_LABEL } from "./quizzes/labels";
 
 export const metadata: Metadata = { title: "Dasbor Guru" };
 
@@ -22,7 +24,11 @@ const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 
 async function Dashboard() {
   const user = await requireTeacher();
-  const [counts, questionCounts] = await Promise.all([countMaterialsByStatus(), countQuestionsByStatus()]);
+  const [counts, questionCounts, quizCounts] = await Promise.all([
+    countMaterialsByStatus(),
+    countQuestionsByStatus(),
+    countQuizzesByStatus(),
+  ]);
   return (
     <section className="flex flex-col gap-3">
       <h1 className="text-2xl font-semibold">Halo, {user.displayName}</h1>
@@ -70,6 +76,22 @@ async function Dashboard() {
               <li key={s}>
                 <Link href={`/teacher/questions?status=${s}`} className={LINK}>
                   {QUESTION_STATUS_LABEL[s]}: {questionCounts[s]}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Ulangan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="flex flex-col gap-1">
+            {(["DRAFT", "PUBLISHED"] as const).map((s) => (
+              <li key={s}>
+                <Link href="/teacher/quizzes" className={LINK}>
+                  {QUIZ_STATUS_LABEL[s]}: {quizCounts[s]}
                 </Link>
               </li>
             ))}
