@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#fff8f8;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"tone-danger-bg":"#FEECEC","on-error-container":"#93000a","surface-container-high":"#f2e5e7","primary-container":"#ff7034","on-secondary":"#ffffff","on-error":"#ffffff","secondary-fixed-dim":"#afc6ff","canvas-peach-subtle":"#FFEADB","error":"#ba1a1a","surface-container":"#f7ebed","primary":"#a83900","on-secondary-fixed":"#001943","surface":"#fff8f8","tone-success":"#1E9E64","on-primary":"#ffffff","canvas-peach":"#FFF5EE","surface-tint":"#a83900","tone-warning-bg":"#FFF4E5","tertiary":"#895200","outline":"#8d7167","on-tertiary-fixed":"#2c1700","surface-bright":"#fff8f8","secondary-container":"#5d93ff","surface-container-lowest":"#ffffff","tone-info":"#2D68C4","border-active":"#FF7034","on-tertiary-container":"#4d2c00","tertiary-fixed":"#ffdcbc","primary-fixed-dim":"#ffb59a","tertiary-container":"#db891c","tone-warning":"#E8890C","on-secondary-container":"#002b68","surface-container-highest":"#ecdfe2","surface-container-low":"#fdf1f3","on-tertiary":"#ffffff","surface-dim":"#e3d7d9","secondary-fixed":"#d9e2ff","on-primary-container":"#601d00","surface-variant":"#ecdfe2","text-muted":"#695F63","border-subtle":"#F2E2D8","on-tertiary-fixed-variant":"#683d00","on-primary-fixed-variant":"#802a00","background":"#fff8f8","outline-variant":"#e1bfb4","error-container":"#ffdad6","primary-fixed":"#ffdbcf","secondary":"#0d59c3","tone-danger":"#E53E3E","tone-success-bg":"#E8F8F0","on-primary-fixed":"#380d00","on-secondary-fixed-variant":"#004398","on-surface-variant":"#594139","text-primary":"#241F21","inverse-primary":"#ffb59a","inverse-on-surface":"#faeef0","on-background":"#201a1c","tertiary-fixed-dim":"#ffb86a","on-surface":"#201a1c","surface-card":"#FFFFFF","inverse-surface":"#352f31","tone-info-bg":"#EEF4FD"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"gutter-mobile":"1rem","space-md":"1rem","space-xs":"0.25rem",margin:"2rem","space-lg":"1.5rem","space-2xl":"3rem",gutter:"1.5rem","space-xl":"2rem","margin-mobile":"1rem","space-sm":"0.5rem"},fontFamily:{"headline-xl":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-xl-mobile":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"code-mono":["JetBrains Mono"],"headline-md":["Plus Jakarta Sans"],"body-xl":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"metric-display":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"]},fontSize:{"headline-xl":["2.25rem",{lineHeight:"2.75rem",letterSpacing:"-0.02em",fontWeight:"800"}],"label-sm":["0.875rem",{lineHeight:"1.25rem",fontWeight:"600"}],"headline-xl-mobile":["1.75rem",{lineHeight:"2.25rem",letterSpacing:"-0.01em",fontWeight:"800"}],"label-lg":["1.125rem",{lineHeight:"1.5rem",fontWeight:"600"}],"headline-lg":["1.75rem",{lineHeight:"2.25rem",letterSpacing:"-0.015em",fontWeight:"700"}],"code-mono":["1rem",{lineHeight:"1.5rem",letterSpacing:"0.05em",fontWeight:"500"}],"headline-md":["1.375rem",{lineHeight:"1.875rem",letterSpacing:"-0.01em",fontWeight:"700"}],"body-xl":["1.25rem",{lineHeight:"1.875rem",fontWeight:"500"}],"body-md":["1rem",{lineHeight:"1.5rem",fontWeight:"400"}],"body-lg":["1.125rem",{lineHeight:"1.75rem",fontWeight:"400"}],"metric-display":["4rem",{lineHeight:"4.5rem",letterSpacing:"-0.03em",fontWeight:"800"}],"headline-sm":["1.125rem",{lineHeight:"1.625rem",fontWeight:"700"}],"label-md":["1rem",{lineHeight:"1.375rem",fontWeight:"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs"><button aria-label="Kembali" class="min-h-12 min-w-12 w-12 h-12 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-text-primary truncate">Edit Soal</h1></div><div class="flex items-center gap-space-sm"><button aria-label="Simpan" class="min-h-12 h-12 px-space-lg rounded-xl bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-space-xs shadow-sm hover:opacity-95 active:scale-98 transition-all"><span class="material-symbols-outlined text-[20px]">save</span><span>Simpan</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface px-gutter-mobile"><div class="flex flex-col w-full pb-24 space-y-5">
+<!-- Sub-Header Meta & Status Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm space-y-3">
+<div class="flex items-start justify-between gap-2">
+<div class="min-w-0">
+<span class="font-code-mono text-code-mono text-primary font-medium tracking-wide">#SOAL-0059</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary truncate">Ubah Butir Soal</h2>
+</div>
+<div class="flex items-center gap-1.5 shrink-0">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-tone-warning-bg text-tone-warning">
+<span class="w-2 h-2 rounded-full bg-tone-warning"></span>
+          Draf
+        </span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-2 pt-1">
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-label-sm font-label-sm bg-canvas-peach-subtle text-primary">
+<span class="material-symbols-outlined text-[16px]">menu_book</span>
+        Kurikulum Merdeka Fase C
+      </span>
+<button class="min-h-12 px-4 py-2 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-2 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-secondary text-[20px]">visibility</span>
+<span>Pratinjau Siswa</span>
+</button>
+</div>
+</div>
+<!-- Horizontal Scrollable Question Type Tabs -->
+<div class="w-full overflow-x-auto no-scrollbar -mx-gutter-mobile px-gutter-mobile py-1">
+<div class="flex items-center gap-2 w-max">
+<button class="min-h-12 px-4 py-2.5 rounded-full bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">radio_button_checked</span>
+<span>Pilihan Ganda</span>
+</button>
+<button class="min-h-12 px-4 py-2.5 rounded-full bg-surface-container-lowest text-text-muted font-label-md text-label-md flex items-center gap-1.5 active:scale-95 transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">check_box</span>
+<span>PG Kompleks</span>
+</button>
+<button class="min-h-12 px-4 py-2.5 rounded-full bg-surface-container-lowest text-text-muted font-label-md text-label-md flex items-center gap-1.5 active:scale-95 transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">flaky</span>
+<span>Benar / Salah</span>
+</button>
+<button class="min-h-12 px-4 py-2.5 rounded-full bg-surface-container-lowest text-text-muted font-label-md text-label-md flex items-center gap-1.5 active:scale-95 transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">short_text</span>
+<span>Jawaban Singkat</span>
+</button>
+<button class="min-h-12 px-4 py-2.5 rounded-full bg-surface-container-lowest text-text-muted font-label-md text-label-md flex items-center gap-1.5 active:scale-95 transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">subject</span>
+<span>Uraian / Esai</span>
+</button>
+</div>
+</div>
+<!-- Section 1: Struktur Capaian & Kurikulum -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm space-y-4">
+<div class="flex items-center gap-2 text-primary font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-[22px]">account_tree</span>
+<span class="text-text-primary">1. Capaian &amp; Kurikulum</span>
+</div>
+<div class="space-y-3">
+<div>
+<label class="block font-label-sm text-label-sm text-text-muted mb-1.5">Mata Pelajaran</label>
+<div class="relative">
+<select class="w-full min-h-12 h-12 px-3.5 pr-10 rounded-xl bg-surface-container-low text-text-primary font-body-md text-body-md appearance-none focus:outline-none focus:bg-canvas-peach-subtle">
+<option selected="">IPAS (Ilmu Pengetahuan Alam dan Sosial)</option>
+<option>Matematika</option>
+<option>Bahasa Indonesia</option>
+</select>
+<span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted text-[20px]">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-text-muted mb-1.5">Bab Pembelajaran</label>
+<div class="relative">
+<select class="w-full min-h-12 h-12 px-3.5 pr-10 rounded-xl bg-surface-container-low text-text-primary font-body-md text-body-md appearance-none focus:outline-none focus:bg-canvas-peach-subtle">
+<option selected="">Bab 2: Harmoni dalam Ekosistem</option>
+<option>Bab 1: Mengubah Bentuk Energi</option>
+<option>Bab 3: Magnet, Listrik, dan Teknologi</option>
+</select>
+<span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted text-[20px]">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-text-muted mb-1.5">Subbab Materi</label>
+<div class="relative">
+<select class="w-full min-h-12 h-12 px-3.5 pr-10 rounded-xl bg-surface-container-low text-text-primary font-body-md text-body-md appearance-none focus:outline-none focus:bg-canvas-peach-subtle">
+<option selected="">Subbab 2.1: Rantai Makanan Sawah</option>
+<option>Subbab 2.2: Jaring-Jaring Makanan Hutan</option>
+<option>Subbab 2.3: Peran Pengurai dalam Tanah</option>
+</select>
+<span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Teks / Stimulus Soal (Markdown Editor) -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-text-primary">
+<span class="material-symbols-outlined text-primary text-[22px]">edit_note</span>
+<span>2. Stimulus &amp; Butir Soal</span>
+</div>
+<span class="text-label-sm font-label-sm text-tone-info bg-tone-info-bg px-2.5 py-0.5 rounded-full font-code-mono">Markdown</span>
+</div>
+<!-- Friendly Toolbar -->
+<div class="flex items-center flex-wrap gap-1 p-1 bg-surface-container-low rounded-xl">
+<button aria-label="Tebal" class="w-10 h-10 min-w-10 min-h-10 rounded-lg flex items-center justify-center text-text-primary hover:bg-surface-container active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">format_bold</span>
+</button>
+<button aria-label="Miring" class="w-10 h-10 min-w-10 min-h-10 rounded-lg flex items-center justify-center text-text-primary hover:bg-surface-container active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">format_italic</span>
+</button>
+<button aria-label="Kode" class="w-10 h-10 min-w-10 min-h-10 rounded-lg flex items-center justify-center text-text-primary hover:bg-surface-container active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">code</span>
+</button>
+<button aria-label="Daftar" class="w-10 h-10 min-w-10 min-h-10 rounded-lg flex items-center justify-center text-text-primary hover:bg-surface-container active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">format_list_bulleted</span>
+</button>
+<div class="h-6 w-px bg-outline-variant mx-1 self-center"></div>
+<button class="min-h-10 h-10 px-2.5 rounded-lg flex items-center gap-1 text-primary hover:bg-canvas-peach-subtle active:scale-95 transition-all font-label-sm text-label-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">add_photo_alternate</span>
+<span>Sisipkan Gambar</span>
+</button>
+</div>
+<!-- Question Input Textarea -->
+<textarea class="w-full p-3.5 rounded-xl bg-surface-container-low text-text-primary font-body-md text-body-md focus:outline-none focus:bg-canvas-peach-subtle leading-relaxed resize-y" rows="5">Perhatikan gambar rantai makanan pada ekosistem sawah di samping! Jika populasi katak menurun drastis akibat perburuan liar, apakah dampak langsung yang paling mungkin terjadi pada keseimbangan populasi belalang dan hasil produksi tanaman padi?</textarea>
+</div>
+<!-- Section 3: Panel Gambar Soal Terintegrasi -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-text-primary">
+<span class="material-symbols-outlined text-primary text-[22px]">image</span>
+<span>3. Media Pendukung</span>
+</div>
+<span class="text-label-sm font-label-sm text-text-muted">1 dari 3 Media</span>
+</div>
+<div class="p-3 bg-surface-container-low rounded-xl flex gap-3 items-center">
+<div class="w-20 h-20 min-w-20 rounded-lg overflow-hidden bg-surface-container shrink-0 relative">
+<img class="w-full h-full object-cover" data-alt="Ilustrasi edukatif rantai makanan di ekosistem sawah untuk anak sekolah dasar kelas 6, menampilkan padi berbulir emas, belalang hijau cerah, katak sawah, dan burung elang dengan garis gambar bersih lembut penuh kehangatan" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy0KchtQVR8WeZprZzex7Y1ocx2erIKTYQ2B4yHyoNTKvi-iE_KUdDKB754fVQqv2G1RWgVXrH8MtC3Es-ucmB0jYUIF9G0rU5kmOl-hK5M1Drv-5h0Qp9_3FbvevMJ9B31k-w-Ym7dHUU1kegLUtBS6SGZSb-lNCvFiWd-JeCVT2rmEGJDmyO1PR6p-SvmRAFu6Yiryy84TlAX0OmnMxRWE9776fidGa-uLfNsvEH"/>
+</div>
+<div class="min-w-0 flex-1 space-y-1">
+<div class="flex items-center gap-1.5 truncate">
+<span class="font-label-md text-label-md text-text-primary truncate">ekosistem-sawah.webp</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-tone-success-bg text-tone-success font-medium">
+<span class="material-symbols-outlined text-[14px]">check</span>
+            Alt-Text Aktif
+          </span>
+<span class="text-label-sm font-label-sm text-text-muted">248 KB</span>
+</div>
+<p class="text-label-sm font-label-sm text-text-muted truncate">"Diagram aliran energi ekosistem padi..."</p>
+</div>
+</div>
+<!-- Image Action Buttons -->
+<div class="flex flex-col gap-2 pt-1">
+<button class="w-full min-h-12 h-12 px-3 rounded-xl bg-canvas-peach-subtle text-primary font-label-md text-label-md flex items-center justify-center gap-2 active:scale-98 transition-all" onclick="navigator.clipboard?.writeText('![Rantai Makanan](aksara-image:img-02)')" type="button">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+<span class="truncate">Salin Kode: ![Rantai Makanan](aksara-image:img-02)</span>
+</button>
+<button class="w-full min-h-12 h-12 px-3 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center gap-2 active:scale-98 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">upload_file</span>
+<span>Unggah Gambar Baru (Maks 4MB)</span>
+</button>
+</div>
+</div>
+<!-- Section 4: Pilihan Opsi & Kunci Jawaban -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-text-primary">
+<span class="material-symbols-outlined text-primary text-[22px]">checklist</span>
+<span>4. Opsi &amp; Kunci Jawaban</span>
+</div>
+<span class="text-label-sm font-label-sm text-tone-success bg-tone-success-bg px-2.5 py-0.5 rounded-full font-medium">1 Kunci Terpilih</span>
+</div>
+<!-- Options List -->
+<div class="space-y-3" id="optionsContainer">
+<!-- Option A -->
+<label class="flex items-start gap-3 p-3.5 rounded-2xl bg-surface-container-low min-h-12 cursor-pointer active:scale-98 transition-all">
+<input class="mt-1 min-w-6 min-h-6 w-6 h-6 text-primary accent-primary" name="kunci_jawaban" type="radio" value="A"/>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-md text-label-md text-text-primary font-bold">Pilihan A</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Populasi belalang menurun drastis, sehingga hasil panen padi melonjak sangat pesat.</p>
+</div>
+</label>
+<!-- Option B -->
+<label class="flex items-start gap-3 p-3.5 rounded-2xl bg-surface-container-low min-h-12 cursor-pointer active:scale-98 transition-all">
+<input class="mt-1 min-w-6 min-h-6 w-6 h-6 text-primary accent-primary" name="kunci_jawaban" type="radio" value="B"/>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-md text-label-md text-text-primary font-bold">Pilihan B</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Populasi belalang tetap stabil karena burung elang beralih memangsa serangga.</p>
+</div>
+</label>
+<!-- Option C (Correct Answer) -->
+<label class="flex items-start gap-3 p-3.5 rounded-2xl bg-tone-success-bg min-h-12 cursor-pointer active:scale-98 transition-all shadow-sm">
+<input checked="" class="mt-1 min-w-6 min-h-6 w-6 h-6 text-tone-success accent-tone-success" name="kunci_jawaban" type="radio" value="C"/>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-md text-label-md text-tone-success font-bold">Pilihan C</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-tone-success text-on-secondary font-bold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+              Kunci Benar
+            </span>
+</div>
+<p class="font-body-md text-body-md text-text-primary font-medium">Populasi belalang melonjak naik, mengakibatkan tanaman padi rusak dan hasil panen menurun.</p>
+</div>
+</label>
+<!-- Option D -->
+<label class="flex items-start gap-3 p-3.5 rounded-2xl bg-surface-container-low min-h-12 cursor-pointer active:scale-98 transition-all">
+<input class="mt-1 min-w-6 min-h-6 w-6 h-6 text-primary accent-primary" name="kunci_jawaban" type="radio" value="D"/>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-md text-label-md text-text-primary font-bold">Pilihan D</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Tanaman padi terbebas dari hama belalang karena rantai makanan terputus total.</p>
+</div>
+</label>
+</div>
+<!-- Randomize Toggle -->
+<div class="pt-2">
+<label class="flex items-center gap-3 p-3 rounded-xl bg-canvas-peach-subtle min-h-12 cursor-pointer">
+<input checked="" class="w-6 h-6 min-w-6 min-h-6 accent-primary rounded" type="checkbox"/>
+<div class="min-w-0 flex-1">
+<span class="font-label-md text-label-md text-text-primary block">Acak urutan pilihan saat ujian siswa</span>
+<span class="font-label-sm text-label-sm text-text-muted block">Mencegah siswa saling mencontek tata letak opsi A/B/C/D</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Section 5: Parameter Soal & Kesulitan -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm space-y-4">
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-text-primary">
+<span class="material-symbols-outlined text-primary text-[22px]">tune</span>
+<span>5. Parameter &amp; Kesulitan</span>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-text-muted mb-2">Tingkat Kesulitan Kognitif</label>
+<div class="grid grid-cols-3 gap-2">
+<button class="min-h-12 py-2 px-1 rounded-xl bg-surface-container-low text-text-primary font-label-sm text-label-sm flex flex-col items-center justify-center active:scale-95 transition-all" type="button">
+<span class="font-bold">Mudah</span>
+<span class="text-text-muted text-[11px]">(LOTS)</span>
+</button>
+<button class="min-h-12 py-2 px-1 rounded-xl bg-primary-container text-on-primary font-label-sm text-label-sm flex flex-col items-center justify-center shadow-sm active:scale-95 transition-all" type="button">
+<span class="font-bold">Sedang</span>
+<span class="text-on-primary/90 text-[11px]">(MOTS)</span>
+</button>
+<button class="min-h-12 py-2 px-1 rounded-xl bg-surface-container-low text-text-primary font-label-sm text-label-sm flex flex-col items-center justify-center active:scale-95 transition-all" type="button">
+<span class="font-bold">Sulit</span>
+<span class="text-text-muted text-[11px]">(HOTS)</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2">
+<div>
+<span class="font-label-md text-label-md text-text-primary block">Bobot Skor Butir</span>
+<span class="font-label-sm text-label-sm text-text-muted block">Nilai baku jawaban tepat</span>
+</div>
+<!-- Counter Control -->
+<div class="flex items-center gap-2 bg-surface-container-low p-1 rounded-xl">
+<button aria-label="Kurangi poin" class="w-10 h-10 min-w-10 min-h-10 rounded-lg bg-surface-container-lowest text-text-primary flex items-center justify-center font-bold active:scale-95 transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="font-headline-sm text-headline-sm text-text-primary px-3 text-center min-w-12">1 Poin</span>
+<button aria-label="Tambah poin" class="w-10 h-10 min-w-10 min-h-10 rounded-lg bg-surface-container-lowest text-text-primary flex items-center justify-center font-bold active:scale-95 transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Section 6: Pembahasan & Catatan Guru -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm space-y-4">
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-text-primary">
+<span class="material-symbols-outlined text-primary text-[22px]">psychology</span>
+<span>6. Pembahasan &amp; Refleksi</span>
+</div>
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<label class="font-label-sm text-label-sm text-text-muted">Pembahasan untuk Siswa</label>
+<span class="text-label-sm font-label-sm text-text-muted">Tampil pasca ujian dirilis</span>
+</div>
+<textarea class="w-full p-3.5 rounded-xl bg-surface-container-low text-text-primary font-body-md text-body-md focus:outline-none focus:bg-canvas-peach-subtle leading-relaxed" placeholder="Tuliskan kunci penjelasan mengapa jawaban C benar..." rows="3">Katak berperan sebagai predator alami belalang. Jika katak diburu hingga habis, populasi belalang tidak terkendali sehingga memakan daun dan bulir padi secara berlebihan hingga panen gagal.</textarea>
+</div>
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<label class="font-label-sm text-label-sm text-text-muted">Catatan Verifikasi Asesmen Guru</label>
+<span class="inline-flex items-center gap-1 text-label-sm font-label-sm text-tone-danger">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+          Rahasia Penguji
+        </span>
+</div>
+<textarea class="w-full p-3.5 rounded-xl bg-surface-container-low text-text-primary font-body-md text-body-md focus:outline-none focus:bg-canvas-peach-subtle leading-relaxed" placeholder="Tambahkan catatan khusus untuk tim MGMP/Kombel..." rows="2">Soal telah diselaraskan dengan modul ajar IPAS Bab 2 Pertemuan ke-3. Sudah divalidasi oleh Ibu Rahma.</textarea>
+</div>
+</div>
+<!-- Sticky Bottom Quick Action Tray -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-surface/90 backdrop-blur-md shadow-xl flex items-center gap-3 z-40 max-w-md mx-auto">
+<button class="min-h-12 h-12 flex-1 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center gap-2 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">archive</span>
+<span>Simpan Draf</span>
+</button>
+<button class="min-h-12 h-12 flex-1 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span>Simpan &amp; Aktifkan</span>
+</button>
+</div>
+</div></main></body></html>

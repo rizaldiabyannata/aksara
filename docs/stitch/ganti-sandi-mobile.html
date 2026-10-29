@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { width: 100vw; margin: 0; padding: 0; background-color: #FFF5EE; } body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "secondary-fixed-dim": "#afc6ff", "on-secondary": "#ffffff", "surface-variant": "#ecdfe2", "surface-card": "#FFFFFF", "on-primary": "#ffffff", "surface-dim": "#e3d7d9", "border-active": "#FF7034", "secondary-container": "#5d93ff", "surface-container-highest": "#ecdfe2", "on-secondary-container": "#002b68", "inverse-surface": "#352f31", "tertiary-fixed": "#ffdcbc", "on-tertiary-container": "#4d2c00", "tone-success": "#1E9E64", "text-primary": "#241F21", "tone-warning-bg": "#FFF4E5", "primary-fixed-dim": "#ffb59a", "primary-container": "#ff7034", "error-container": "#ffdad6", "surface-container-high": "#f2e5e7", "tone-danger": "#E53E3E", "canvas-peach-subtle": "#FFEADB", "canvas-peach": "#FFF5EE", "text-muted": "#695F63", "on-error": "#ffffff", "on-error-container": "#93000a", "primary": "#a83900", "surface": "#fff8f8", "tone-warning": "#E8890C", "secondary-fixed": "#d9e2ff", "background": "#fff8f8", "tone-info": "#2D68C4", "on-primary-fixed": "#380d00", "on-background": "#201a1c", "inverse-on-surface": "#faeef0", "tertiary-container": "#db891c", "on-tertiary-fixed-variant": "#683d00", "on-surface-variant": "#594139", "surface-tint": "#a83900", "outline": "#8d7167", "error": "#ba1a1a", "surface-bright": "#fff8f8", "surface-container-low": "#fdf1f3", "primary-fixed": "#ffdbcf", "secondary": "#0d59c3", "on-tertiary-fixed": "#2c1700", "surface-container-lowest": "#ffffff", "tone-danger-bg": "#FEECEC", "tone-success-bg": "#E8F8F0", "on-primary-fixed-variant": "#802a00", "tertiary": "#895200", "on-secondary-fixed": "#001943", "inverse-primary": "#ffb59a", "tone-info-bg": "#EEF4FD", "on-secondary-fixed-variant": "#004398", "on-surface": "#201a1c", "border-subtle": "#F2E2D8", "on-primary-container": "#601d00", "surface-container": "#f7ebed", "outline-variant": "#e1bfb4", "tertiary-fixed-dim": "#ffb86a", "on-tertiary": "#ffffff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "gutter": "1.5rem", "space-lg": "1.5rem", "margin": "2rem", "gutter-mobile": "1rem", "space-2xl": "3rem", "space-sm": "0.5rem", "margin-mobile": "1rem", "space-xl": "2rem", "space-md": "1rem" }, fontFamily: { "headline-sm": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "code-mono": ["JetBrains Mono"], "body-xl": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "metric-display": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"] }, fontSize: { "headline-sm": ["1.125rem", { "lineHeight": "1.625rem", "fontWeight": "700" }], "headline-lg": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.015em", "fontWeight": "700" }], "code-mono": ["1rem", { "lineHeight": "1.5rem", "letterSpacing": "0.05em", "fontWeight": "500" }], "body-xl": ["1.25rem", { "lineHeight": "1.875rem", "fontWeight": "500" }], "headline-md": ["1.375rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-lg": ["1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" }], "body-md": ["1rem", { "lineHeight": "1.5rem", "fontWeight": "400" }], "metric-display": ["4rem", { "lineHeight": "4.5rem", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-lg": ["1.125rem", { "lineHeight": "1.5rem", "fontWeight": "600" }], "label-md": ["1rem", { "lineHeight": "1.375rem", "fontWeight": "600" }], "headline-xl-mobile": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.01em", "fontWeight": "800" }], "headline-xl": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.02em", "fontWeight": "800" }], "label-sm": ["0.875rem", { "lineHeight": "1.25rem", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><button aria-label="Kembali atau Tutup" class="w-12 h-12 flex items-center justify-center rounded-xl text-on-surface hover:bg-surface-variant/40 active:scale-95 transition-all" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><div class="flex flex-col min-w-0"><span class="font-label-sm text-label-sm text-primary tracking-wide leading-none">Aksara Fase C</span><h1 class="font-headline-sm text-headline-sm text-on-surface truncate leading-tight">Ubah Kata Sandi Guru</h1></div></div><div class="flex items-center gap-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full pb-12">
+<!-- Status & Mandatory Notice Banner -->
+<div class="px-gutter-mobile pt-space-md">
+<div class="bg-primary-fixed rounded-2xl p-space-md shadow-sm">
+<div class="flex items-start gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shrink-0 text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-xs font-semibold">
+              Wajib Dilakukan
+            </span>
+<span class="font-code-mono text-xs text-on-primary-fixed-variant bg-canvas-peach px-2 py-0.5 rounded-full">
+              mustChangePassword
+            </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-primary-fixed leading-snug">
+            Perlindungan Akun Guru
+          </h2>
+<p class="font-body-md text-sm text-on-primary-fixed-variant mt-1 leading-relaxed">
+            Buat kata sandi baru Anda sebelum mulai mengelola kelas, materi ajar, bank soal, dan evaluasi kelulusan siswa SD/MI Kelas VI.
+          </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Teacher Profile & Connected Device Card -->
+<div class="px-gutter-mobile mt-space-md">
+<div class="bg-surface-card rounded-2xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-12 h-12 rounded-2xl bg-canvas-peach-subtle flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[28px]">school</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h3 class="font-label-lg text-label-lg text-text-primary truncate">
+            Dra. Hj. Siti Nurjanah, M.Pd.
+          </h3>
+<p class="font-body-md text-xs text-text-muted">
+            NIP. 19740815 199903 2 004
+          </p>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-2 h-2 rounded-full bg-tone-success"></span>
+<span class="font-label-sm text-xs text-text-muted truncate">
+              Wali Kelas VI-A • SDN Menteng 01
+            </span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-3 flex items-center justify-between gap-space-xs">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0">devices</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-[11px] text-text-muted leading-tight">Perangkat Aktif</span>
+<span class="font-label-md text-xs text-text-primary truncate">Smartphone Guru (Android 14)</span>
+</div>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-tone-success-bg text-tone-success font-label-sm text-[11px] shrink-0">
+<span class="material-symbols-outlined text-[14px] mr-1">link</span>
+          Chromebook Sinkron
+        </span>
+</div>
+</div>
+</div>
+<!-- Main Password Form -->
+<div class="px-gutter-mobile mt-space-md">
+<div class="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div>
+<h2 class="font-headline-md text-headline-md text-text-primary">
+          Ganti Kata Sandi Guru
+        </h2>
+<p class="font-body-md text-sm text-text-muted mt-1 leading-relaxed">
+          Demi keamanan data nilai dan asesmen siswa, buat kata sandi baru yang kuat dan mudah Anda ingat.
+        </p>
+</div>
+<!-- Field 1: Old Password -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-primary flex items-center justify-between" for="oldPassword">
+<span>Kata Sandi Lama <span class="text-tone-danger">*</span></span>
+<span class="font-body-md text-xs text-text-muted">(Dari dinas/sekolah)</span>
+</label>
+<div class="relative flex items-center">
+<input class="w-full min-h-12 h-12 bg-surface-container-low rounded-xl px-4 pr-12 font-body-md text-text-primary placeholder:text-text-muted/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all text-base" id="oldPassword" placeholder="Masukkan kata sandi lama Anda" type="password"/>
+<button aria-label="Tampilkan atau sembunyikan kata sandi lama" class="absolute right-1 w-11 h-11 flex items-center justify-center text-text-muted hover:text-text-primary active:scale-95 transition-all" onclick="togglePasswordVisibility('oldPassword', this)" type="button">
+<span class="material-symbols-outlined text-[22px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Field 2: New Password -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-primary" for="newPassword">
+          Kata Sandi Baru <span class="text-tone-danger">*</span>
+</label>
+<div class="relative flex items-center">
+<input class="w-full min-h-12 h-12 bg-surface-container-low rounded-xl px-4 pr-12 font-body-md text-text-primary placeholder:text-text-muted/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all text-base" id="newPassword" oninput="checkPasswordStrength(this.value)" placeholder="Buat minimal 12 karakter unik..." type="password"/>
+<button aria-label="Tampilkan atau sembunyikan kata sandi baru" class="absolute right-1 w-11 h-11 flex items-center justify-center text-text-muted hover:text-text-primary active:scale-95 transition-all" onclick="togglePasswordVisibility('newPassword', this)" type="button">
+<span class="material-symbols-outlined text-[22px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Strength Indicator Box -->
+<div class="bg-surface-container-low rounded-xl p-3.5 flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-xs text-text-muted">Kekuatan Kata Sandi:</span>
+<span class="font-label-md text-xs px-2.5 py-0.5 rounded-full bg-tone-warning-bg text-tone-warning" id="strengthLabel">
+            Kekuatan: Sedang
+          </span>
+</div>
+<div class="w-full h-2 bg-surface-variant rounded-full overflow-hidden flex gap-1">
+<div class="h-full w-1/3 bg-tone-warning rounded-full transition-all" id="bar1"></div>
+<div class="h-full w-1/3 bg-tone-warning rounded-full transition-all" id="bar2"></div>
+<div class="h-full w-1/3 bg-surface-variant rounded-full transition-all" id="bar3"></div>
+</div>
+<!-- Criteria Checklists -->
+<div class="flex flex-col gap-2 pt-1">
+<div class="flex items-center gap-2" id="critLength">
+<span class="material-symbols-outlined text-tone-success text-[18px]">check_circle</span>
+<span class="font-body-md text-xs text-text-primary">
+              Minimal 12 karakter (Aturan baku guru SD/MI)
+            </span>
+</div>
+<div class="flex items-center gap-2" id="critUnique">
+<span class="material-symbols-outlined text-tone-success text-[18px]">check_circle</span>
+<span class="font-body-md text-xs text-text-primary">
+              Berbeda dari kata sandi lama atau nama akun
+            </span>
+</div>
+<div class="flex items-center gap-2" id="critComplex">
+<span class="material-symbols-outlined text-text-muted text-[18px]">radio_button_unchecked</span>
+<span class="font-body-md text-xs text-text-muted">
+              Kombinasi huruf besar, kecil, angka, atau simbol
+            </span>
+</div>
+</div>
+</div>
+<!-- Field 3: Confirm Password -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-primary" for="confirmPassword">
+          Ulangi Kata Sandi Baru <span class="text-tone-danger">*</span>
+</label>
+<div class="relative flex items-center">
+<input class="w-full min-h-12 h-12 bg-surface-container-low rounded-xl px-4 pr-12 font-body-md text-text-primary placeholder:text-text-muted/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary transition-all text-base" id="confirmPassword" oninput="validateMatch()" placeholder="Ketik ulang kata sandi baru Anda" type="password"/>
+<button aria-label="Tampilkan atau sembunyikan konfirmasi kata sandi" class="absolute right-1 w-11 h-11 flex items-center justify-center text-text-muted hover:text-text-primary active:scale-95 transition-all" onclick="togglePasswordVisibility('confirmPassword', this)" type="button">
+<span class="material-symbols-outlined text-[22px]">visibility</span>
+</button>
+</div>
+<div class="hidden flex items-center gap-1.5 mt-1 text-tone-success" id="matchNotice">
+<span class="material-symbols-outlined text-[18px]">task_alt</span>
+<span class="font-label-sm text-xs">Kata sandi cocok dan terverifikasi</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Session Revocation Alert Notice -->
+<div class="px-gutter-mobile mt-space-md">
+<div class="bg-tone-warning-bg rounded-2xl p-space-md shadow-sm">
+<div class="flex items-start gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-tone-warning flex items-center justify-center shrink-0 text-white shadow-sm">
+<span class="material-symbols-outlined text-[24px]">power_settings_new</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h4 class="font-label-lg text-label-lg text-tone-warning font-bold">
+            Pencabutan Sesi Perangkat Otomatis
+          </h4>
+<p class="font-body-md text-xs text-text-primary mt-1 leading-relaxed">
+            Perhatian: Setelah kata sandi baru disimpan, seluruh sesi guru di perangkat lain (laptop kelas, tablet sekolah, proyektor, ponsel lain) akan <strong>dicabut otomatis</strong> demi keamanan. Anda akan tetap masuk di perangkat ini.
+          </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Action CTA Buttons -->
+<div class="px-gutter-mobile mt-space-lg flex flex-col gap-space-sm">
+<button class="w-full min-h-12 h-14 bg-primary-container hover:bg-primary active:scale-[0.98] text-on-primary rounded-xl font-label-lg text-label-lg shadow-md flex items-center justify-center gap-2 transition-all" onclick="handleSavePassword()" type="button">
+<span class="material-symbols-outlined text-[22px]">vpn_key</span>
+<span>Simpan Kata Sandi Baru</span>
+</button>
+<button class="w-full min-h-12 h-12 bg-surface-container-high hover:bg-surface-variant text-text-primary active:scale-[0.98] rounded-xl font-label-md text-label-md flex items-center justify-center transition-all" onclick="history.back()" type="button">
+      Batal / Kembali ke Dasbor
+    </button>
+</div>
+<!-- Collapsible Educational Security Guide for Teachers -->
+<div class="px-gutter-mobile mt-space-xl">
+<div class="bg-surface-card rounded-2xl p-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-canvas-peach-subtle text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">lightbulb</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">
+            Pedoman Keamanan Guru SD
+          </h3>
+</div>
+<span class="text-xs font-label-sm text-primary px-2.5 py-1 bg-canvas-peach rounded-full">
+          Fase C
+        </span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Card 1 -->
+<div class="bg-surface-container-low rounded-xl p-3 flex gap-3 items-start">
+<div class="w-8 h-8 rounded-lg bg-surface-card flex items-center justify-center text-primary shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-[20px]">cast_connected</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h5 class="font-label-md text-xs font-bold text-text-primary">
+              Lindungi Tampilan Proyektor
+            </h5>
+<p class="font-body-md text-xs text-text-muted mt-0.5 leading-snug">
+              Jangan mengetikkan sandi saat layar laptop/HP terhubung ke proyektor kelas di hadapan murid. Gunakan fitur <em>freeze screen</em> proyektor.
+            </p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-low rounded-xl p-3 flex gap-3 items-start">
+<div class="w-8 h-8 rounded-lg bg-surface-card flex items-center justify-center text-tone-info shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h5 class="font-label-md text-xs font-bold text-text-primary">
+              Gunakan Pola "Kalimat Sandi"
+            </h5>
+<p class="font-body-md text-xs text-text-muted mt-0.5 leading-snug">
+              Pilih 4 kata acak bahasa Indonesia yang mudah Anda hafal namun mustahil ditebak orang lain. Contoh: <code class="font-code-mono text-[11px] text-primary bg-white px-1.5 py-0.5 rounded">Sempolan#Enak!Mekar2025</code>
+</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-low rounded-xl p-3 flex gap-3 items-start">
+<div class="w-8 h-8 rounded-lg bg-surface-card flex items-center justify-center text-tone-danger shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-[20px]">report</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h5 class="font-label-md text-xs font-bold text-text-primary">
+              Laporkan Sesi Mencurigakan
+            </h5>
+<p class="font-body-md text-xs text-text-muted mt-0.5 leading-snug">
+              Segera hubungi tim proktor atau operator Dapodik sekolah jika ada notifikasi login asing di luar jam mengajar.
+            </p>
+</div>
+</div>
+</div>
+<!-- Help Desk Contact -->
+<div class="bg-canvas-peach rounded-xl p-3 flex items-center justify-between gap-2">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="material-symbols-outlined text-primary text-[22px] shrink-0">support_agent</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-xs text-text-primary truncate">Posko Bantuan Asesmen</span>
+<span class="font-body-md text-[11px] text-text-muted">Senin - Jumat (07.30 - 16.00 WIB)</span>
+</div>
+</div>
+<button class="min-h-12 px-3 py-1.5 rounded-lg bg-white text-primary font-label-sm text-xs shadow-xs hover:bg-primary hover:text-white transition-all shrink-0 flex items-center gap-1" onclick="alert('Menghubungi Posko Bantuan Dinas Pendidikan...')" type="button">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+<span>Bantuan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Security Protocol Footer -->
+<div class="px-gutter-mobile mt-space-lg text-center">
+<div class="flex items-center justify-center gap-1.5 text-text-muted mb-1">
+<span class="material-symbols-outlined text-[16px] text-tone-success">lock</span>
+<span class="font-label-sm text-[11px]">Enkripsi SSL 256-Bit Terstandar</span>
+</div>
+<p class="font-body-md text-[11px] text-text-muted leading-tight">
+      Standar Akun Guru Kurikulum Merdeka Fase C • Terintegrasi Dapodik &amp; EMIS
+    </p>
+</div>
+</div>
+<script>
+  function togglePasswordVisibility(inputId, triggerBtn) {
+    const input = document.getElementById(inputId);
+    const icon = triggerBtn.querySelector('.material-symbols-outlined');
+    if (!input || !icon) return;
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = 'visibility_off';
+    } else {
+      input.type = 'password';
+      icon.textContent = 'visibility';
+    }
+  }
+
+  function checkPasswordStrength(val) {
+    const lenCheck = val.length >= 12;
+    const complexCheck = /[A-Z]/.test(val) && /[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val);
+    const uniqueCheck = val.length > 0 && !val.toLowerCase().includes('siti') && !val.toLowerCase().includes('sdn');
+
+    const critLength = document.getElementById('critLength');
+    const critUnique = document.getElementById('critUnique');
+    const critComplex = document.getElementById('critComplex');
+    const bar1 = document.getElementById('bar1');
+    const bar2 = document.getElementById('bar2');
+    const bar3 = document.getElementById('bar3');
+    const label = document.getElementById('strengthLabel');
+
+    if (critLength) {
+      critLength.querySelector('.material-symbols-outlined').textContent = lenCheck ? 'check_circle' : 'radio_button_unchecked';
+      critLength.querySelector('.material-symbols-outlined').className = lenCheck ? 'material-symbols-outlined text-tone-success text-[18px]' : 'material-symbols-outlined text-text-muted text-[18px]';
+    }
+
+    if (critUnique) {
+      critUnique.querySelector('.material-symbols-outlined').textContent = uniqueCheck ? 'check_circle' : 'radio_button_unchecked';
+      critUnique.querySelector('.material-symbols-outlined').className = uniqueCheck ? 'material-symbols-outlined text-tone-success text-[18px]' : 'material-symbols-outlined text-text-muted text-[18px]';
+    }
+
+    if (critComplex) {
+      critComplex.querySelector('.material-symbols-outlined').textContent = complexCheck ? 'check_circle' : 'radio_button_unchecked';
+      critComplex.querySelector('.material-symbols-outlined').className = complexCheck ? 'material-symbols-outlined text-tone-success text-[18px]' : 'material-symbols-outlined text-text-muted text-[18px]';
+    }
+
+    let score = 0;
+    if (lenCheck) score++;
+    if (uniqueCheck) score++;
+    if (complexCheck) score++;
+
+    if (score >= 3) {
+      label.textContent = 'Kekuatan: Sangat Kuat';
+      label.className = 'font-label-md text-xs px-2.5 py-0.5 rounded-full bg-tone-success-bg text-tone-success';
+      bar1.className = 'h-full w-1/3 bg-tone-success rounded-full transition-all';
+      bar2.className = 'h-full w-1/3 bg-tone-success rounded-full transition-all';
+      bar3.className = 'h-full w-1/3 bg-tone-success rounded-full transition-all';
+    } else if (score >= 2) {
+      label.textContent = 'Kekuatan: Sedang / Baik';
+      label.className = 'font-label-md text-xs px-2.5 py-0.5 rounded-full bg-tone-warning-bg text-tone-warning';
+      bar1.className = 'h-full w-1/3 bg-tone-warning rounded-full transition-all';
+      bar2.className = 'h-full w-1/3 bg-tone-warning rounded-full transition-all';
+      bar3.className = 'h-full w-1/3 bg-surface-variant rounded-full transition-all';
+    } else {
+      label.textContent = 'Kekuatan: Perlu Ditingkatkan';
+      label.className = 'font-label-md text-xs px-2.5 py-0.5 rounded-full bg-tone-danger-bg text-tone-danger';
+      bar1.className = 'h-full w-1/3 bg-tone-danger rounded-full transition-all';
+      bar2.className = 'h-full w-1/3 bg-surface-variant rounded-full transition-all';
+      bar3.className = 'h-full w-1/3 bg-surface-variant rounded-full transition-all';
+    }
+
+    validateMatch();
+  }
+
+  function validateMatch() {
+    const p1 = document.getElementById('newPassword').value;
+    const p2 = document.getElementById('confirmPassword').value;
+    const notice = document.getElementById('matchNotice');
+    if (!notice) return;
+
+    if (p1 && p2 && p1 === p2) {
+      notice.classList.remove('hidden');
+    } else {
+      notice.classList.add('hidden');
+    }
+  }
+
+  function handleSavePassword() {
+    const p1 = document.getElementById('newPassword').value;
+    const p2 = document.getElementById('confirmPassword').value;
+    const pOld = document.getElementById('oldPassword').value;
+
+    if (!pOld) {
+      alert('Harap masukkan kata sandi lama Anda dari dinas/sekolah.');
+      document.getElementById('oldPassword').focus();
+      return;
+    }
+
+    if (!p1 || p1.length < 12) {
+      alert('Kata sandi baru wajib memiliki minimal 12 karakter sesuai standar keamanan akun guru SD/MI.');
+      document.getElementById('newPassword').focus();
+      return;
+    }
+
+    if (p1 !== p2) {
+      alert('Konfirmasi kata sandi belum cocok. Harap periksa kembali.');
+      document.getElementById('confirmPassword').focus();
+      return;
+    }
+
+    alert('Kata sandi baru berhasil disimpan! Seluruh perangkat lain telah dicabut. Anda siap mengelola kelas.');
+  }
+</script></main></body></html>

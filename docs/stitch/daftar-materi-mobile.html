@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "outline": "#8d7167", "on-tertiary-fixed-variant": "#683d00", "surface-container": "#f7ebed", "tertiary-container": "#db891c", "canvas-peach": "#FFF5EE", "primary-fixed": "#ffdbcf", "border-active": "#FF7034", "tone-warning-bg": "#FFF4E5", "background": "#fff8f8", "surface": "#fff8f8", "tertiary-fixed-dim": "#ffb86a", "on-primary": "#ffffff", "tone-info": "#2D68C4", "primary-container": "#ff7034", "surface-dim": "#e3d7d9", "inverse-on-surface": "#faeef0", "on-tertiary-fixed": "#2c1700", "secondary-container": "#5d93ff", "on-secondary-fixed": "#001943", "surface-container-low": "#fdf1f3", "on-primary-fixed": "#380d00", "tone-success": "#1E9E64", "tone-warning": "#E8890C", "primary-fixed-dim": "#ffb59a", "inverse-primary": "#ffb59a", "on-secondary": "#ffffff", "secondary": "#0d59c3", "on-primary-container": "#601d00", "on-secondary-container": "#002b68", "on-tertiary": "#ffffff", "surface-card": "#FFFFFF", "outline-variant": "#e1bfb4", "secondary-fixed-dim": "#afc6ff", "error": "#ba1a1a", "on-error-container": "#93000a", "tertiary": "#895200", "on-error": "#ffffff", "secondary-fixed": "#d9e2ff", "tertiary-fixed": "#ffdcbc", "tone-danger-bg": "#FEECEC", "surface-container-high": "#f2e5e7", "surface-variant": "#ecdfe2", "primary": "#a83900", "surface-bright": "#fff8f8", "border-subtle": "#F2E2D8", "on-tertiary-container": "#4d2c00", "canvas-peach-subtle": "#FFEADB", "on-secondary-fixed-variant": "#004398", "text-primary": "#241F21", "on-background": "#201a1c", "on-primary-fixed-variant": "#802a00", "text-muted": "#695F63", "surface-container-lowest": "#ffffff", "tone-success-bg": "#E8F8F0", "on-surface": "#201a1c", "inverse-surface": "#352f31", "surface-container-highest": "#ecdfe2", "surface-tint": "#a83900", "tone-danger": "#E53E3E", "on-surface-variant": "#594139", "tone-info-bg": "#EEF4FD", "error-container": "#ffdad6" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2rem", "space-2xl": "3rem", "space-lg": "1.5rem", "space-md": "1rem", "gutter": "1.5rem", "space-xs": "0.25rem", "margin": "2rem", "gutter-mobile": "1rem", "margin-mobile": "1rem", "space-sm": "0.5rem" }, fontFamily: { "headline-xl-mobile": ["Plus Jakarta Sans"], "metric-display": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "code-mono": ["JetBrains Mono"], "headline-md": ["Plus Jakarta Sans"], "body-xl": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"] }, fontSize: { "headline-xl-mobile": ["1.75rem", { lineHeight: "2.25rem", letterSpacing: "-0.01em", fontWeight: "800" }], "metric-display": ["4rem", { lineHeight: "4.5rem", letterSpacing: "-0.03em", fontWeight: "800" }], "headline-lg": ["1.75rem", { lineHeight: "2.25rem", letterSpacing: "-0.015em", fontWeight: "700" }], "body-md": ["1rem", { lineHeight: "1.5rem", fontWeight: "400" }], "label-sm": ["0.875rem", { lineHeight: "1.25rem", fontWeight: "600" }], "label-md": ["1rem", { lineHeight: "1.375rem", fontWeight: "600" }], "headline-xl": ["2.25rem", { lineHeight: "2.75rem", letterSpacing: "-0.02em", fontWeight: "800" }], "body-lg": ["1.125rem", { lineHeight: "1.75rem", fontWeight: "400" }], "label-lg": ["1.125rem", { lineHeight: "1.5rem", fontWeight: "600" }], "code-mono": ["1rem", { lineHeight: "1.5rem", letterSpacing: "0.05em", fontWeight: "500" }], "headline-md": ["1.375rem", { lineHeight: "1.875rem", letterSpacing: "-0.01em", fontWeight: "700" }], "body-xl": ["1.25rem", { lineHeight: "1.875rem", fontWeight: "500" }], "headline-sm": ["1.125rem", { lineHeight: "1.625rem", fontWeight: "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-canvas-peach font-body-md text-body-md text-text-primary min-h-screen flex flex-col antialiased selection:bg-primary-fixed"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(230,115,60,0.06)] pt-safe"><div class="h-16 px-gutter-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary-container text-on-primary font-headline-md text-headline-md shadow-[0_2px_8px_rgba(255,112,52,0.25)] flex-shrink-0">A</div><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-text-primary tracking-tight font-extrabold truncate">Aksara</span><span class="px-space-xs py-0.5 rounded-full bg-canvas-peach-subtle text-on-primary-container font-label-sm text-[10px] uppercase font-bold tracking-wider">SD VI</span></div><span class="font-label-sm text-[11px] text-text-muted truncate">T.A 2026/2027</span></div></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="Buka Notifikasi" class="min-h-12 min-w-12 w-12 h-12 rounded-xl flex items-center justify-center text-text-primary hover:bg-canvas-peach transition-colors" type="button"><span class="material-symbols-outlined text-[24px]">notifications</span></button><a aria-label="Profil Guru" class="min-h-12 min-w-12 w-12 h-12 flex items-center justify-center rounded-xl p-1" data-path="profil-dan-pengaturan" href="#"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-[0_2px_6px_rgba(168,57,0,0.25)]"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></a></div></div></header><main class="flex flex-col relative w-full pt-16 pb-28 bg-canvas-peach min-h-screen"><div class="flex flex-col w-full px-gutter-mobile gap-space-md">
+<!-- Sub-header Area (Title, Subtitle, & Primary CTA) -->
+<section class="flex flex-col gap-space-sm pt-space-xs">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex flex-col min-w-0">
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-text-primary tracking-tight">Materi Pelajaran</h1>
+<p class="font-label-sm text-label-sm text-text-muted">Kelola modul ajar Kurikulum Merdeka Fase C</p>
+</div>
+<div class="w-10 h-10 rounded-2xl bg-canvas-peach-subtle flex items-center justify-center flex-shrink-0 text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[24px]">auto_stories</span>
+</div>
+</div>
+<!-- Primary Action Button: Add New Material -->
+<button class="w-full min-h-12 py-3 px-space-md rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-[0_4px_16px_rgba(255,112,52,0.28)] active:scale-[0.98] transition-transform" type="button">
+<span class="material-symbols-outlined text-[22px]">add_circle</span>
+<span>+ Tulis Materi Baru</span>
+</button>
+</section>
+<!-- Metric Summary Cards (2x2 Grid) -->
+<section class="grid grid-cols-2 gap-space-sm">
+<!-- Card 1: Total Materi -->
+<div class="bg-surface-card rounded-2xl p-space-md shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07)] flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[12px] font-semibold text-text-muted">Total Modul</span>
+<span class="material-symbols-outlined text-tone-info text-[20px]">folder_special</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg text-text-primary font-bold">24</span>
+<span class="font-label-sm text-[11px] text-text-muted">Modul</span>
+</div>
+<div class="mt-1 h-1.5 w-full bg-tone-info-bg rounded-full overflow-hidden">
+<div class="h-full bg-tone-info rounded-full w-full"></div>
+</div>
+</div>
+<!-- Card 2: Terbit -->
+<div class="bg-surface-card rounded-2xl p-space-md shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07)] flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[12px] font-semibold text-text-muted">Terbit Aktif</span>
+<span class="material-symbols-outlined text-tone-success text-[20px]">verified</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg text-tone-success font-bold">18</span>
+<span class="font-label-sm text-[11px] text-text-muted">Siap Baca</span>
+</div>
+<div class="mt-1 h-1.5 w-full bg-tone-success-bg rounded-full overflow-hidden">
+<div class="h-full bg-tone-success rounded-full w-3/4"></div>
+</div>
+</div>
+<!-- Card 3: Ditinjau / Siap Rilis -->
+<div class="bg-surface-card rounded-2xl p-space-md shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07)] flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[12px] font-semibold text-text-muted">Siap Rilis</span>
+<span class="material-symbols-outlined text-tone-warning text-[20px]">rate_review</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg text-tone-warning font-bold">4</span>
+<span class="font-label-sm text-[11px] text-text-muted">Ditinjau</span>
+</div>
+<div class="mt-1 h-1.5 w-full bg-tone-warning-bg rounded-full overflow-hidden">
+<div class="h-full bg-tone-warning rounded-full w-1/3"></div>
+</div>
+</div>
+<!-- Card 4: Draf Guru -->
+<div class="bg-surface-card rounded-2xl p-space-md shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07)] flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[12px] font-semibold text-text-muted">Draf Pribadi</span>
+<span class="material-symbols-outlined text-outline text-[20px]">edit_note</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg text-text-primary font-bold">2</span>
+<span class="font-label-sm text-[11px] text-text-muted">Modul</span>
+</div>
+<div class="mt-1 h-1.5 w-full bg-canvas-peach-subtle rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full w-1/6"></div>
+</div>
+</div>
+</section>
+<!-- Filter & Quick Search Controls -->
+<section class="flex flex-col gap-space-sm">
+<!-- Search Bar -->
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[20px] text-text-muted">search</span>
+<input class="w-full min-h-12 pl-11 pr-4 py-2.5 rounded-xl bg-surface-card text-body-md text-text-primary placeholder:text-text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container/40 transition-shadow" placeholder="Cari judul materi / kata kunci..." type="text"/>
+</div>
+<!-- Horizontal Subject Filters -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 no-scrollbar">
+<button class="min-h-12 px-space-md py-2 rounded-full bg-primary text-on-primary font-label-sm text-label-sm whitespace-nowrap shadow-sm flex items-center gap-1.5 flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[16px]">apps</span>
+        Semua Mapel (24)
+      </button>
+<button class="min-h-12 px-space-md py-2 rounded-full bg-surface-card text-text-primary font-label-sm text-label-sm whitespace-nowrap shadow-sm hover:bg-canvas-peach-subtle flex items-center gap-1.5 flex-shrink-0" type="button">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+        Matematika (14)
+      </button>
+<button class="min-h-12 px-space-md py-2 rounded-full bg-surface-card text-text-primary font-label-sm text-label-sm whitespace-nowrap shadow-sm hover:bg-canvas-peach-subtle flex items-center gap-1.5 flex-shrink-0" type="button">
+<span class="w-2.5 h-2.5 rounded-full bg-tone-success"></span>
+        IPAS (10)
+      </button>
+</div>
+<!-- Status Dropdown Trigger -->
+<div class="flex items-center justify-between bg-surface-card px-space-md py-2.5 rounded-xl shadow-sm min-h-12">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-text-muted">tune</span>
+<span class="font-label-sm text-label-sm text-text-primary">Status Penerbitan:</span>
+</div>
+<button class="flex items-center gap-1 text-primary font-label-sm text-label-sm font-bold min-h-[36px] px-2 rounded-lg hover:bg-canvas-peach-subtle transition-colors" type="button">
+<span>Semua Status</span>
+<span class="material-symbols-outlined text-[18px]">keyboard_arrow_down</span>
+</button>
+</div>
+</section>
+<!-- Grouped Materials List -->
+<section class="flex flex-col gap-space-lg">
+<!-- BAB 1: MATEMATIKA -->
+<div class="flex flex-col gap-space-sm">
+<!-- Chapter Section Banner -->
+<div class="flex items-center justify-between bg-canvas-peach-subtle/80 px-space-md py-2.5 rounded-xl">
+<div class="flex items-center gap-2 min-w-0">
+<div class="w-7 h-7 rounded-lg bg-secondary text-on-secondary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[16px]">calculate</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-text-primary truncate">Bab 1: Pecahan &amp; Desimal</span>
+<span class="font-label-sm text-[11px] text-text-muted">Matematika SD VI • 3 Subbab Tersedia</span>
+</div>
+</div>
+<span class="font-label-sm text-[11px] font-bold px-2 py-0.5 rounded bg-surface-card text-secondary flex-shrink-0">Fase C</span>
+</div>
+<!-- Card Material 1: Perkalian Pecahan Campuran -->
+<article class="bg-surface-card rounded-2xl p-space-md shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07)] flex flex-col gap-space-sm">
+<div class="flex items-start justify-between gap-space-xs">
+<span class="px-space-sm py-1 rounded-full bg-tone-success-bg text-tone-success font-label-sm text-[12px] flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined text-[15px]">check_circle</span>
+            Terbit (Siap Dibaca)
+          </span>
+<div class="flex items-center gap-1">
+<button aria-label="Naikkan Urutan" class="w-9 h-9 rounded-lg bg-canvas-peach flex items-center justify-center text-text-muted active:bg-canvas-peach-subtle" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_upward</span>
+</button>
+<button aria-label="Turunkan Urutan" class="w-9 h-9 rounded-lg bg-canvas-peach flex items-center justify-center text-text-muted active:bg-canvas-peach-subtle" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_downward</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="font-headline-sm text-headline-sm text-text-primary">Perkalian Pecahan Campuran dan Desimal</h2>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-2 text-text-muted font-label-sm text-[12px]">
+<span class="font-bold text-secondary">Subbab 1.1</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">menu_book</span>6 Hlm</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">image</span>3 Gambar</span>
+<span>•</span>
+<span class="flex items-center gap-0.5 text-tone-success font-semibold"><span class="material-symbols-outlined text-[14px]">group</span>32 Siswa</span>
+</div>
+</div>
+<!-- Thumbnail Visual Micro-element -->
+<div class="w-full h-24 rounded-xl overflow-hidden relative bg-canvas-peach flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A warm, engaging 2D educational illustration for Grade 6 elementary mathematics showing visual fractions, colorful chocolate bar grids, and decimal numbers drawn cleanly in a sunny, comforting classroom aesthetic with soft peach, mango orange, and cobalt blue tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBh-UuOtDojK-ZI9pSRfFLI3F4oq4wTIgmxH110P82YwXCeb8ssvz0DTDuESYcmCBA8u0OPmiPM0C-rL1TDlMOOQmWkss5iX6diGpsPjQ8cjwlt2xyKybqDj3qY06zWCiSlVxymb49ftfdIif8LcwK1adFfiuMpUOfojTkTqjuH-6q0HCMIapaudUH8U19Piak3fEEHCgYmz_3Y5jImyNIcUA9TTWP39kT6nQuYEDjP"/>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-inverse-surface/80 text-inverse-on-surface text-[10px] font-code-mono font-medium flex items-center gap-1 backdrop-blur-sm">
+<span class="material-symbols-outlined text-[12px]">visibility</span> Terakhir diakses 10 mnt lalu
+          </div>
+</div>
+<!-- Action Row -->
+<div class="grid grid-cols-2 gap-space-sm pt-1">
+<button class="min-h-12 rounded-xl bg-canvas-peach hover:bg-canvas-peach-subtle text-text-primary font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">preview</span>
+            Pratinjau
+          </button>
+<button class="min-h-12 rounded-xl bg-canvas-peach-subtle text-primary font-label-md text-label-md flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform font-bold" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+            Ubah
+          </button>
+</div>
+</article>
+<!-- Card Material 2: Pembagian Bilangan Desimal -->
+<article class="bg-surface-card rounded-2xl p-space-md shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07)] flex flex-col gap-space-sm">
+<div class="flex items-start justify-between gap-space-xs">
+<span class="px-space-sm py-1 rounded-full bg-tone-success-bg text-tone-success font-label-sm text-[12px] flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined text-[15px]">check_circle</span>
+            Terbit (Siap Dibaca)
+          </span>
+<div class="flex items-center gap-1">
+<button aria-label="Naikkan Urutan" class="w-9 h-9 rounded-lg bg-canvas-peach flex items-center justify-center text-text-muted active:bg-canvas-peach-subtle" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_upward</span>
+</button>
+<button aria-label="Turunkan Urutan" class="w-9 h-9 rounded-lg bg-canvas-peach flex items-center justify-center text-text-muted active:bg-canvas-peach-subtle" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_downward</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="font-headline-sm text-headline-sm text-text-primary">Pembagian Bilangan Desimal Sehari-hari</h2>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-2 text-text-muted font-label-sm text-[12px]">
+<span class="font-bold text-secondary">Subbab 1.2</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">menu_book</span>4 Hlm</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">image</span>2 Gambar</span>
+<span>•</span>
+<span class="flex items-center gap-0.5 text-tone-success font-semibold"><span class="material-symbols-outlined text-[14px]">group</span>29 Siswa</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-sm pt-1">
+<button class="min-h-12 rounded-xl bg-canvas-peach hover:bg-canvas-peach-subtle text-text-primary font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">preview</span>
+            Pratinjau
+          </button>
+<button class="min-h-12 rounded-xl bg-canvas-peach-subtle text-primary font-label-md text-label-md flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform font-bold" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+            Ubah
+          </button>
+</div>
+</article>
+<!-- Card Material 3: Operasi Hitung Campuran (Siap Terbit) -->
+<article class="bg-surface-card rounded-2xl p-space-md shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07)] flex flex-col gap-space-sm">
+<div class="flex items-start justify-between gap-space-xs">
+<span class="px-space-sm py-1 rounded-full bg-tone-info-bg text-tone-info font-label-sm text-[12px] flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined text-[15px]">task_alt</span>
+            Sudah Ditinjau • Siap Rilis
+          </span>
+<span class="font-code-mono text-[11px] text-text-muted bg-canvas-peach px-2 py-0.5 rounded-md">ID: MAT-06-13</span>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="font-headline-sm text-headline-sm text-text-primary">Operasi Hitung Campuran dan Bilangan Bulat Negatif</h2>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-2 text-text-muted font-label-sm text-[12px]">
+<span class="font-bold text-secondary">Subbab 1.3</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">menu_book</span>8 Hlm</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">image</span>4 Gambar</span>
+</div>
+</div>
+<!-- Reviewer Feedback Callout -->
+<div class="bg-tone-warning-bg rounded-xl p-space-sm flex items-start gap-2">
+<span class="material-symbols-outlined text-tone-warning text-[18px] flex-shrink-0 mt-0.5">comment</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-[11px] text-tone-warning font-bold">Catatan Peninjau Kurikulum:</span>
+<p class="font-body-md text-[13px] text-text-primary leading-snug">"Soal kontekstual suhu pegunungan Dieng sudah valid dan relevan untuk anak."</p>
+</div>
+</div>
+<!-- Prominent Publish CTA for Teacher -->
+<div class="flex flex-col gap-2 pt-1">
+<button class="w-full min-h-12 py-3 px-space-md rounded-xl bg-tone-success text-on-primary font-label-md text-label-md flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(30,158,100,0.25)] active:scale-[0.98] transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">send</span>
+<span>✓ Terbitkan ke Siswa</span>
+</button>
+<button class="w-full min-h-12 rounded-xl bg-canvas-peach text-text-primary font-label-md text-label-md flex items-center justify-center gap-1.5 hover:bg-canvas-peach-subtle transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+            Ubah Isi Modul
+          </button>
+</div>
+</article>
+</div>
+<!-- BAB 1: IPAS -->
+<div class="flex flex-col gap-space-sm">
+<!-- Chapter Section Banner -->
+<div class="flex items-center justify-between bg-tone-success-bg/70 px-space-md py-2.5 rounded-xl">
+<div class="flex items-center gap-2 min-w-0">
+<div class="w-7 h-7 rounded-lg bg-tone-success text-on-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[16px]">biotech</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-text-primary truncate">Bab 1: Bagaimana Tubuh Kita Bergerak?</span>
+<span class="font-label-sm text-[11px] text-text-muted">IPAS SD VI • 1 Draf Sedang Dikerjakan</span>
+</div>
+</div>
+<span class="font-label-sm text-[11px] font-bold px-2 py-0.5 rounded bg-surface-card text-tone-success flex-shrink-0">Fase C</span>
+</div>
+<!-- Card Material 4: Draf Guru Rangka Manusia -->
+<article class="bg-surface-card rounded-2xl p-space-md shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07)] flex flex-col gap-space-sm">
+<div class="flex items-start justify-between gap-space-xs">
+<span class="px-space-sm py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-[12px] flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined text-[15px]">drafts</span>
+            Draf Guru (Privat)
+          </span>
+<span class="font-label-sm text-[11px] text-text-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">lock</span> Belum Terbuka
+          </span>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="font-headline-sm text-headline-sm text-text-primary">Rangka Manusia dan Fungsinya</h2>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-2 text-text-muted font-label-sm text-[12px]">
+<span class="font-bold text-tone-success">Subbab 1.1</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[14px]">image</span>1 Gambar diunggah</span>
+<span>•</span>
+<span class="text-primary-container font-semibold">Tersimpan otomatis 14:20</span>
+</div>
+</div>
+<!-- Visual Progress in Draft -->
+<div class="w-full h-20 rounded-xl overflow-hidden relative bg-canvas-peach flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A warm and clear educational 3D anatomical diagram of human skeleton system designed for Indonesian primary school students Grade 6, friendly pedagogical atmosphere, soft pastel lighting, creamy peach background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDq0k10NHJwJJMTWRzeG9AL3Z-a3Qfn30O3ueKpqcBToAt_I93rwpbUYHLW7geimCFjWUjCBDq2qZ_jFX9x205egmbxUokcgSgBobwrVY1zRuCbKK8oai2dVldDjSd4Zhsd-UJY02v9PqD3h70EaATWpYfnAX-EwlYnkAX_AhNI5h6YI5LsiABVKS_UFFQGgLm_MqljJKqIYecxUpG-gCTdVNd0w9X30HkfBdEdJiT"/>
+<div class="absolute inset-0 bg-text-primary/30 backdrop-blur-[1px] flex items-center justify-center">
+<span class="font-label-sm text-[12px] text-on-primary bg-inverse-surface/80 px-3 py-1 rounded-full flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined text-[15px]">pending</span> Progres Menulis: 45%
+            </span>
+</div>
+</div>
+<!-- Action Row -->
+<div class="grid grid-cols-2 gap-space-sm pt-1">
+<button class="min-h-12 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-[0_2px_8px_rgba(255,112,52,0.2)] active:scale-[0.98] transition-transform font-bold" type="button">
+<span class="material-symbols-outlined text-[18px]">edit_document</span>
+            Lanjutkan
+          </button>
+<button class="min-h-12 rounded-xl bg-canvas-peach hover:bg-canvas-peach-subtle text-text-primary font-label-sm text-label-sm flex items-center justify-center gap-1 transition-colors text-center px-2" type="button">
+<span class="material-symbols-outlined text-[18px] text-tone-info">verified</span>
+            Tandai Ditinjau
+          </button>
+</div>
+</article>
+</div>
+</section>
+<!-- Pagination & Bottom Loader -->
+<section class="flex flex-col items-center gap-space-sm pt-space-xs pb-space-lg">
+<div class="flex items-center gap-1 text-text-muted font-label-sm text-[12px]">
+<span>Menampilkan</span>
+<span class="font-bold text-text-primary">4</span>
+<span>dari</span>
+<span class="font-bold text-text-primary">24</span>
+<span>materi modul</span>
+</div>
+<!-- Progress Indicator Bar -->
+<div class="w-48 h-2 bg-canvas-peach-subtle rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full w-[17%]"></div>
+</div>
+<button class="w-full min-h-12 py-3 px-space-md rounded-xl bg-surface-card text-text-primary font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm hover:bg-canvas-peach transition-colors active:scale-[0.99]" type="button">
+<span class="material-symbols-outlined text-[20px] text-primary">expand_more</span>
+<span>Muat Materi Lainnya (20 Modul)</span>
+</button>
+</section>
+</div>
+<script>
+  // Simple micro-interactions for teacher actions
+  document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      // Avoid redirect or form action during prototype click
+      if (this.innerText.includes('Terbitkan ke Siswa')) {
+        const confirmed = confirm('Apakah Bapak/Ibu Guru yakin ingin menerbitkan modul ini agar dapat langsung dibaca oleh seluruh siswa Kelas VI?');
+        if (confirmed) {
+          this.classList.remove('bg-tone-success');
+          this.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+          this.innerHTML = '<span class="material-symbols-outlined text-[20px]">done_all</span><span>Berhasil Diterbitkan</span>';
+        }
+      }
+    });
+  });
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(230,115,60,0.08)]" data-active-classes="text-border-active font-bold"><div class="flex items-center justify-around h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 text-text-muted transition-colors rounded-xl" data-path="dasbor" href="#"><span class="material-symbols-outlined text-[24px]">dashboard</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Dasbor</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 text-text-muted transition-colors rounded-xl" data-path="kelas-dan-siswa" href="#"><span class="material-symbols-outlined text-[24px]">groups</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Kelas</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 text-text-muted transition-colors rounded-xl" data-path="bank-soal-dan-materi" href="#"><span class="material-symbols-outlined text-[24px]">menu_book</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Bank Soal</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 text-text-muted transition-colors rounded-xl" data-path="ulangan" href="#"><span class="material-symbols-outlined text-[24px]">assignment</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Ulangan</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 text-text-muted transition-colors rounded-xl" data-path="profil-dan-pengaturan" href="#"><span class="material-symbols-outlined text-[24px]">settings</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Pengaturan</span></a></div></nav></body></html>

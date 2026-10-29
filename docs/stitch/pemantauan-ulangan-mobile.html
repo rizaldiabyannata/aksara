@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "outline": "#8d7167", "on-tertiary-fixed-variant": "#683d00", "surface-container": "#f7ebed", "tertiary-container": "#db891c", "canvas-peach": "#FFF5EE", "primary-fixed": "#ffdbcf", "border-active": "#FF7034", "tone-warning-bg": "#FFF4E5", "background": "#fff8f8", "surface": "#fff8f8", "tertiary-fixed-dim": "#ffb86a", "on-primary": "#ffffff", "tone-info": "#2D68C4", "primary-container": "#ff7034", "surface-dim": "#e3d7d9", "inverse-on-surface": "#faeef0", "on-tertiary-fixed": "#2c1700", "secondary-container": "#5d93ff", "on-secondary-fixed": "#001943", "surface-container-low": "#fdf1f3", "on-primary-fixed": "#380d00", "tone-success": "#1E9E64", "tone-warning": "#E8890C", "primary-fixed-dim": "#ffb59a", "inverse-primary": "#ffb59a", "on-secondary": "#ffffff", "secondary": "#0d59c3", "on-primary-container": "#601d00", "on-secondary-container": "#002b68", "on-tertiary": "#ffffff", "surface-card": "#FFFFFF", "outline-variant": "#e1bfb4", "secondary-fixed-dim": "#afc6ff", "error": "#ba1a1a", "on-error-container": "#93000a", "tertiary": "#895200", "on-error": "#ffffff", "secondary-fixed": "#d9e2ff", "tertiary-fixed": "#ffdcbc", "tone-danger-bg": "#FEECEC", "surface-container-high": "#f2e5e7", "surface-variant": "#ecdfe2", "primary": "#a83900", "surface-bright": "#fff8f8", "border-subtle": "#F2E2D8", "on-tertiary-container": "#4d2c00", "canvas-peach-subtle": "#FFEADB", "on-secondary-fixed-variant": "#004398", "text-primary": "#241F21", "on-background": "#201a1c", "on-primary-fixed-variant": "#802a00", "text-muted": "#695F63", "surface-container-lowest": "#ffffff", "tone-success-bg": "#E8F8F0", "on-surface": "#201a1c", "inverse-surface": "#352f31", "surface-container-highest": "#ecdfe2", "surface-tint": "#a83900", "tone-danger": "#E53E3E", "on-surface-variant": "#594139", "tone-info-bg": "#EEF4FD", "error-container": "#ffdad6" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2rem", "space-2xl": "3rem", "space-lg": "1.5rem", "space-md": "1rem", "gutter": "1.5rem", "space-xs": "0.25rem", "margin": "2rem", "gutter-mobile": "1rem", "margin-mobile": "1rem", "space-sm": "0.5rem" }, fontFamily: { "headline-xl-mobile": ["Plus Jakarta Sans"], "metric-display": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "code-mono": ["JetBrains Mono"], "headline-md": ["Plus Jakarta Sans"], "body-xl": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"] }, fontSize: { "headline-xl-mobile": ["1.75rem", { lineHeight: "2.25rem", letterSpacing: "-0.01em", fontWeight: "800" }], "metric-display": ["4rem", { lineHeight: "4.5rem", letterSpacing: "-0.03em", fontWeight: "800" }], "headline-lg": ["1.75rem", { lineHeight: "2.25rem", letterSpacing: "-0.015em", fontWeight: "700" }], "body-md": ["1rem", { lineHeight: "1.5rem", fontWeight: "400" }], "label-sm": ["0.875rem", { lineHeight: "1.25rem", fontWeight: "600" }], "label-md": ["1rem", { lineHeight: "1.375rem", fontWeight: "600" }], "headline-xl": ["2.25rem", { lineHeight: "2.75rem", letterSpacing: "-0.02em", fontWeight: "800" }], "body-lg": ["1.125rem", { lineHeight: "1.75rem", fontWeight: "400" }], "label-lg": ["1.125rem", { lineHeight: "1.5rem", fontWeight: "600" }], "code-mono": ["1rem", { lineHeight: "1.5rem", letterSpacing: "0.05em", fontWeight: "500" }], "headline-md": ["1.375rem", { lineHeight: "1.875rem", letterSpacing: "-0.01em", fontWeight: "700" }], "body-xl": ["1.25rem", { lineHeight: "1.875rem", fontWeight: "500" }], "headline-sm": ["1.125rem", { lineHeight: "1.625rem", fontWeight: "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-canvas-peach font-body-md text-body-md text-text-primary min-h-screen flex flex-col antialiased selection:bg-primary-fixed"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(230,115,60,0.06)] pt-safe"><div class="h-16 px-gutter-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary-container text-on-primary font-headline-md text-headline-md shadow-[0_2px_8px_rgba(255,112,52,0.25)] flex-shrink-0">A</div><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-text-primary tracking-tight font-extrabold truncate">Aksara</span><span class="px-space-xs py-0.5 rounded-full bg-canvas-peach-subtle text-on-primary-container font-label-sm text-[10px] uppercase font-bold tracking-wider">SD VI</span></div><span class="font-label-sm text-[11px] text-text-muted truncate">T.A 2026/2027</span></div></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="Buka Notifikasi" class="min-h-12 min-w-12 w-12 h-12 rounded-xl flex items-center justify-center text-text-primary hover:bg-canvas-peach transition-colors" type="button"><span class="material-symbols-outlined text-[24px]">notifications</span></button><a aria-label="Profil Guru" class="min-h-12 min-w-12 w-12 h-12 flex items-center justify-center rounded-xl p-1" data-path="profil-dan-pengaturan" href="#"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-[0_2px_6px_rgba(168,57,0,0.25)]"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></a></div></div></header><main class="flex flex-col relative w-full pt-16 pb-28 bg-canvas-peach min-h-screen"><div class="flex flex-col w-full px-margin-mobile space-y-space-md">
+<!-- Live Monitoring Breadcrumb & Session Bar -->
+<section class="flex items-center justify-between pt-space-xs">
+<div class="flex items-center gap-space-xs text-text-muted">
+<a aria-label="Kembali ke Daftar Ulangan" class="min-h-12 min-w-12 -ml-2 rounded-xl flex items-center justify-center text-text-primary hover:bg-canvas-peach-subtle transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</a>
+<span class="font-label-sm text-label-sm text-text-primary font-bold">Pemantauan Langsung</span>
+</div>
+<div class="flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-tone-success-bg text-tone-success shadow-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tone-success opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tone-success"></span>
+</span>
+<span class="font-label-sm text-[11px] font-bold tracking-tight">Sesi Aktif</span>
+</div>
+</section>
+<!-- Top Overview Card -->
+<section class="bg-surface-card rounded-2xl p-space-md shadow-md space-y-space-sm relative overflow-hidden">
+<div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-primary-fixed/30 pointer-events-none blur-xl"></div>
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="px-space-xs py-0.5 rounded-full bg-tone-info-bg text-tone-info font-label-sm text-[11px] font-bold">Matematika VI-B</span>
+<span class="px-space-xs py-0.5 rounded-full bg-canvas-peach-subtle text-primary font-label-sm text-[11px] font-bold">Formatif Bab 2</span>
+</div>
+<h1 class="font-headline-sm text-headline-sm text-text-primary font-bold leading-tight tracking-tight">Ulangan Harian Bab 2: Pecahan dan Desimal</h1>
+</div>
+<button aria-label="Pengaturan Ulangan" class="min-h-12 min-w-12 w-12 h-12 rounded-xl bg-surface-container-low text-text-primary flex items-center justify-center hover:bg-canvas-peach-subtle active:scale-95 transition-all flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[22px]">tune</span>
+</button>
+</div>
+<!-- Metrics Strip -->
+<div class="grid grid-cols-3 gap-space-xs pt-1">
+<div class="bg-surface-container-low rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-text-muted text-[18px]">timer</span>
+<span class="font-headline-sm text-headline-sm text-text-primary font-bold">45m</span>
+<span class="font-label-sm text-[11px] text-text-muted">Durasi Ujian</span>
+</div>
+<div class="bg-surface-container-low rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-text-muted text-[18px]">military_tech</span>
+<span class="font-headline-sm text-headline-sm text-text-primary font-bold">75</span>
+<span class="font-label-sm text-[11px] text-text-muted">KKM Minimum</span>
+</div>
+<div class="bg-surface-container-low rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-text-muted text-[18px]">quiz</span>
+<span class="font-headline-sm text-headline-sm text-text-primary font-bold">15</span>
+<span class="font-label-sm text-[11px] text-text-muted">Butir Soal</span>
+</div>
+</div>
+</section>
+<!-- Live Pulse & Refresh Info Bar -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-space-xs text-text-muted">
+<span class="material-symbols-outlined text-tone-info text-[18px] animate-spin" style="animation-duration: 4s;">autorenew</span>
+<span class="font-label-sm text-[12px] text-text-muted">Sinkronisasi: <strong class="text-text-primary">09:12 WITA</strong> (30 dtk)</span>
+</div>
+<button class="min-h-12 px-space-sm flex items-center gap-1 rounded-xl text-primary font-label-sm text-label-sm hover:bg-canvas-peach-subtle active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+<span>Segarkan</span>
+</button>
+</div>
+<!-- Real-Time Status Chips 2x2 Grid -->
+<section aria-label="Statistik Kehadiran Siswa" class="grid grid-cols-2 gap-space-sm">
+<!-- Active -->
+<div class="bg-surface-card rounded-2xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<span class="min-h-12 min-w-12 w-12 h-12 rounded-xl bg-tone-info-bg text-tone-info flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">edit_note</span>
+</span>
+<span class="font-headline-lg text-headline-lg text-tone-info font-extrabold">18</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-primary font-bold">Sedang Mengerjakan</span>
+<span class="font-label-sm text-[11px] text-text-muted mt-0.5">64% dari 28 siswa</span>
+</div>
+<!-- Need Review -->
+<div class="bg-surface-card rounded-2xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<span class="min-h-12 min-w-12 w-12 h-12 rounded-xl bg-tone-warning-bg text-tone-warning flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">rate_review</span>
+</span>
+<span class="font-headline-lg text-headline-lg text-tone-warning font-extrabold">5</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-primary font-bold">Perlu Dinilai</span>
+<span class="font-label-sm text-[11px] text-text-muted mt-0.5">Soal uraian masuk</span>
+</div>
+<!-- Completed Final -->
+<div class="bg-surface-card rounded-2xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<span class="min-h-12 min-w-12 w-12 h-12 rounded-xl bg-tone-success-bg text-tone-success flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">check_circle</span>
+</span>
+<span class="font-headline-lg text-headline-lg text-tone-success font-extrabold">3</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-primary font-bold">Selesai (Final)</span>
+<span class="font-label-sm text-[11px] text-text-muted mt-0.5">Nilai telah tuntas</span>
+</div>
+<!-- Not Started / Pending -->
+<div class="bg-surface-card rounded-2xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<span class="min-h-12 min-w-12 w-12 h-12 rounded-xl bg-surface-container-high text-text-muted flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">hourglass_empty</span>
+</span>
+<span class="font-headline-lg text-headline-lg text-text-muted font-extrabold">2</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-primary font-bold">Belum Mulai</span>
+<span class="font-label-sm text-[11px] text-text-muted mt-0.5">Menunggu login</span>
+</div>
+</section>
+<!-- Projection Safe Pin Banner -->
+<section class="bg-surface-card rounded-2xl p-space-md shadow-sm flex items-center justify-between gap-space-sm" id="token-card">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="min-h-12 min-w-12 w-12 h-12 rounded-xl bg-canvas-peach-subtle text-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">key</span>
+</div>
+<div class="min-w-0 flex flex-col">
+<span class="font-label-sm text-[11px] text-text-muted uppercase font-bold tracking-wider">Token Ujian Siswa</span>
+<span class="font-code-mono text-code-mono text-headline-sm font-extrabold text-text-primary tracking-widest" id="pin-display">••••••</span>
+</div>
+</div>
+<button class="min-h-12 px-space-md rounded-xl bg-surface-container text-text-primary font-label-sm text-label-sm font-bold flex items-center gap-1.5 active:scale-95 transition-all" id="btn-toggle-pin" type="button">
+<span class="material-symbols-outlined text-[20px]" id="pin-icon">visibility</span>
+<span id="pin-text">Tampilkan</span>
+</button>
+</section>
+<!-- Quick Search & Filter Controls -->
+<section class="space-y-space-xs pt-1">
+<div class="flex items-center gap-space-xs">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-3.5 text-text-muted text-[20px]">search</span>
+<input class="w-full min-h-12 pl-10 pr-space-md rounded-xl bg-surface-card text-text-primary placeholder:text-text-muted font-body-md text-body-md shadow-sm outline-none focus:bg-canvas-peach-subtle transition-all" placeholder="Cari nama atau absen..." type="text"/>
+</div>
+<button aria-label="Filter status ujian" class="min-h-12 min-w-12 w-12 h-12 rounded-xl bg-surface-card text-text-primary flex items-center justify-center shadow-sm hover:bg-canvas-peach-subtle active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[22px]">filter_list</span>
+</button>
+</div>
+<!-- Horizontal Category Filter Pills -->
+<div class="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar text-nowrap">
+<button class="min-h-12 px-space-md rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm shadow-sm flex items-center gap-1" type="button">
+<span>Semua (28)</span>
+</button>
+<button class="min-h-12 px-space-md rounded-full bg-surface-card text-text-muted hover:text-text-primary font-label-sm text-label-sm shadow-sm flex items-center gap-1" type="button">
+<span class="w-2 h-2 rounded-full bg-tone-info"></span>
+<span>Sedang Mengerjakan (18)</span>
+</button>
+<button class="min-h-12 px-space-md rounded-full bg-surface-card text-text-muted hover:text-text-primary font-label-sm text-label-sm shadow-sm flex items-center gap-1" type="button">
+<span class="w-2 h-2 rounded-full bg-tone-warning"></span>
+<span>Perlu Dinilai (5)</span>
+</button>
+<button class="min-h-12 px-space-md rounded-full bg-surface-card text-text-muted hover:text-text-primary font-label-sm text-label-sm shadow-sm flex items-center gap-1" type="button">
+<span class="w-2 h-2 rounded-full bg-tone-danger"></span>
+<span>Kendala (1)</span>
+</button>
+</div>
+</section>
+<!-- Student Monitoring Stack -->
+<section aria-label="Daftar Siswa Pemantauan Langsung" class="space-y-space-sm">
+<!-- 1. Ahmad Fauzi (Sedang Mengerjakan) -->
+<article class="bg-surface-card rounded-2xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-xl bg-secondary-fixed text-secondary flex items-center justify-center font-headline-sm text-headline-sm font-bold flex-shrink-0">
+            01
+          </div>
+<div class="min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-bold truncate">Ahmad Fauzi</h2>
+<div class="flex items-center gap-1 text-tone-info">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span class="font-label-sm text-[12px] font-semibold truncate">Chromebook • Tab Terkunci</span>
+</div>
+</div>
+</div>
+<span class="px-space-xs py-1 rounded-full bg-tone-info-bg text-tone-info font-label-sm text-[11px] font-bold flex-shrink-0 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tone-info animate-pulse"></span>
+          Aktif
+        </span>
+</div>
+<!-- Live Answer Progress Bar -->
+<div class="space-y-1 bg-surface-container-low rounded-xl p-3">
+<div class="flex justify-between items-center text-text-muted">
+<span class="font-label-sm text-label-sm">Jawaban Masuk: <strong class="text-text-primary">12 / 15 Soal</strong></span>
+<span class="font-label-sm text-label-sm font-bold text-text-primary">80%</span>
+</div>
+<div class="w-full bg-surface-dim h-2.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: 80%"></div>
+</div>
+<div class="flex justify-between items-center pt-1 font-label-sm text-[12px] text-text-muted">
+<span class="flex items-center gap-1 text-tone-warning font-semibold">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+            Sisa 18 menit
+          </span>
+<span class="text-text-muted">No. Terakhir: 13</span>
+</div>
+</div>
+</article>
+<!-- 2. Budi Santoso (Perlu Dinilai Uraian) -->
+<article class="bg-surface-card rounded-2xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high text-text-muted flex items-center justify-center font-headline-sm text-headline-sm font-bold flex-shrink-0">
+            04
+          </div>
+<div class="min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-bold truncate">Budi Santoso</h2>
+<span class="font-label-sm text-[12px] text-text-muted truncate">Selesai kirim: 09:05 WITA</span>
+</div>
+</div>
+<span class="px-space-xs py-1 rounded-full bg-tone-warning-bg text-tone-warning font-label-sm text-[11px] font-bold flex-shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">edit_note</span>
+          Uraian
+        </span>
+</div>
+<div class="bg-tone-warning-bg/40 rounded-xl p-3 flex items-center justify-between">
+<div>
+<span class="font-label-sm text-[12px] text-text-muted block">Skor Pilihan Ganda</span>
+<span class="font-headline-sm text-headline-sm text-text-primary font-extrabold">60 <span class="text-text-muted font-normal text-body-md">/ 70</span></span>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-[12px] text-text-muted block">Status Uraian</span>
+<span class="font-label-sm text-label-sm text-tone-warning font-bold">2 Soal Menunggu</span>
+</div>
+</div>
+<button class="w-full min-h-12 rounded-xl bg-tertiary-container text-on-tertiary font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 active:scale-98 shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">grading</span>
+<span>Nilai Uraian Sekarang</span>
+</button>
+</article>
+<!-- 3. Citra Dewi (Selesai - Final) -->
+<article class="bg-surface-card rounded-2xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-xl bg-tone-success-bg text-tone-success flex items-center justify-center font-headline-sm text-headline-sm font-bold flex-shrink-0">
+            08
+          </div>
+<div class="min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-bold truncate">Citra Dewi</h2>
+<span class="font-label-sm text-[12px] text-text-muted">Total waktu: 32 Menit</span>
+</div>
+</div>
+<span class="px-space-xs py-1 rounded-full bg-tone-success-bg text-tone-success font-label-sm text-[11px] font-bold flex-shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+          Tuntas KKM
+        </span>
+</div>
+<div class="bg-surface-container-low rounded-xl p-3 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-[12px] text-text-muted">Skor Akhir (Final)</span>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg font-extrabold text-tone-success">88.50</span>
+<span class="font-label-sm text-[12px] text-text-muted">/ 100</span>
+</div>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-label-sm text-[12px] text-text-muted">Peringkat Kelas</span>
+<span class="font-label-sm text-label-sm font-bold text-text-primary">1 dari 28 Siswa</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<button class="min-h-12 px-space-md rounded-xl text-primary font-label-sm text-label-sm font-bold flex items-center gap-1 hover:bg-canvas-peach-subtle transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span>Lihat Lembar Jawaban</span>
+</button>
+<span class="font-label-sm text-[12px] text-tone-success font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">check</span>
+          Tersimpan
+        </span>
+</div>
+</article>
+<!-- 4. Doni Pratama (Terputus / Kendala) -->
+<article class="bg-surface-card rounded-2xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-xl bg-tone-danger-bg text-tone-danger flex items-center justify-center font-headline-sm text-headline-sm font-bold flex-shrink-0">
+            12
+          </div>
+<div class="min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-bold truncate">Doni Pratama</h2>
+<div class="flex items-center gap-1 text-tone-danger">
+<span class="material-symbols-outlined text-[16px]">wifi_off</span>
+<span class="font-label-sm text-[12px] font-semibold truncate">Koneksi Hilang • 4 mnt lalu</span>
+</div>
+</div>
+</div>
+<span class="px-space-xs py-1 rounded-full bg-tone-danger-bg text-tone-danger font-label-sm text-[11px] font-bold flex-shrink-0">
+          Terputus
+        </span>
+</div>
+<div class="bg-tone-danger-bg/40 rounded-xl p-3 space-y-1">
+<span class="font-label-sm text-[12px] text-text-muted">Progres Terakhir Disimpan Server</span>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-text-primary">7 dari 15 Soal Terjawab</span>
+<span class="font-label-sm text-label-sm text-tone-danger font-bold">Waktu Beku: 24m</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs">
+<button class="min-h-12 px-2 rounded-xl bg-surface-container text-text-primary font-label-sm text-label-sm font-bold flex items-center justify-center gap-1 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+<span>Buka Kunci</span>
+</button>
+<button class="min-h-12 px-2 rounded-xl bg-tone-danger text-on-error font-label-sm text-label-sm font-bold flex items-center justify-center gap-1 shadow-sm active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Sesi Pengganti</span>
+</button>
+</div>
+</article>
+</section>
+<!-- Sticky Bottom Actions Bar (Respects App Shell Nav Bar) -->
+<section class="sticky bottom-20 z-40 bg-surface/95 backdrop-blur-md p-space-sm rounded-2xl shadow-xl space-y-2 mt-space-md">
+<div class="grid grid-cols-2 gap-space-sm">
+<button class="min-h-12 w-full rounded-xl bg-surface-card text-text-primary font-label-sm text-label-sm font-bold shadow-sm flex items-center justify-center gap-1.5 hover:bg-canvas-peach-subtle active:scale-98 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px] text-tone-success">file_download</span>
+<span>Rekap Excel</span>
+</button>
+<button class="min-h-12 w-full rounded-xl bg-primary-container text-on-primary font-label-sm text-label-sm font-bold shadow-sm flex items-center justify-center gap-1.5 active:scale-98 transition-all" id="btn-close-exam" type="button">
+<span class="material-symbols-outlined text-[20px]">lock_clock</span>
+<span>Tutup Ulangan</span>
+</button>
+</div>
+</section>
+</div>
+<script>
+  // Micro-interaction for Teacher Classroom Projection PIN mask
+  const btnToggle = document.getElementById('btn-toggle-pin');
+  const pinDisplay = document.getElementById('pin-display');
+  const pinIcon = document.getElementById('pin-icon');
+  const pinText = document.getElementById('pin-text');
+  let isRevealed = false;
+
+  if (btnToggle && pinDisplay) {
+    btnToggle.addEventListener('click', () => {
+      isRevealed = !isRevealed;
+      if (isRevealed) {
+        pinDisplay.textContent = 'M4T-6B';
+        pinIcon.textContent = 'visibility_off';
+        pinText.textContent = 'Sembunyikan';
+      } else {
+        pinDisplay.textContent = '••••••';
+        pinIcon.textContent = 'visibility';
+        pinText.textContent = 'Tampilkan';
+      }
+    });
+  }
+
+  // Micro-interaction for End Quiz Confirmation Dialog Prompt
+  const btnCloseExam = document.getElementById('btn-close-exam');
+  if (btnCloseExam) {
+    btnCloseExam.addEventListener('click', () => {
+      if (confirm('Yakin ingin menutup sesi ulangan sekarang? Siswa yang belum submit akan otomatis terkumpul dengan jawaban terakhir.')) {
+        alert('Sesi ulangan berhasil ditutup. Sistem sedang menghitung rekapitulasi nilai akhir.');
+      }
+    });
+  }
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(230,115,60,0.08)]" data-active-classes="text-border-active font-bold"><div class="flex items-center justify-around h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 text-text-muted transition-colors rounded-xl" data-path="dasbor" href="#"><span class="material-symbols-outlined text-[24px]">dashboard</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Dasbor</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 text-text-muted transition-colors rounded-xl" data-path="kelas-dan-siswa" href="#"><span class="material-symbols-outlined text-[24px]">groups</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Kelas</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 text-text-muted transition-colors rounded-xl" data-path="bank-soal-dan-materi" href="#"><span class="material-symbols-outlined text-[24px]">menu_book</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Bank Soal</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 transition-colors rounded-xl text-border-active font-bold" data-path="ulangan" href="#"><span class="material-symbols-outlined text-[24px]">assignment</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Ulangan</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 text-text-muted transition-colors rounded-xl" data-path="profil-dan-pengaturan" href="#"><span class="material-symbols-outlined text-[24px]">settings</span><span class="font-label-sm text-[11px] font-semibold tracking-tight">Pengaturan</span></a></div></nav></body></html>

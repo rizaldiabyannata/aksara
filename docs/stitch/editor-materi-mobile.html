@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#fff8f8;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"tone-danger-bg":"#FEECEC","on-error-container":"#93000a","surface-container-high":"#f2e5e7","primary-container":"#ff7034","on-secondary":"#ffffff","on-error":"#ffffff","secondary-fixed-dim":"#afc6ff","canvas-peach-subtle":"#FFEADB","error":"#ba1a1a","surface-container":"#f7ebed","primary":"#a83900","on-secondary-fixed":"#001943","surface":"#fff8f8","tone-success":"#1E9E64","on-primary":"#ffffff","canvas-peach":"#FFF5EE","surface-tint":"#a83900","tone-warning-bg":"#FFF4E5","tertiary":"#895200","outline":"#8d7167","on-tertiary-fixed":"#2c1700","surface-bright":"#fff8f8","secondary-container":"#5d93ff","surface-container-lowest":"#ffffff","tone-info":"#2D68C4","border-active":"#FF7034","on-tertiary-container":"#4d2c00","tertiary-fixed":"#ffdcbc","primary-fixed-dim":"#ffb59a","tertiary-container":"#db891c","tone-warning":"#E8890C","on-secondary-container":"#002b68","surface-container-highest":"#ecdfe2","surface-container-low":"#fdf1f3","on-tertiary":"#ffffff","surface-dim":"#e3d7d9","secondary-fixed":"#d9e2ff","on-primary-container":"#601d00","surface-variant":"#ecdfe2","text-muted":"#695F63","border-subtle":"#F2E2D8","on-tertiary-fixed-variant":"#683d00","on-primary-fixed-variant":"#802a00","background":"#fff8f8","outline-variant":"#e1bfb4","error-container":"#ffdad6","primary-fixed":"#ffdbcf","secondary":"#0d59c3","tone-danger":"#E53E3E","tone-success-bg":"#E8F8F0","on-primary-fixed":"#380d00","on-secondary-fixed-variant":"#004398","on-surface-variant":"#594139","text-primary":"#241F21","inverse-primary":"#ffb59a","inverse-on-surface":"#faeef0","on-background":"#201a1c","tertiary-fixed-dim":"#ffb86a","on-surface":"#201a1c","surface-card":"#FFFFFF","inverse-surface":"#352f31","tone-info-bg":"#EEF4FD"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"gutter-mobile":"1rem","space-md":"1rem","space-xs":"0.25rem",margin:"2rem","space-lg":"1.5rem","space-2xl":"3rem",gutter:"1.5rem","space-xl":"2rem","margin-mobile":"1rem","space-sm":"0.5rem"},fontFamily:{"headline-xl":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-xl-mobile":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"code-mono":["JetBrains Mono"],"headline-md":["Plus Jakarta Sans"],"body-xl":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"metric-display":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"]},fontSize:{"headline-xl":["2.25rem",{lineHeight:"2.75rem",letterSpacing:"-0.02em",fontWeight:"800"}],"label-sm":["0.875rem",{lineHeight:"1.25rem",fontWeight:"600"}],"headline-xl-mobile":["1.75rem",{lineHeight:"2.25rem",letterSpacing:"-0.01em",fontWeight:"800"}],"label-lg":["1.125rem",{lineHeight:"1.5rem",fontWeight:"600"}],"headline-lg":["1.75rem",{lineHeight:"2.25rem",letterSpacing:"-0.015em",fontWeight:"700"}],"code-mono":["1rem",{lineHeight:"1.5rem",letterSpacing:"0.05em",fontWeight:"500"}],"headline-md":["1.375rem",{lineHeight:"1.875rem",letterSpacing:"-0.01em",fontWeight:"700"}],"body-xl":["1.25rem",{lineHeight:"1.875rem",fontWeight:"500"}],"body-md":["1rem",{lineHeight:"1.5rem",fontWeight:"400"}],"body-lg":["1.125rem",{lineHeight:"1.75rem",fontWeight:"400"}],"metric-display":["4rem",{lineHeight:"4.5rem",letterSpacing:"-0.03em",fontWeight:"800"}],"headline-sm":["1.125rem",{lineHeight:"1.625rem",fontWeight:"700"}],"label-md":["1rem",{lineHeight:"1.375rem",fontWeight:"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs"><button aria-label="Kembali" class="min-h-12 min-w-12 w-12 h-12 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-text-primary truncate">Edit Materi</h1></div><div class="flex items-center gap-space-sm"><button aria-label="Simpan" class="min-h-12 h-12 px-space-lg rounded-xl bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-space-xs shadow-sm hover:opacity-95 active:scale-98 transition-all"><span class="material-symbols-outlined text-[20px]">save</span><span>Simpan</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface px-gutter-mobile"><div class="flex flex-col w-full pb-28">
+<!-- Status & Auto-save Sub-bar -->
+<div class="pt-3 pb-3 flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-text-primary">Ubah Modul Ajar</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-canvas-peach-subtle text-primary font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+        Draf Aktif
+      </span>
+</div>
+<div class="flex items-center gap-1.5 text-text-muted">
+<span class="material-symbols-outlined text-[16px] text-tone-success">cloud_done</span>
+<span class="font-label-sm text-label-sm">Tersimpan otomatis 14:20 WITA</span>
+</div>
+</div>
+<!-- Warm Guidance Banner for Senior Primary Educators -->
+<div class="mb-4 p-4 rounded-2xl bg-canvas-peach text-on-surface flex items-start gap-3 shadow-sm">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[24px]">school</span>
+</div>
+<div class="min-w-0 flex-1">
+<h3 class="font-headline-sm text-headline-sm text-text-primary leading-tight mb-1">Panduan Menulis Modul Kelas VI</h3>
+<p class="font-body-md text-body-md text-text-muted">Gunakan bahasa akrab, kalimat ringkas (15-20 kata), dan tambahkan diagram visual untuk memudahkan siswa memahami sains tubuh manusia.</p>
+<div class="mt-2.5 flex items-center gap-3">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary font-bold">
+<span class="material-symbols-outlined text-[16px]">wifi</span> Hemat Kuota Siswa (&lt;150KB)
+        </span>
+</div>
+</div>
+</div>
+<!-- SECTION 1: Informasi Dasar & Kurikulum -->
+<section class="mb-4 p-4 rounded-2xl bg-surface-card shadow-sm flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">book_2</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">1. Informasi &amp; Kurikulum</h2>
+</div>
+<span class="px-2 py-0.5 rounded-md bg-surface-container font-label-sm text-label-sm text-text-muted">Kurikulum Merdeka</span>
+</div>
+<!-- Title input with counter -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-text-primary font-semibold" for="module-title">Judul Modul Ajar</label>
+<span class="font-code-mono text-label-sm text-text-muted" id="title-counter">58/120</span>
+</div>
+<input class="min-h-12 w-full px-3.5 py-2.5 rounded-xl bg-surface text-text-primary font-body-md text-body-md outline-none focus:bg-canvas-peach/30 transition-all placeholder:text-text-muted" id="module-title" maxlength="120" placeholder="Ketik judul modul pembelajaran..." type="text" value="Rangka Manusia dan Fungsinya: Sistem Gerak Pasif &amp; Aktif"/>
+</div>
+<!-- Mapel & Tingkat -->
+<div class="grid grid-cols-1 gap-3">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-primary font-semibold" for="select-mapel">Mata Pelajaran</label>
+<div class="relative">
+<select class="min-h-12 w-full appearance-none px-3.5 pr-10 py-2.5 rounded-xl bg-surface text-text-primary font-body-md text-body-md outline-none" id="select-mapel">
+<option selected="">IPAS Kelas VI (Ilmu Pengetahuan Alam &amp; Sosial)</option>
+<option>Bahasa Indonesia Kelas VI</option>
+<option>Matematika Kelas VI</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none text-[22px]">expand_more</span>
+</div>
+</div>
+<!-- Bab & Subbab -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-primary font-semibold" for="select-bab">Bab &amp; Sub-Materi</label>
+<div class="relative mb-2">
+<select class="min-h-12 w-full appearance-none px-3.5 pr-10 py-2.5 rounded-xl bg-surface text-text-primary font-body-md text-body-md outline-none" id="select-bab">
+<option selected="">Bab 1: Bagaimana Tubuh Kita Bergerak?</option>
+<option>Bab 2: Cerita tentang Indonesia Kita</option>
+<option>Bab 3: Bumi dan Alam Semesta</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none text-[22px]">expand_more</span>
+</div>
+<div class="relative">
+<select class="min-h-12 w-full appearance-none px-3.5 pr-10 py-2.5 rounded-xl bg-surface text-text-primary font-body-md text-body-md outline-none" id="select-subbab">
+<option selected="">Subbab 1.1: Rangka Manusia dan Bagiannya</option>
+<option>Subbab 1.2: Sendi: Engsel Ajaib Tubuh</option>
+<option>Subbab 1.3: Otot dan Cara Kerjanya</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none text-[22px]">expand_more</span>
+</div>
+</div>
+<!-- Sumber Buku -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-text-primary font-semibold" for="book-ref">Buku Sumber Resmi</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-text-muted text-[20px]">menu_book</span>
+<input class="min-h-12 w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-surface text-text-primary font-body-md text-body-md outline-none placeholder:text-text-muted" id="book-ref" type="text" value="Buku IPAS Kemendikbudristek 2025, hal 4-18"/>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 2: Ringkasan Pengantar (Anak Usia 11-12 Tahun) -->
+<section class="mb-4 p-4 rounded-2xl bg-surface-card shadow-sm flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[22px]">sentiment_satisfied</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">2. Pengantar Modul (Untuk Siswa)</h2>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-tone-success-bg text-tone-success font-label-sm text-label-sm">Bahasa Ramah</span>
+</div>
+<p class="font-body-md text-body-md text-text-muted">Teks sambutan hangat yang pertama kali dibaca siswa saat membuka gawai/tablet mereka.</p>
+<div class="relative">
+<textarea class="w-full p-3.5 rounded-xl bg-surface text-text-primary font-body-md text-body-md outline-none focus:bg-canvas-peach/30 transition-all resize-none leading-relaxed" placeholder="Tulis salam pembuka ramah anak..." rows="4">Halo Anak-Anak Hebat Kelas 6! Di modul ini kita akan menjelajahi rangka tubuh yang luar biasa. Tahukah kamu bahwa tanpa 206 tulang di badanmu, tubuh kita akan seperti agar-agar lembek? Yuk, siapkan rasa ingin tahumu dan amati diagram rangka di bawah ini bersama teman sebangkumu!</textarea>
+</div>
+</section>
+<!-- SECTION 3: Isi Pembelajaran Utama (Markdown & Toolbar Ramah Sentuhan) -->
+<section class="mb-4 p-4 rounded-2xl bg-surface-card shadow-sm flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">edit_note</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">3. Isi Pembelajaran Utama</h2>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted">Format Markdown</span>
+</div>
+<!-- Ergonomic Large-Touch Toolbar -->
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+<button class="min-h-12 min-w-12 px-3 rounded-xl bg-surface text-text-primary flex items-center justify-center font-label-md text-label-md active:bg-canvas-peach-subtle transition-colors shrink-0 shadow-sm" onclick="insertSyntax('## ')" title="Judul Bagian" type="button">
+        H2
+      </button>
+<button class="min-h-12 min-w-12 px-3 rounded-xl bg-surface text-text-primary flex items-center justify-center font-label-md text-label-md active:bg-canvas-peach-subtle transition-colors shrink-0 shadow-sm" onclick="insertSyntax('### ')" title="Sub Judul" type="button">
+        H3
+      </button>
+<button class="min-h-12 min-w-12 rounded-xl bg-surface text-text-primary flex items-center justify-center active:bg-canvas-peach-subtle transition-colors shrink-0 shadow-sm" onclick="insertSyntax('**Teks Tebal**')" title="Tebal" type="button">
+<span class="material-symbols-outlined text-[20px]">format_bold</span>
+</button>
+<button class="min-h-12 min-w-12 rounded-xl bg-surface text-text-primary flex items-center justify-center active:bg-canvas-peach-subtle transition-colors shrink-0 shadow-sm" onclick="insertSyntax('*Teks Miring*')" title="Miring" type="button">
+<span class="material-symbols-outlined text-[20px]">format_italic</span>
+</button>
+<button class="min-h-12 px-3.5 rounded-xl bg-tone-warning-bg text-tertiary flex items-center gap-1.5 font-label-sm text-label-sm active:opacity-80 transition-colors shrink-0 shadow-sm" onclick="insertSyntax('&gt; [Kotak Fakta Sains]: ')" type="button">
+<span class="material-symbols-outlined text-[18px]">lightbulb</span>
+<span>Kotak Fakta</span>
+</button>
+<button class="min-h-12 px-3.5 rounded-xl bg-tone-info-bg text-tone-info flex items-center gap-1.5 font-label-sm text-label-sm active:opacity-80 transition-colors shrink-0 shadow-sm" onclick="insertSyntax('![Diagram Rangka](aksara-image:img-sd-801)')" type="button">
+<span class="material-symbols-outlined text-[18px]">image</span>
+<span>Sisip Gambar</span>
+</button>
+</div>
+<!-- Textarea Editor with auto line-height -->
+<div class="flex flex-col gap-1.5">
+<textarea class="w-full p-4 rounded-xl bg-surface text-text-primary font-code-mono text-label-md leading-relaxed outline-none focus:bg-canvas-peach/20 transition-all resize-y" id="markdown-editor" rows="10">## 1. Apa Itu Rangka Tubuh?
+Rangka adalah susunan teratur dari tulang-tulang yang saling terhubung. Pada manusia dewasa, terdapat 206 ruas tulang yang menyatu kuat.
+
+&gt; [Kotak Fakta Sains]: Tulang paha (femur) adalah tulang terpanjang dan terkuat di tubuh kita!
+
+![Diagram Rangka Tubuh Manusia](aksara-image:img-sd-801)
+
+### 2. Tiga Fungsi Utama Rangka:
+1. Menegakkan dan membentuk postur tubuh kita saat berdiri tegap.
+2. Melindungi organ dalam yang sangat lunak seperti otak, jantung, dan paru-paru.
+3. Tempat melekatnya otot lurik sehingga kita dapat melompat dan berlari kencang.
+
+![Tengkorak dan Tulang Rusuk](aksara-image:img-sd-802)</textarea>
+</div>
+</section>
+<!-- SECTION 4: Panel Gambar Terintegrasi (Quota Friendly <150KB) -->
+<section class="mb-4 p-4 rounded-2xl bg-surface-card shadow-sm flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">photo_library</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">4. Media Gambar Terpadu</h2>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-canvas-peach-subtle text-primary font-code-mono text-label-sm font-semibold">2 / 20 Gambar</span>
+</div>
+<p class="font-body-md text-body-md text-text-muted">Otomatis dioptimalkan ke WebP hemat kuota (&lt;150KB) agar cepat terbuka di handphone siswa.</p>
+<!-- Upload Button Area -->
+<button class="min-h-12 w-full py-3 px-4 rounded-xl bg-canvas-peach text-primary font-label-md text-label-md flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-sm" type="button">
+<span class="material-symbols-outlined text-[22px]">add_photo_alternate</span>
+<span>+ Unggah Gambar Baru (&lt;150KB)</span>
+</button>
+<!-- Image Cards List -->
+<div class="flex flex-col gap-3 mt-1">
+<!-- Image 1 Card -->
+<div class="p-3 rounded-xl bg-surface flex flex-col gap-2.5">
+<div class="flex items-center gap-3">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-surface-container relative">
+<img alt="Diagram Rangka Tubuh" class="w-full h-full object-cover" data-alt="Scientific anatomical illustration of the human skeletal system with labels in Indonesian language, soft classroom pastel colors on clean white background, educational visual chart for elementary school students." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJSGsszD2cTgsnToTHVIXv8Pv88P7pdHIED3HvP0iQK_jfo0NqyDMS3dWwsGZiRhi_GJ6FZMYXLkHRkqz3nuc55jaKuqnHv_A2QqL0WPY4RRZd1l6GIs6W_dZRHxruyOqzRfxuzOfCVsWAkPKLVTAhPPLuPx64-_cE293zG0BZ3KTqE2G-j81U1xHPpKCcuDTrNgKXdOWELTff1kTrXiUaq5K0WZJXwBMnxeqpZaN3"/>
+<span class="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono leading-none">94 KB</span>
+</div>
+<div class="min-w-0 flex-1">
+<h4 class="font-headline-sm text-headline-sm text-text-primary truncate">Diagram Rangka Tubuh</h4>
+<p class="font-code-mono text-label-sm text-text-muted truncate mt-0.5">ID: img-sd-801</p>
+<div class="flex items-center gap-2 mt-1.5">
+<span class="inline-flex items-center gap-1 text-[12px] text-tone-success font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> WebP Optimal
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1">
+<button class="min-h-12 flex-1 px-3 rounded-lg bg-surface-container-low text-primary font-label-sm text-label-sm flex items-center justify-center gap-1.5 active:bg-canvas-peach transition-colors" onclick="copyCode('![Diagram Rangka](aksara-image:img-sd-801)', this)" type="button">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+<span>Salin Kode Sisip</span>
+</button>
+<button aria-label="Hapus gambar" class="min-h-12 min-w-12 rounded-lg bg-tone-danger-bg text-tone-danger flex items-center justify-center active:opacity-80 transition-opacity" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Image 2 Card -->
+<div class="p-3 rounded-xl bg-surface flex flex-col gap-2.5">
+<div class="flex items-center gap-3">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-surface-container relative">
+<img alt="Tengkorak Manusia" class="w-full h-full object-cover" data-alt="Clear colorful medical illustration of human cranium and ribcage bone structure showing protective cavity for brain and heart, educational biology diagram for 6th grade kids." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc83NyzxA0ErcSSVAH90zo6naN4T2QZq3S0r8qeuEFb10FfELPelb_9tqiGo0m20BKNb4231OH_u8q-qtDaWDVhex3M2FX9GVsFy4gfnLyIl-FhiipHeZNE2HQdtaT6G5QEiCblLCOC1ZbwIlFB4jGnhe0psxk3cFpm7j19-ECzLO5kI4F5DhPFZK5DqrNeWJgYeOog9HQuZxMAPOlobzCVXnemr74R9xmfQSLFFRH"/>
+<span class="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono leading-none">118 KB</span>
+</div>
+<div class="min-w-0 flex-1">
+<h4 class="font-headline-sm text-headline-sm text-text-primary truncate">Tengkorak Manusia</h4>
+<p class="font-code-mono text-label-sm text-text-muted truncate mt-0.5">ID: img-sd-802</p>
+<div class="flex items-center gap-2 mt-1.5">
+<span class="inline-flex items-center gap-1 text-[12px] text-tone-success font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> WebP Optimal
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1">
+<button class="min-h-12 flex-1 px-3 rounded-lg bg-surface-container-low text-primary font-label-sm text-label-sm flex items-center justify-center gap-1.5 active:bg-canvas-peach transition-colors" onclick="copyCode('![Tengkorak Manusia](aksara-image:img-sd-802)', this)" type="button">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+<span>Salin Kode Sisip</span>
+</button>
+<button aria-label="Hapus gambar" class="min-h-12 min-w-12 rounded-lg bg-tone-danger-bg text-tone-danger flex items-center justify-center active:opacity-80 transition-opacity" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 5: Aktivitas Berpasangan & Latihan Mandiri (Accordion) -->
+<section class="mb-6 rounded-2xl bg-surface-card shadow-sm overflow-hidden">
+<!-- Accordion 1 -->
+<details class="group p-4 open:bg-surface-container-low transition-colors" open="">
+<summary class="flex items-center justify-between cursor-pointer list-none select-none">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-secondary text-[22px]">diversity_3</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">5. Aktivitas Belajar Berpasangan</h2>
+</div>
+<span class="material-symbols-outlined text-text-muted group-open:rotate-180 transition-transform text-[22px]">expand_more</span>
+</summary>
+<div class="mt-3.5 pt-3 flex flex-col gap-2">
+<label class="font-label-md text-label-md text-text-primary font-medium" for="pair-activity-input">Instruksi Tugas Meja:</label>
+<textarea class="w-full p-3 rounded-xl bg-surface text-text-primary font-body-md text-body-md outline-none" id="pair-activity-input" rows="3">Bersama kawan sebangkumu, raba tulang selangkang dan tulang siku masing-masing. Diskusikan gerakan apa saja yang dapat dilakukan oleh sendi tersebut lalu catat di buku harian sains!</textarea>
+</div>
+</details>
+<div class="h-px bg-surface-container"></div>
+<!-- Accordion 2 -->
+<details class="group p-4 open:bg-surface-container-low transition-colors">
+<summary class="flex items-center justify-between cursor-pointer list-none select-none">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-tone-warning text-[22px]">quiz</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">Latihan Pemahaman Mandiri (3 Soal)</h2>
+</div>
+<span class="material-symbols-outlined text-text-muted group-open:rotate-180 transition-transform text-[22px]">expand_more</span>
+</summary>
+<div class="mt-3.5 pt-3 flex flex-col gap-2">
+<p class="font-body-md text-body-md text-text-muted">Pertanyaan refleksi cepat di akhir materi modul untuk mengukur pemahaman konsep siswa.</p>
+<div class="p-3 rounded-xl bg-surface flex items-center justify-between">
+<span class="font-label-md text-label-md text-text-primary">3 Pertanyaan Pilihan Ganda Telah Terhubung</span>
+<button class="min-h-12 px-3 rounded-lg text-primary font-label-sm text-label-sm font-bold flex items-center gap-1" type="button">
+<span>Kelola</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</details>
+</section>
+<!-- Sticky Bottom Quick Action Tray -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-md px-gutter-mobile py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-safe">
+<div class="max-w-md mx-auto flex items-center gap-2">
+<!-- Pratinjau Siswa -->
+<button class="min-h-12 flex-1 px-3 rounded-xl bg-surface-container text-text-primary font-label-md text-label-md flex items-center justify-center gap-1.5 active:scale-95 transition-transform" onclick="previewStudentView()" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+<span class="truncate">Pratinjau</span>
+</button>
+<!-- Tandai Sudah Ditinjau -->
+<button class="min-h-12 flex-1 px-3 rounded-xl bg-canvas-peach-subtle text-primary font-label-md text-label-md flex items-center justify-center gap-1.5 active:scale-95 transition-transform" onclick="markAsReviewed(this)" type="button">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+<span class="truncate">Ditinjau</span>
+</button>
+<!-- Terbitkan ke Siswa -->
+<button class="min-h-12 flex-1 px-3 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform" onclick="publishModule()" type="button">
+<span class="material-symbols-outlined text-[20px]">send</span>
+<span class="truncate">Terbitkan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Client-side Interactive Behaviors -->
+<script>
+  // Character counter updater
+  const titleInput = document.getElementById('module-title');
+  const counterSpan = document.getElementById('title-counter');
+  if (titleInput && counterSpan) {
+    titleInput.addEventListener('input', () => {
+      counterSpan.textContent = `${titleInput.value.length}/120`;
+    });
+  }
+
+  // Markdown syntax insertion helper
+  function insertSyntax(code) {
+    const textarea = document.getElementById('markdown-editor');
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const val = textarea.value;
+    textarea.value = val.substring(0, start) + code + val.substring(end);
+    textarea.focus();
+    textarea.selectionEnd = start + code.length;
+  }
+
+  // Copy Image Embed Code Helper with Toast
+  function copyCode(code, btn) {
+    navigator.clipboard.writeText(code).then(() => {
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `<span class="material-symbols-outlined text-[18px] text-tone-success">check</span><span class="text-tone-success">Tersalin!</span>`;
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+      }, 1800);
+    });
+  }
+
+  // Action Bar Handlers
+  function previewStudentView() {
+    alert('Membuka mode pratinjau tablet siswa: "Rangka Manusia dan Fungsinya"');
+  }
+
+  function markAsReviewed(btn) {
+    btn.classList.add('bg-tone-success-bg', 'text-tone-success');
+    btn.innerHTML = `<span class="material-symbols-outlined text-[20px]">done_all</span><span class="truncate">Siap Terbit</span>`;
+  }
+
+  function publishModule() {
+    if (confirm('Terbitkan Modul Ajar ini ke seluruh siswa kelas VI A dan VI B?')) {
+      alert('Modul Ajar berhasil diterbitkan dan tersedia di perpustakaan siswa!');
+    }
+  }
+</script></main></body></html>

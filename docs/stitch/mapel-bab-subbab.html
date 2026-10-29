@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary-fixed":"#ffdbcf","border-active":"#FF7034","tone-success-bg":"#E8F8F0","surface":"#fff8f8","tone-danger":"#E53E3E","background":"#fff8f8","text-muted":"#695F63","error-container":"#ffdad6","tone-warning-bg":"#FFF4E5","secondary-container":"#5d93ff","surface-card":"#FFFFFF","canvas-peach":"#FFF5EE","on-secondary-fixed":"#001943","on-secondary-container":"#002b68","on-secondary-fixed-variant":"#004398","on-tertiary-container":"#4d2c00","on-primary-fixed":"#380d00","surface-dim":"#e3d7d9","surface-bright":"#fff8f8","on-surface":"#201a1c","tone-danger-bg":"#FEECEC","on-tertiary-fixed":"#2c1700","primary-container":"#ff7034","surface-container-lowest":"#ffffff","border-subtle":"#F2E2D8","tone-warning":"#E8890C","on-tertiary":"#ffffff","tone-success":"#1E9E64","tone-info":"#2D68C4","primary-fixed-dim":"#ffb59a","surface-container-high":"#f2e5e7","on-background":"#201a1c","surface-tint":"#a83900","inverse-primary":"#ffb59a","on-primary-container":"#601d00","primary":"#a83900","outline":"#8d7167","on-error-container":"#93000a","on-surface-variant":"#594139","tone-info-bg":"#EEF4FD","tertiary-fixed":"#ffdcbc","surface-container-highest":"#ecdfe2","secondary":"#0d59c3","inverse-on-surface":"#faeef0","surface-variant":"#ecdfe2","on-primary":"#ffffff","on-secondary":"#ffffff","tertiary-fixed-dim":"#ffb86a","secondary-fixed-dim":"#afc6ff","inverse-surface":"#352f31","surface-container-low":"#fdf1f3","error":"#ba1a1a","secondary-fixed":"#d9e2ff","on-tertiary-fixed-variant":"#683d00","tertiary-container":"#db891c","text-primary":"#241F21","outline-variant":"#e1bfb4","canvas-peach-subtle":"#FFEADB","on-primary-fixed-variant":"#802a00","surface-container":"#f7ebed","tertiary":"#895200","on-error":"#ffffff"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"gutter":"1.5rem","space-2xl":"3rem","gutter-mobile":"1rem","space-xs":"0.25rem","margin":"2rem","space-xl":"2rem","space-sm":"0.5rem","space-md":"1rem","space-lg":"1.5rem","margin-mobile":"1rem"},fontFamily:{"code-mono":["JetBrains Mono"],"label-md":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"headline-xl":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-xl-mobile":["Plus Jakarta Sans"],"metric-display":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"body-xl":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"]},fontSize:{"code-mono":["1rem",{lineHeight:"1.5rem",letterSpacing:"0.05em",fontWeight:"500"}],"label-md":["1rem",{lineHeight:"1.375rem",fontWeight:"600"}],"body-md":["1rem",{lineHeight:"1.5rem",fontWeight:"400"}],"headline-xl":["2.25rem",{lineHeight:"2.75rem",letterSpacing:"-0.02em",fontWeight:"800"}],"label-sm":["0.875rem",{lineHeight:"1.25rem",fontWeight:"600"}],"headline-xl-mobile":["1.75rem",{lineHeight:"2.25rem",letterSpacing:"-0.01em",fontWeight:"800"}],"metric-display":["4rem",{lineHeight:"4.5rem",letterSpacing:"-0.03em",fontWeight:"800"}],"headline-lg":["1.75rem",{lineHeight:"2.25rem",letterSpacing:"-0.015em",fontWeight:"700"}],"label-lg":["1.125rem",{lineHeight:"1.5rem",fontWeight:"600"}],"body-xl":["1.25rem",{lineHeight:"1.875rem",fontWeight:"500"}],"headline-sm":["1.125rem",{lineHeight:"1.625rem",fontWeight:"700"}],"body-lg":["1.125rem",{lineHeight:"1.75rem",fontWeight:"400"}],"headline-md":["1.375rem",{lineHeight:"1.875rem",letterSpacing:"-0.01em",fontWeight:"700"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between"><div class="flex flex-col"><div class="h-20 flex items-center gap-3 px-space-lg"><div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-[0_2px_8px_rgba(168,57,0,0.2)]"><span class="material-symbols-outlined text-[24px]">school</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface leading-tight tracking-tight">Aksara</span><span class="font-label-sm text-label-sm text-text-muted">Portal Guru SD/MI</span></div></div><div class="px-space-md py-space-xs"><span class="px-space-sm font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Menu Utama</span></div><nav class="flex flex-col gap-1 px-space-sm" data-active-classes="bg-primary-container text-on-primary font-bold shadow-[0_4px_12px_rgba(255,112,52,0.25)]"><a class="flex items-center gap-3 px-space-md py-space-sm min-h-12 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-canvas-peach hover:text-on-surface transition-all" data-path="dasbor" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span>Dasbor</span></a><a class="flex items-center gap-3 px-space-md py-space-sm min-h-12 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-canvas-peach hover:text-on-surface transition-all" data-path="kelas" href="#"><span class="material-symbols-outlined text-[22px]">meeting_room</span><span>Kelas</span></a><a class="flex items-center gap-3 px-space-md py-space-sm min-h-12 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-canvas-peach hover:text-on-surface transition-all" data-path="siswa" href="#"><span class="material-symbols-outlined text-[22px]">groups</span><span>Siswa</span></a><a aria-current="page" class="flex items-center gap-3 px-space-md py-space-sm min-h-12 rounded-xl transition-all bg-primary-container text-on-primary font-bold shadow-[0_4px_12px_rgba(255,112,52,0.25)]" data-path="mapel-&amp;-bab" href="#"><span class="material-symbols-outlined text-[22px]">menu_book</span><span>Mapel &amp; Bab</span></a><a class="flex items-center gap-3 px-space-md py-space-sm min-h-12 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-canvas-peach hover:text-on-surface transition-all" data-path="materi" href="#"><span class="material-symbols-outlined text-[22px]">local_library</span><span>Materi</span></a><a class="flex items-center gap-3 px-space-md py-space-sm min-h-12 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-canvas-peach hover:text-on-surface transition-all" data-path="bank-soal" href="#"><span class="material-symbols-outlined text-[22px]">quiz</span><span>Bank Soal</span></a><a class="flex items-center gap-3 px-space-md py-space-sm min-h-12 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-canvas-peach hover:text-on-surface transition-all" data-path="ulangan" href="#"><span class="material-symbols-outlined text-[22px]">assignment_turned_in</span><span>Ulangan</span></a></nav></div><div class="p-space-sm pb-space-lg flex flex-col gap-1"><div class="px-space-md py-space-xs"><span class="px-space-sm font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Pengaturan Akun</span></div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-container text-on-primary font-bold shadow-[0_4px_12px_rgba(255,112,52,0.25)]"><a class="flex items-center gap-3 px-space-md py-space-sm min-h-12 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-canvas-peach hover:text-on-surface transition-all" data-path="ganti-sandi" href="#"><span class="material-symbols-outlined text-[22px]">lock_reset</span><span>Ganti Sandi</span></a><a class="flex items-center gap-3 px-space-md py-space-sm min-h-12 rounded-xl text-tone-danger font-label-md text-label-md hover:bg-tone-danger-bg hover:text-tone-danger transition-all" data-path="keluar" href="#"><span class="material-symbols-outlined text-[22px]">logout</span><span>Keluar</span></a></nav></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-20 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-xl"><div class="flex items-center flex-1 max-w-md mr-space-lg"><div class="w-full flex items-center bg-canvas-peach rounded-xl px-space-md py-space-sm min-h-12"><span class="material-symbols-outlined text-text-muted mr-space-sm text-[22px]">search</span><input class="w-full bg-transparent border-0 outline-none text-on-surface placeholder:text-text-muted font-body-md text-body-md" placeholder="Cari materi, bank soal, atau siswa..." type="text"/></div></div><div class="flex items-center gap-space-lg shrink-0"><div class="hidden lg:flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-tone-warning-bg text-on-surface min-h-12 shadow-[0_1px_4px_rgba(0,0,0,0.02)]"><span class="material-symbols-outlined text-tone-warning text-[20px]">calendar_today</span><span class="font-label-sm text-label-sm text-text-primary">T.A 2026/2027 · Semester Ganjil</span></div><button aria-label="Notifikasi" class="relative w-12 h-12 rounded-xl bg-canvas-peach flex items-center justify-center text-on-surface-variant hover:bg-canvas-peach-subtle hover:text-on-surface transition-all" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-tone-danger"></span></button><div class="flex items-center gap-3 pl-space-sm"><div class="flex flex-col text-right hidden sm:flex"><span class="font-label-md text-label-md text-on-surface leading-snug">Ibu Siti Rahayu, S.Pd.</span><span class="font-label-sm text-label-sm text-text-muted">Wali Kelas VI</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="relative pt-20 w-full min-h-screen bg-surface px-space-xl py-space-xl"><div class="flex flex-col w-full gap-space-xl">
+<!-- Top Banner / Page Header -->
+<section class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-lg bg-surface-container-lowest p-space-xl rounded-2xl shadow-sm">
+<div class="flex flex-col gap-space-xs max-w-2xl">
+<div class="inline-flex items-center gap-2 self-start px-space-md py-1 rounded-full bg-canvas-peach text-primary font-label-sm text-label-sm tracking-wide">
+<span class="material-symbols-outlined text-[18px]">auto_stories</span>
+<span>KURIKULUM &amp; STRUKTUR PEMBELAJARAN</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">
+        Mapel, Bab, dan Subbab
+      </h1>
+<p class="font-body-lg text-body-lg text-text-muted leading-relaxed">
+        Atur mata pelajaran, susun urutan bab buku teks resmi, dan kelola subbab untuk bahan ajar serta bank soal kelas VI SD/MI.
+      </p>
+</div>
+<div class="flex items-center gap-space-md shrink-0">
+<button class="min-h-12 px-space-lg bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-space-sm shadow-md hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer" onclick="document.getElementById('modal-tambah-mapel').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[24px]">bookmark_add</span>
+<span>+ Tambah Mapel Baru</span>
+</button>
+</div>
+</section>
+<!-- Metric / Overview Counters (3 Columns) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Stat 1 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex items-center gap-space-md">
+<div class="w-14 h-14 rounded-2xl bg-canvas-peach flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[32px]">menu_book</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted">Total Mapel Terdaftar</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">2</span>
+<span class="font-label-md text-label-md text-text-primary">Mata Pelajaran</span>
+</div>
+<span class="font-label-sm text-label-sm text-tone-info">Matematika &amp; IPAS Kelas VI</span>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex items-center gap-space-md">
+<div class="w-14 h-14 rounded-2xl bg-tone-warning-bg flex items-center justify-center text-tone-warning shrink-0">
+<span class="material-symbols-outlined text-[32px]">format_list_numbered</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted">Total Struktur Bab</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">10</span>
+<span class="font-label-md text-label-md text-text-primary">Bab Aktif</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted">4 Matematika · 6 IPAS Revisi 2025</span>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex items-center gap-space-md">
+<div class="w-14 h-14 rounded-2xl bg-tone-success-bg flex items-center justify-center text-tone-success shrink-0">
+<span class="material-symbols-outlined text-[32px]">verified</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted">Materi Terhubung</span>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">24</span>
+<span class="font-label-md text-label-md text-text-primary">Dokumen Modul</span>
+</div>
+<span class="font-label-sm text-label-sm text-tone-success">100% Siap Diajarkan di Kelas</span>
+</div>
+</div>
+</section>
+<!-- Main Content 2-Column Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- LEFT COLUMN: Hierarchy & Subject Cards (8 Columns) -->
+<div class="lg:col-span-8 flex flex-col gap-space-xl">
+<!-- MAPEL 1: Matematika -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-xl flex flex-col gap-space-lg">
+<!-- Subject Header -->
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-md pb-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-canvas-peach flex items-center justify-center text-primary shrink-0 mt-1">
+<span class="material-symbols-outlined text-[28px]">calculate</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex flex-wrap items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">Matematika Kelas VI</h2>
+<span class="px-space-sm py-0.5 rounded-full bg-canvas-peach text-primary font-label-sm text-label-sm">
+                  Kurikulum Merdeka 2022
+                </span>
+</div>
+<p class="font-body-md text-body-md text-text-muted">
+                Memuat materi bilangan bulat, pecahan dan desimal, lingkaran, serta bangun ruang dan penyajian data statistik.
+              </p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0 self-end sm:self-start">
+<button class="min-h-12 px-space-md rounded-xl bg-canvas-peach hover:bg-canvas-peach-subtle text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+<span>Ubah Nama</span>
+</button>
+<div class="relative group">
+<button class="min-h-12 px-space-md rounded-xl bg-surface-container text-text-muted font-label-md text-label-md flex items-center gap-1.5 cursor-not-allowed opacity-60" disabled="" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+<span>Hapus</span>
+</button>
+<div class="absolute bottom-full right-0 mb-2 hidden group-hover:block w-56 p-space-sm rounded-xl bg-on-surface text-surface text-label-sm font-label-sm shadow-xl z-20">
+                Mapel terlindungi: Dipakai di 4 bab &amp; 2 ulangan aktif.
+              </div>
+</div>
+</div>
+</div>
+<!-- Chapter Sequence Notification / Bar -->
+<div class="flex items-center justify-between px-space-md py-space-sm rounded-xl bg-canvas-peach text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">swap_vert</span>
+<span class="font-label-sm text-label-sm text-text-primary">Urutan Bab Buku Teks Resmi (Otomatis Terindeks Siswa)</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted">4 Bab Terdata</span>
+</div>
+<!-- Bab List -->
+<div class="flex flex-col gap-space-md">
+<!-- Bab 1 (Expanded with Sub-chapters) -->
+<div class="bg-surface rounded-2xl p-space-lg flex flex-col gap-space-md shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div class="flex items-start gap-space-md">
+<span class="w-9 h-9 rounded-lg bg-primary-container text-on-primary font-headline-sm text-headline-sm flex items-center justify-center shrink-0">
+                  1
+                </span>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">
+                    Pecahan dan Desimal
+                  </h3>
+<div class="flex flex-wrap items-center gap-2 mt-1 text-text-muted font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">menu_book</span>
+                      Buku Kemendikbud 2022
+                    </span>
+<span>•</span>
+<span class="text-tone-info font-label-sm">6 Modul Materi</span>
+<span>•</span>
+<span class="text-tone-success font-label-sm">18 Soal Aktif</span>
+</div>
+</div>
+</div>
+<!-- Reorder & Action Controls for Senior Teachers -->
+<div class="flex items-center gap-1.5 self-end md:self-auto shrink-0">
+<button class="min-h-12 w-12 rounded-xl bg-surface-container text-text-muted flex items-center justify-center cursor-not-allowed opacity-50" disabled="" title="Paling atas (Sudah nomor 1)" type="button">
+<span class="material-symbols-outlined text-[24px]">keyboard_arrow_up</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach flex items-center justify-center shadow-sm active:scale-95 transition-all" title="Pindah ke urutan bawah" type="button">
+<span class="material-symbols-outlined text-[24px] text-primary">keyboard_arrow_down</span>
+</button>
+<button class="min-h-12 px-space-md rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach font-label-sm text-label-sm flex items-center gap-1 shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span>Ubah</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-tone-danger-bg text-tone-danger hover:bg-error-container flex items-center justify-center transition-all" title="Hapus Bab" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Subbab Nested Container -->
+<div class="ml-2 sm:ml-6 pl-4 flex flex-col gap-2.5">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Subbab Pembelajaran</span>
+<!-- Subbab 1.1 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm hover:shadow transition-shadow">
+<div class="flex items-center gap-space-md">
+<span class="w-7 h-7 rounded-md bg-canvas-peach text-primary font-label-sm text-label-sm flex items-center justify-center shrink-0">
+                    1.1
+                  </span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Perkalian Pecahan Biasa dan Campuran</span>
+<span class="font-label-sm text-label-sm text-text-muted">Halaman 12–24 · 2 Dokumen Materi Terlampir</span>
+</div>
+</div>
+<div class="flex items-center gap-1 self-end sm:self-auto shrink-0">
+<button class="min-h-12 w-10 rounded-lg bg-surface-container text-text-muted flex items-center justify-center cursor-not-allowed opacity-50" disabled="" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_upward</span>
+</button>
+<button class="min-h-12 w-10 rounded-lg bg-canvas-peach text-primary hover:bg-canvas-peach-subtle flex items-center justify-center transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_downward</span>
+</button>
+<button class="min-h-12 px-space-sm rounded-lg bg-canvas-peach text-primary hover:bg-canvas-peach-subtle font-label-sm text-label-sm flex items-center gap-1 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+</div>
+<!-- Subbab 1.2 -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm hover:shadow transition-shadow">
+<div class="flex items-center gap-space-md">
+<span class="w-7 h-7 rounded-md bg-canvas-peach text-primary font-label-sm text-label-sm flex items-center justify-center shrink-0">
+                    1.2
+                  </span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Pembagian Bilangan Desimal</span>
+<span class="font-label-sm text-label-sm text-text-muted">Halaman 25–38 · 3 Dokumen Materi Terlampir</span>
+</div>
+</div>
+<div class="flex items-center gap-1 self-end sm:self-auto shrink-0">
+<button class="min-h-12 w-10 rounded-lg bg-canvas-peach text-primary hover:bg-canvas-peach-subtle flex items-center justify-center transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_upward</span>
+</button>
+<button class="min-h-12 w-10 rounded-lg bg-surface-container text-text-muted flex items-center justify-center cursor-not-allowed opacity-50" disabled="" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_downward</span>
+</button>
+<button class="min-h-12 px-space-sm rounded-lg bg-canvas-peach text-primary hover:bg-canvas-peach-subtle font-label-sm text-label-sm flex items-center gap-1 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+</div>
+</div>
+<!-- + Add Sub-chapter trigger -->
+<button class="min-h-12 mt-1 w-full rounded-xl bg-surface-container-lowest text-primary hover:bg-canvas-peach font-label-sm text-label-sm flex items-center justify-center gap-2 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>+ Tambah Subbab Baru di Bab 1</span>
+</button>
+</div>
+</div>
+<!-- Bab 2 -->
+<div class="bg-surface rounded-2xl p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-sm shadow-sm">
+<div class="flex items-start gap-space-md">
+<span class="w-9 h-9 rounded-lg bg-primary-container text-on-primary font-headline-sm text-headline-sm flex items-center justify-center shrink-0">
+                2
+              </span>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">
+                  Lingkaran dan Luas Bangun Datar
+                </h3>
+<div class="flex flex-wrap items-center gap-2 mt-1 text-text-muted font-label-sm text-label-sm">
+<span>Buku Kemendikbud 2022</span>
+<span>•</span>
+<span class="text-tone-info">5 Modul Materi</span>
+<span>•</span>
+<span class="text-tone-success">15 Soal Aktif</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 self-end md:self-auto shrink-0">
+<button class="min-h-12 w-12 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach flex items-center justify-center shadow-sm transition-all" title="Pindah ke atas" type="button">
+<span class="material-symbols-outlined text-[24px] text-primary">keyboard_arrow_up</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach flex items-center justify-center shadow-sm transition-all" title="Pindah ke bawah" type="button">
+<span class="material-symbols-outlined text-[24px] text-primary">keyboard_arrow_down</span>
+</button>
+<button class="min-h-12 px-space-md rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach font-label-sm text-label-sm flex items-center gap-1 shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span>Ubah</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-tone-danger-bg text-tone-danger hover:bg-error-container flex items-center justify-center transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Bab 3 -->
+<div class="bg-surface rounded-2xl p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-sm shadow-sm">
+<div class="flex items-start gap-space-md">
+<span class="w-9 h-9 rounded-lg bg-primary-container text-on-primary font-headline-sm text-headline-sm flex items-center justify-center shrink-0">
+                3
+              </span>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">
+                  Bangun Ruang dan Volume
+                </h3>
+<div class="flex flex-wrap items-center gap-2 mt-1 text-text-muted font-label-sm text-label-sm">
+<span>Buku Kemendikbud 2022</span>
+<span>•</span>
+<span class="text-tone-info">4 Modul Materi</span>
+<span>•</span>
+<span class="text-tone-success">12 Soal Aktif</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 self-end md:self-auto shrink-0">
+<button class="min-h-12 w-12 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach flex items-center justify-center shadow-sm transition-all" title="Pindah ke atas" type="button">
+<span class="material-symbols-outlined text-[24px] text-primary">keyboard_arrow_up</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach flex items-center justify-center shadow-sm transition-all" title="Pindah ke bawah" type="button">
+<span class="material-symbols-outlined text-[24px] text-primary">keyboard_arrow_down</span>
+</button>
+<button class="min-h-12 px-space-md rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach font-label-sm text-label-sm flex items-center gap-1 shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span>Ubah</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-tone-danger-bg text-tone-danger hover:bg-error-container flex items-center justify-center transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Bab 4 -->
+<div class="bg-surface rounded-2xl p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-sm shadow-sm">
+<div class="flex items-start gap-space-md">
+<span class="w-9 h-9 rounded-lg bg-primary-container text-on-primary font-headline-sm text-headline-sm flex items-center justify-center shrink-0">
+                4
+              </span>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">
+                  Pengolahan dan Penyajian Data
+                </h3>
+<div class="flex flex-wrap items-center gap-2 mt-1 text-text-muted font-label-sm text-label-sm">
+<span>Buku Kemendikbud 2022</span>
+<span>•</span>
+<span class="text-tone-info">3 Modul Materi</span>
+<span>•</span>
+<span class="text-tone-success">10 Soal Aktif</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 self-end md:self-auto shrink-0">
+<button class="min-h-12 w-12 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach flex items-center justify-center shadow-sm transition-all" title="Pindah ke atas" type="button">
+<span class="material-symbols-outlined text-[24px] text-primary">keyboard_arrow_up</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-surface-container text-text-muted flex items-center justify-center cursor-not-allowed opacity-50" disabled="" title="Paling bawah" type="button">
+<span class="material-symbols-outlined text-[24px]">keyboard_arrow_down</span>
+</button>
+<button class="min-h-12 px-space-md rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach font-label-sm text-label-sm flex items-center gap-1 shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span>Ubah</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-tone-danger-bg text-tone-danger hover:bg-error-container flex items-center justify-center transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Add Chapter Button -->
+<button class="min-h-12 w-full rounded-xl bg-canvas-peach text-primary hover:bg-canvas-peach-subtle font-label-md text-label-md flex items-center justify-center gap-2 transition-all" type="button">
+<span class="material-symbols-outlined text-[22px]">add_box</span>
+<span>+ Tambah Bab Baru di Mapel Matematika</span>
+</button>
+</article>
+<!-- MAPEL 2: IPAS (Ilmu Pengetahuan Alam dan Sosial) -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-xl flex flex-col gap-space-lg">
+<!-- Subject Header -->
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-md pb-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-tone-info-bg flex items-center justify-center text-tone-info shrink-0 mt-1">
+<span class="material-symbols-outlined text-[28px]">biotech</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex flex-wrap items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">Ilmu Pengetahuan Alam dan Sosial (IPAS)</h2>
+<span class="px-space-sm py-0.5 rounded-full bg-tone-info-bg text-tone-info font-label-sm text-label-sm">
+                  Edisi Revisi 2025
+                </span>
+</div>
+<p class="font-body-md text-body-md text-text-muted">
+                Kombinasi materi anatomi tubuh, fenomena alam bumi antariksa, kebudayaan nusantara, dan sejarah kemerdekaan RI.
+              </p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0 self-end sm:self-start">
+<button class="min-h-12 px-space-md rounded-xl bg-canvas-peach hover:bg-canvas-peach-subtle text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+<span>Ubah Nama</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-surface-container text-text-muted hover:text-tone-danger hover:bg-tone-danger-bg flex items-center justify-center transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Collapsible Bar & Info -->
+<div class="flex items-center justify-between px-space-md py-space-sm rounded-xl bg-tone-info-bg text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tone-info text-[20px]">library_books</span>
+<span class="font-label-sm text-label-sm text-text-primary">6 Bab Aktif Terdaftar · 32 Soal Siap Uji</span>
+</div>
+<span class="font-label-sm text-label-sm text-tone-info font-bold">Sedang Ditampilkan (2 Bab Awal)</span>
+</div>
+<!-- IPAS Bab List -->
+<div class="flex flex-col gap-space-md">
+<!-- IPAS Bab 1 -->
+<div class="bg-surface rounded-2xl p-space-lg flex flex-col gap-space-md shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div class="flex items-start gap-space-md">
+<span class="w-9 h-9 rounded-lg bg-secondary text-on-secondary font-headline-sm text-headline-sm flex items-center justify-center shrink-0">
+                  1
+                </span>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">
+                    Bagaimana Tubuh Kita Bergerak?
+                  </h3>
+<div class="flex flex-wrap items-center gap-2 mt-1 text-text-muted font-label-sm text-label-sm">
+<span>Sistem Rangka &amp; Otot Manusia</span>
+<span>•</span>
+<span class="text-tone-info">4 Materi</span>
+<span>•</span>
+<span class="text-tone-success">14 Soal</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 self-end md:self-auto shrink-0">
+<button class="min-h-12 w-12 rounded-xl bg-surface-container text-text-muted flex items-center justify-center cursor-not-allowed opacity-50" disabled="" type="button">
+<span class="material-symbols-outlined text-[24px]">keyboard_arrow_up</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach flex items-center justify-center shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[24px] text-primary">keyboard_arrow_down</span>
+</button>
+<button class="min-h-12 px-space-md rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach font-label-sm text-label-sm flex items-center gap-1 shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span>Ubah</span>
+</button>
+</div>
+</div>
+<!-- Subbab items -->
+<div class="ml-2 sm:ml-6 pl-4 flex flex-col gap-2">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<span class="w-7 h-7 rounded-md bg-tone-info-bg text-tone-info font-label-sm text-label-sm flex items-center justify-center">1.1</span>
+<span class="font-label-md text-label-md text-on-surface">Rangka Manusia dan Fungsinya</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted">Hal. 4–18</span>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<span class="w-7 h-7 rounded-md bg-tone-info-bg text-tone-info font-label-sm text-label-sm flex items-center justify-center">1.2</span>
+<span class="font-label-md text-label-md text-on-surface">Sendi, Otot, dan Gangguan Gerak</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted">Hal. 19–35</span>
+</div>
+</div>
+</div>
+<!-- IPAS Bab 2 -->
+<div class="bg-surface rounded-2xl p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-sm shadow-sm">
+<div class="flex items-start gap-space-md">
+<span class="w-9 h-9 rounded-lg bg-secondary text-on-secondary font-headline-sm text-headline-sm flex items-center justify-center shrink-0">
+                2
+              </span>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">
+                  Cerita tentang Indonesia Kita
+                </h3>
+<div class="flex flex-wrap items-center gap-2 mt-1 text-text-muted font-label-sm text-label-sm">
+<span>Sejarah Perjuangan &amp; Diplomasi Kemerdekaan</span>
+<span>•</span>
+<span class="text-tone-info">3 Materi</span>
+<span>•</span>
+<span class="text-tone-success">10 Soal</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1.5 self-end md:self-auto shrink-0">
+<button class="min-h-12 w-12 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach flex items-center justify-center shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[24px] text-primary">keyboard_arrow_up</span>
+</button>
+<button class="min-h-12 w-12 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach flex items-center justify-center shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[24px] text-primary">keyboard_arrow_down</span>
+</button>
+<button class="min-h-12 px-space-md rounded-xl bg-surface-container-lowest text-on-surface hover:bg-canvas-peach font-label-sm text-label-sm flex items-center gap-1 shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span>Ubah</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer / Expand trigger -->
+<button class="min-h-12 w-full rounded-xl bg-surface-container text-on-surface hover:bg-canvas-peach font-label-md text-label-md flex items-center justify-center gap-2 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">unfold_more</span>
+<span>Tampilkan 4 Bab Lainnya (Bab 3 s.d. Bab 6)</span>
+</button>
+</article>
+</div>
+<!-- RIGHT COLUMN: Guidelines, Book Sync, & Quick Add Form (4 Columns) -->
+<aside class="lg:col-span-4 flex flex-col gap-space-lg sticky top-24">
+<!-- Card 1: Fast Guidance on Ordering -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center gap-space-sm text-primary">
+<span class="material-symbols-outlined text-[24px]">lightbulb</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Panduan Urutan &amp; Penomoran</h3>
+</div>
+<ul class="flex flex-col gap-space-sm font-body-md text-body-md text-on-surface">
+<li class="flex items-start gap-2.5">
+<span class="material-symbols-outlined text-tone-success text-[20px] shrink-0 mt-0.5">check_circle</span>
+<span><strong>Urutan Mengalir Otomatis:</strong> Susunan nomor bab langsung mencerminkan daftar isi modul siswa dan filter bank soal.</span>
+</li>
+<li class="flex items-start gap-2.5">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">touch_app</span>
+<span><strong>Tombol Naik &amp; Turun:</strong> Dirancang ramah guru tanpa perlu drag-and-drop rumit untuk menukar urutan secara instan.</span>
+</li>
+<li class="flex items-start gap-2.5">
+<span class="material-symbols-outlined text-tone-warning text-[20px] shrink-0 mt-0.5">shield</span>
+<span><strong>Perlindungan Data:</strong> Bab dan mapel yang telah berisi modul atau bank soal terlindungi dari penghapusan tidak disengaja.</span>
+</li>
+</ul>
+</div>
+<!-- Card 2: Friendly Book Sync Notice -->
+<div class="bg-canvas-peach rounded-2xl p-space-lg flex flex-col gap-space-sm shadow-sm">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-[22px]">sync_saved_locally</span>
+<span class="font-label-md text-label-md">Sinkronisasi Buku Kemendikbud</span>
+</div>
+<p class="font-body-md text-body-md text-text-primary leading-relaxed">
+          Buku teks IPAS &amp; Matematika Kelas VI telah diselaraskan dengan silabus Dapodik semester ganjil T.A 2026/2027. Anda dapat menambahkan subbab mandiri sesuai RPP/Modul Ajar sekolah.
+        </p>
+</div>
+<!-- Card 3: Quick Add Chapter Form -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Form Cepat: Tambah Bab</h3>
+</div>
+<form class="flex flex-col gap-space-md" onsubmit="event.preventDefault(); alert('Bab baru berhasil ditambahkan ke urutan!');">
+<!-- Pilih Mapel -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface">Pilih Mata Pelajaran</label>
+<select class="min-h-12 w-full px-space-md bg-surface text-on-surface rounded-xl outline-none font-body-md text-body-md cursor-pointer">
+<option value="matematika">Matematika Kelas VI</option>
+<option value="ipas">Ilmu Pengetahuan Alam dan Sosial (IPAS)</option>
+</select>
+</div>
+<!-- Judul Bab -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface">Judul Bab Baru</label>
+<input class="min-h-12 w-full px-space-md bg-surface text-on-surface placeholder:text-text-muted rounded-xl outline-none font-body-md text-body-md" placeholder="Contoh: Operasi Hitung Campuran" required="" type="text"/>
+</div>
+<!-- Sumber Buku & Tahun -->
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface">Buku Sumber</label>
+<input class="min-h-12 w-full px-space-md bg-surface text-on-surface rounded-xl outline-none font-body-md text-body-md" type="text" value="Kemendikbudristek"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface">Edisi / Tahun</label>
+<input class="min-h-12 w-full px-space-md bg-surface text-on-surface rounded-xl outline-none font-body-md text-body-md" type="text" value="2025 Revisi"/>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="min-h-12 w-full bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-sm hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer mt-1" type="submit">
+<span class="material-symbols-outlined text-[20px]">save</span>
+<span>Simpan Bab Baru</span>
+</button>
+</form>
+</div>
+</aside>
+</div>
+<!-- Modal Tambah Mapel Baru (Hidden by default, easy reveal via JS) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-space-md bg-on-surface/40 backdrop-blur-sm" id="modal-tambah-mapel">
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-2xl shadow-xl p-space-xl flex flex-col gap-space-lg">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-canvas-peach text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">bookmark_add</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Tambah Mata Pelajaran</h3>
+</div>
+<button class="w-10 h-10 rounded-lg bg-surface text-text-muted hover:text-on-surface flex items-center justify-center" onclick="document.getElementById('modal-tambah-mapel').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[22px]">close</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-md">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface">Nama Mata Pelajaran</label>
+<input class="min-h-12 w-full px-space-md bg-surface text-on-surface rounded-xl outline-none font-body-md text-body-md" placeholder="Contoh: Bahasa Indonesia Kelas VI" type="text"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface">Kurikulum Acuan</label>
+<input class="min-h-12 w-full px-space-md bg-surface text-on-surface rounded-xl outline-none font-body-md text-body-md" type="text" value="Kurikulum Merdeka (Fase C)"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface">Keterangan / Deskripsi Singkat</label>
+<textarea class="p-space-md bg-surface text-on-surface rounded-xl outline-none font-body-md text-body-md resize-none" placeholder="Tuliskan cakupan materi pembelajaran selama satu tahun ajaran..." rows="3"></textarea>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="min-h-12 px-space-lg rounded-xl bg-surface text-on-surface hover:bg-canvas-peach font-label-md text-label-md" onclick="document.getElementById('modal-tambah-mapel').classList.add('hidden')" type="button">
+          Batal
+        </button>
+<button class="min-h-12 px-space-xl rounded-xl bg-primary-container text-on-primary font-label-md text-label-md shadow-sm" onclick="document.getElementById('modal-tambah-mapel').classList.add('hidden'); alert('Mata pelajaran berhasil ditambahkan!');" type="button">
+          Simpan Mapel
+        </button>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

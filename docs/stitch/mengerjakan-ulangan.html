@@ -1,0 +1,424 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_blank" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "secondary": "#0d59c3", "tertiary-fixed": "#ffdcbc", "on-surface-variant": "#594139", "on-tertiary-fixed-variant": "#683d00", "surface-container-high": "#f2e5e7", "surface-variant": "#ecdfe2", "tone-info": "#2D68C4", "on-primary-container": "#601d00", "on-tertiary-container": "#4d2c00", "secondary-fixed": "#d9e2ff", "text-muted": "#695F63", "primary-fixed-dim": "#ffb59a", "inverse-surface": "#352f31", "error-container": "#ffdad6", "secondary-fixed-dim": "#afc6ff", "tertiary": "#895200", "on-error-container": "#93000a", "surface-container-highest": "#ecdfe2", "on-primary": "#ffffff", "primary-container": "#ff7034", "canvas-peach": "#FFF5EE", "surface": "#fff8f8", "tone-danger-bg": "#FEECEC", "primary": "#a83900", "inverse-primary": "#ffb59a", "secondary-container": "#5d93ff", "on-background": "#201a1c", "background": "#fff8f8", "on-tertiary": "#ffffff", "on-secondary-container": "#002b68", "border-active": "#FF7034", "tone-danger": "#E53E3E", "border-subtle": "#F2E2D8", "inverse-on-surface": "#faeef0", "on-secondary-fixed": "#001943", "surface-dim": "#e3d7d9", "tone-success-bg": "#E8F8F0", "tertiary-container": "#db891c", "error": "#ba1a1a", "on-primary-fixed": "#380d00", "surface-bright": "#fff8f8", "surface-container-low": "#fdf1f3", "tone-warning-bg": "#FFF4E5", "on-surface": "#201a1c", "outline": "#8d7167", "tone-success": "#1E9E64", "on-secondary": "#ffffff", "outline-variant": "#e1bfb4", "on-error": "#ffffff", "tertiary-fixed-dim": "#ffb86a", "tone-warning": "#E8890C", "primary-fixed": "#ffdbcf", "surface-tint": "#a83900", "surface-container-lowest": "#ffffff", "text-primary": "#241F21", "canvas-peach-subtle": "#FFEADB", "on-primary-fixed-variant": "#802a00", "surface-container": "#f7ebed", "on-secondary-fixed-variant": "#004398", "surface-card": "#FFFFFF", "on-tertiary-fixed": "#2c1700", "tone-info-bg": "#EEF4FD" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-md": "1rem", "gutter": "1.5rem", "margin": "2rem", "space-xl": "2rem", "space-sm": "0.5rem", "space-2xl": "3rem", "gutter-mobile": "1rem", "space-lg": "1.5rem", "space-xs": "0.25rem", "margin-mobile": "1rem" }, "fontFamily": { "body-xl": [ "Plus Jakarta Sans" ], "body-lg": [ "Plus Jakarta Sans" ], "label-lg": [ "Plus Jakarta Sans" ], "headline-xl": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "code-mono": [ "JetBrains Mono" ], "headline-xl-mobile": [ "Plus Jakarta Sans" ], "body-md": [ "Plus Jakarta Sans" ], "label-md": [ "Plus Jakarta Sans" ], "label-sm": [ "Plus Jakarta Sans" ], "metric-display": [ "Plus Jakarta Sans" ], "headline-sm": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ] }, "fontSize": { "body-xl": [ "1.25rem", { "lineHeight": "1.875rem", "fontWeight": "500" } ], "body-lg": [ "1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" } ], "label-lg": [ "1.125rem", { "lineHeight": "1.5rem", "fontWeight": "600" } ], "headline-xl": [ "2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.02em", "fontWeight": "800" } ], "headline-md": [ "1.375rem", { "lineHeight": "1.875rem", "letterSpacing": "-0.01em", "fontWeight": "700" } ], "code-mono": [ "1rem", { "lineHeight": "1.5rem", "letterSpacing": "0.05em", "fontWeight": "500" } ], "headline-xl-mobile": [ "1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.01em", "fontWeight": "800" } ], "body-md": [ "1rem", { "lineHeight": "1.5rem", "fontWeight": "400" } ], "label-md": [ "1rem", { "lineHeight": "1.375rem", "fontWeight": "600" } ], "label-sm": [ "0.875rem", { "lineHeight": "1.25rem", "fontWeight": "600" } ], "metric-display": [ "4rem", { "lineHeight": "4.5rem", "letterSpacing": "-0.03em", "fontWeight": "800" } ], "headline-sm": [ "1.125rem", { "lineHeight": "1.625rem", "fontWeight": "700" } ], "headline-lg": [ "1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.015em", "fontWeight": "700" } ] } } } }</script></head><body class="bg-canvas-peach font-body-md text-on-surface antialiased min-h-screen flex items-center justify-center p-space-lg"><main class="w-full max-w-6xl mx-auto"><div class="flex flex-col w-full">
+<!-- Sticky Header Bar -->
+<header class="sticky top-0 z-30 w-full bg-surface-card shadow-sm rounded-2xl mb-space-lg px-space-md py-space-sm sm:px-space-lg sm:py-space-md">
+<div class="flex flex-wrap items-center justify-between gap-y-3">
+<!-- Exam Title & Live Autosave Status -->
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-canvas-peach-subtle flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined text-headline-md" style="font-variation-settings: 'FILL' 1;">calculate</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="bg-canvas-peach px-2 py-0.5 rounded-full font-label-sm text-primary text-label-sm">Kelas VI SD</span>
+<span class="text-text-muted font-body-md text-body-md hidden sm:inline">•</span>
+<span class="text-text-muted font-body-md text-body-md hidden sm:inline">Ulangan Harian</span>
+</div>
+<h1 class="font-headline-sm text-headline-sm text-text-primary tracking-tight">Matematika: Bab 2 Pecahan</h1>
+<!-- Live Autosave Beacon -->
+<div aria-live="polite" class="flex items-center gap-1.5 mt-0.5" role="status">
+<span class="w-2.5 h-2.5 rounded-full bg-tone-success shrink-0 animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-tone-success" id="save-status-text">✓ Tersimpan otomatis pk. 09:14</span>
+</div>
+</div>
+</div>
+<!-- Anti-Panic Big Timer Box & Submit Exam Action -->
+<div class="flex items-center gap-space-sm sm:gap-space-md ml-auto">
+<!-- Prominent Comfort Timer Container -->
+<div aria-label="Waktu tersisa" class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl bg-canvas-peach border border-primary/20 shadow-xs" role="timer">
+<span class="material-symbols-outlined text-headline-md text-primary" style="font-variation-settings: 'FILL' 1;">alarm</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Sisa Waktu</span>
+<span class="font-headline-sm text-headline-sm text-text-primary tabular-nums" id="exam-timer">25m : 36d</span>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="min-h-12 px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg shadow-sm hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 focus:outline-none" id="btn-open-submit-modal" type="button">
+<span class="material-symbols-outlined text-headline-sm">check_circle</span>
+<span class="hidden sm:inline">Kumpulkan</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Container Layout: Question Workspace + Navigation Matrix -->
+<div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Left / Center: Question Panel (8 cols) -->
+<section class="lg:col-span-8 flex flex-col gap-space-lg">
+<div class="w-full bg-surface-card rounded-2xl p-space-md sm:p-space-xl shadow-sm flex flex-col">
+<!-- Question Badge & Category Metadata -->
+<div class="flex items-center justify-between border-b border-border-subtle pb-space-md mb-space-md">
+<div class="flex items-center gap-2">
+<span class="bg-primary text-on-primary px-3 py-1 rounded-full font-label-md text-label-md">Nomor 5</span>
+<span class="font-label-md text-label-md text-text-muted">dari 15 Soal</span>
+</div>
+<span class="bg-canvas-peach px-3 py-1 rounded-full font-label-sm text-label-sm text-primary font-semibold">
+            Pilihan Ganda
+          </span>
+</div>
+<!-- Question Prompt Typography -->
+<div class="mb-space-lg">
+<p class="font-body-xl text-body-xl text-text-primary leading-relaxed">
+            Ibu memiliki <span class="bg-canvas-peach-subtle px-1.5 py-0.5 rounded font-bold text-primary">3/4 kg</span> gula pasir. Sebanyak <span class="bg-canvas-peach-subtle px-1.5 py-0.5 rounded font-bold text-primary">1/2 kg</span> digunakan untuk membuat kue bolu. Berapa sisa gula pasir Ibu sekarang?
+          </p>
+</div>
+<!-- Child-Friendly Visual Fraction Diagram (Supporting Rich Element) -->
+<div class="w-full bg-canvas-peach rounded-2xl p-space-md mb-space-xl flex flex-col items-center justify-center gap-space-sm text-center">
+<div class="font-label-sm text-label-sm text-text-muted">Bantuan Visual Pecahan</div>
+<div class="flex flex-wrap items-center justify-center gap-space-md sm:gap-space-xl my-2">
+<!-- Diagram 3/4 -->
+<div class="flex flex-col items-center">
+<svg class="w-24 h-24 drop-shadow-sm" fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<circle cx="50" cy="50" fill="#FFFFFF" r="44"></circle>
+<!-- 3 quarters filled -->
+<path d="M50 50 L50 6 A44 44 0 0 1 94 50 Z" fill="#FF7034"></path>
+<path d="M50 50 L94 50 A44 44 0 0 1 50 94 Z" fill="#FF7034"></path>
+<path d="M50 50 L50 94 A44 44 0 0 1 6 50 Z" fill="#FF7034"></path>
+<path d="M50 50 L6 50 A44 44 0 0 1 50 6 Z" fill="#FFF0E6"></path>
+<!-- Center point -->
+<circle cx="50" cy="50" fill="#241F21" r="3"></circle>
+</svg>
+<span class="mt-2 font-label-md text-label-md text-text-primary">3/4 Bagian Gula</span>
+</div>
+<!-- Operator Minus -->
+<div class="w-8 h-8 rounded-full bg-surface-card flex items-center justify-center text-primary font-headline-md text-headline-md shadow-xs">
+              -
+            </div>
+<!-- Diagram 1/2 (2/4) -->
+<div class="flex flex-col items-center">
+<svg class="w-24 h-24 drop-shadow-sm" fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<circle cx="50" cy="50" fill="#FFFFFF" r="44"></circle>
+<!-- 2 quarters filled (1/2) -->
+<path d="M50 50 L50 6 A44 44 0 0 1 94 50 Z" fill="#5D93FF"></path>
+<path d="M50 50 L94 50 A44 44 0 0 1 50 94 Z" fill="#5D93FF"></path>
+<path d="M50 50 L50 94 A44 44 0 0 1 6 50 Z" fill="#FFF0E6"></path>
+<path d="M50 50 L6 50 A44 44 0 0 1 50 6 Z" fill="#FFF0E6"></path>
+<circle cx="50" cy="50" fill="#241F21" r="3"></circle>
+</svg>
+<span class="mt-2 font-label-md text-label-md text-text-primary">1/2 Bagian (Dipakai)</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-text-muted italic">Petunjuk: Samakan penyebut kedua pecahan sebelum mengurangkannya.</p>
+</div>
+<!-- Big Touch Friendly Choice Cards Options -->
+<fieldset aria-label="Pilihan Jawaban" class="w-full flex flex-col gap-space-md" role="radiogroup">
+<legend class="sr-only">Pilih salah satu jawaban yang benar</legend>
+<!-- Option A (Active / Selected state example) -->
+<label class="choice-card relative group flex items-center gap-space-md min-h-14 p-space-md rounded-2xl bg-canvas-peach cursor-pointer border-2 border-primary shadow-xs transition-all">
+<input checked="" class="sr-only choice-radio" name="math_answer" type="radio" value="A">
+<div class="choice-badge w-11 h-11 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center shrink-0">
+              A
+            </div>
+<div class="flex items-center justify-between w-full">
+<span class="font-headline-sm text-headline-sm text-text-primary">1/4 kg</span>
+<span class="choice-check material-symbols-outlined text-headline-md text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+<!-- Option B -->
+<label class="choice-card relative group flex items-center gap-space-md min-h-14 p-space-md rounded-2xl bg-surface-card hover:bg-canvas-peach cursor-pointer border border-border-subtle shadow-xs transition-all">
+<input class="sr-only choice-radio" name="math_answer" type="radio" value="B">
+<div class="choice-badge w-11 h-11 rounded-xl bg-canvas-peach text-text-primary group-hover:bg-primary-container group-hover:text-on-primary font-headline-sm text-headline-sm flex items-center justify-center shrink-0 transition-colors">
+              B
+            </div>
+<div class="flex items-center justify-between w-full">
+<span class="font-headline-sm text-headline-sm text-text-primary">2/4 kg</span>
+<span class="choice-check material-symbols-outlined text-headline-md text-primary hidden" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+<!-- Option C -->
+<label class="choice-card relative group flex items-center gap-space-md min-h-14 p-space-md rounded-2xl bg-surface-card hover:bg-canvas-peach cursor-pointer border border-border-subtle shadow-xs transition-all">
+<input class="sr-only choice-radio" name="math_answer" type="radio" value="C">
+<div class="choice-badge w-11 h-11 rounded-xl bg-canvas-peach text-text-primary group-hover:bg-primary-container group-hover:text-on-primary font-headline-sm text-headline-sm flex items-center justify-center shrink-0 transition-colors">
+              C
+            </div>
+<div class="flex items-center justify-between w-full">
+<span class="font-headline-sm text-headline-sm text-text-primary">1/8 kg</span>
+<span class="choice-check material-symbols-outlined text-headline-md text-primary hidden" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+<!-- Option D -->
+<label class="choice-card relative group flex items-center gap-space-md min-h-14 p-space-md rounded-2xl bg-surface-card hover:bg-canvas-peach cursor-pointer border border-border-subtle shadow-xs transition-all">
+<input class="sr-only choice-radio" name="math_answer" type="radio" value="D">
+<div class="choice-badge w-11 h-11 rounded-xl bg-canvas-peach text-text-primary group-hover:bg-primary-container group-hover:text-on-primary font-headline-sm text-headline-sm flex items-center justify-center shrink-0 transition-colors">
+              D
+            </div>
+<div class="flex items-center justify-between w-full">
+<span class="font-headline-sm text-headline-sm text-text-primary">2/6 kg</span>
+<span class="choice-check material-symbols-outlined text-headline-md text-primary hidden" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+</fieldset>
+<!-- Bottom Action Row: Previous, Help, and Next buttons -->
+<div class="mt-space-2xl pt-space-lg border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<button class="w-full sm:w-auto min-h-12 px-space-lg rounded-xl bg-canvas-peach text-text-primary font-label-lg text-label-lg hover:bg-canvas-peach-subtle active:scale-95 transition-all flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-label-lg">arrow_back</span>
+            Soal Sebelumnya
+          </button>
+<!-- Urgent Teacher / Proctor Assist Button -->
+<button class="w-full sm:w-auto min-h-12 px-space-md rounded-xl bg-surface-container text-text-muted hover:text-tone-danger font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5" id="btn-call-teacher" type="button">
+<span class="material-symbols-outlined text-label-md text-tone-warning">support_agent</span>
+            Bantuan Guru / Kendala
+          </button>
+<button class="w-full sm:w-auto min-h-12 px-space-xl rounded-xl bg-primary text-on-primary font-label-lg text-label-lg hover:brightness-105 active:scale-95 transition-all shadow-sm flex items-center justify-center gap-2" type="button">
+            Soal Berikutnya
+            <span class="material-symbols-outlined text-label-lg">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Right: Question Matrix Navigator Panel (4 cols) -->
+<aside class="lg:col-span-4 flex flex-col gap-space-md">
+<!-- Navigator Card -->
+<div class="w-full bg-surface-card rounded-2xl p-space-md sm:p-space-lg shadow-sm flex flex-col">
+<div class="flex items-center justify-between mb-space-md pb-space-sm border-b border-border-subtle">
+<h2 class="font-headline-sm text-headline-sm text-text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">apps</span>
+            Navigasi Soal
+          </h2>
+<span class="font-label-sm text-label-sm text-text-muted">Total: 15 Butir</span>
+</div>
+<!-- Visual Status Indicator Legend -->
+<div class="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-canvas-peach text-center mb-space-md">
+<div class="flex flex-col items-center">
+<span class="w-3.5 h-3.5 rounded-full bg-tone-success mb-1"></span>
+<span class="font-label-sm text-label-sm text-text-primary">4 Terjawab</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="w-3.5 h-3.5 rounded-full bg-primary mb-1"></span>
+<span class="font-label-sm text-label-sm text-text-primary">1 Aktif</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="w-3.5 h-3.5 rounded-full bg-surface-container mb-1 border border-border-subtle"></span>
+<span class="font-label-sm text-label-sm text-text-primary">10 Belum</span>
+</div>
+</div>
+<!-- Question Grid 1 to 15 -->
+<nav aria-label="Daftar nomor soal ujian">
+<ul class="grid grid-cols-5 gap-2.5" role="list">
+<!-- Number 1 (Done) -->
+<li class="">
+<button aria-label="Soal nomor 1 sudah terjawab" class="w-full aspect-square rounded-xl bg-tone-success text-on-primary font-headline-sm text-headline-sm flex flex-col items-center justify-center hover:opacity-90 active:scale-95 transition-transform" type="button">
+<span class="">1</span>
+<span class="material-symbols-outlined text-sm -mt-1 font-bold">check</span>
+</button>
+</li>
+<!-- Number 2 (Done) -->
+<li class="">
+<button aria-label="Soal nomor 2 sudah terjawab" class="w-full aspect-square rounded-xl bg-tone-success text-on-primary font-headline-sm text-headline-sm flex flex-col items-center justify-center hover:opacity-90 active:scale-95 transition-transform" type="button">
+<span class="">2</span>
+<span class="material-symbols-outlined text-sm -mt-1 font-bold">check</span>
+</button>
+</li>
+<!-- Number 3 (Done) -->
+<li class="">
+<button aria-label="Soal nomor 3 sudah terjawab" class="w-full aspect-square rounded-xl bg-tone-success text-on-primary font-headline-sm text-headline-sm flex flex-col items-center justify-center hover:opacity-90 active:scale-95 transition-transform" type="button">
+<span class="">3</span>
+<span class="material-symbols-outlined text-sm -mt-1 font-bold">check</span>
+</button>
+</li>
+<!-- Number 4 (Done) -->
+<li class="">
+<button aria-label="Soal nomor 4 sudah terjawab" class="w-full aspect-square rounded-xl bg-tone-success text-on-primary font-headline-sm text-headline-sm flex flex-col items-center justify-center hover:opacity-90 active:scale-95 transition-transform" type="button">
+<span class="">4</span>
+<span class="material-symbols-outlined text-sm -mt-1 font-bold">check</span>
+</button>
+</li>
+<!-- Number 5 (Current Active Question) -->
+<li class="">
+<button aria-current="step" aria-label="Soal nomor 5 sedang dikerjakan" class="w-full aspect-square rounded-xl bg-canvas-peach text-primary border-2 border-primary font-headline-sm text-headline-sm flex flex-col items-center justify-center shadow-xs" type="button">
+<span class="">5</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-0.5"></span>
+</button>
+</li>
+<!-- Number 6 to 15 (Unanswered) -->
+<li class="">
+<button aria-label="Soal nomor 6 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                6
+              </button>
+</li>
+<li class="">
+<button aria-label="Soal nomor 7 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                7
+              </button>
+</li>
+<li class="">
+<button aria-label="Soal nomor 8 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                8
+              </button>
+</li>
+<li class="">
+<button aria-label="Soal nomor 9 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                9
+              </button>
+</li>
+<li class="">
+<button aria-label="Soal nomor 10 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                10
+              </button>
+</li>
+<li class="">
+<button aria-label="Soal nomor 11 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                11
+              </button>
+</li>
+<li class="">
+<button aria-label="Soal nomor 12 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                12
+              </button>
+</li>
+<li class="">
+<button aria-label="Soal nomor 13 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                13
+              </button>
+</li>
+<li class="">
+<button aria-label="Soal nomor 14 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                14
+              </button>
+</li>
+<li class="">
+<button aria-label="Soal nomor 15 belum dijawab" class="w-full aspect-square rounded-xl bg-canvas-peach text-text-primary border border-border-subtle hover:bg-canvas-peach-subtle active:scale-95 font-headline-sm text-headline-sm flex items-center justify-center transition-all" type="button">
+                15
+              </button>
+</li>
+</ul>
+</nav>
+<!-- Student Exam Helper Note -->
+<div class="mt-space-lg p-space-md rounded-xl bg-canvas-peach border border-primary/10 flex items-start gap-2.5">
+<span class="material-symbols-outlined text-primary text-headline-sm shrink-0">tips_and_updates</span>
+<p class="font-body-md text-body-md text-text-muted leading-tight">
+            Kamu dapat mengklik kotak nomor di atas kapan saja untuk langsung berpindah ke soal lain.
+          </p>
+</div>
+</div>
+<!-- Quick Student Profile Info Box -->
+<div class="w-full bg-surface-card rounded-2xl p-space-md shadow-sm flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-canvas-peach flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-headline-md">person</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-text-muted">Peserta Ujian:</span>
+<span class="font-headline-sm text-headline-sm text-text-primary truncate">Ahmad Fikri</span>
+<span class="font-body-md text-body-md text-text-muted">NISN: 0098231456 • Meja 12</span>
+</div>
+</div>
+</aside>
+</div>
+<!-- Friendly Student Confirmation Modal for Quiz Submission -->
+<div aria-labelledby="modal-title" aria-modal="true" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/40 backdrop-blur-sm hidden" id="submit-confirm-modal" role="dialog">
+<div class="bg-surface-card rounded-3xl p-space-xl max-w-md w-full shadow-2xl flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-2xl bg-canvas-peach flex items-center justify-center text-primary mb-space-md">
+<span class="material-symbols-outlined text-metric-display" style="font-size: 38px;">task_alt</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-text-primary mb-2" id="modal-title">
+        Sudah Yakin Mau Mengumpulkan?
+      </h3>
+<p class="font-body-md text-body-md text-text-muted mb-space-lg leading-relaxed">
+        Masih ada <strong class="text-primary">10 nomor</strong> yang belum kamu jawab. Sisa waktumu masih ada <strong class="text-text-primary">28 menit</strong>. Periksa kembali jawabanmu sebelum mengumpulkan, ya!
+      </p>
+<div class="flex flex-col sm:flex-row w-full gap-space-sm">
+<button class="w-full min-h-12 rounded-xl bg-canvas-peach text-text-primary font-label-lg text-label-lg hover:bg-canvas-peach-subtle active:scale-95 transition-all" id="btn-cancel-modal" type="button">
+          Periksa Lagi
+        </button>
+<button class="w-full min-h-12 rounded-xl bg-primary text-on-primary font-label-lg text-label-lg hover:brightness-105 active:scale-95 transition-all shadow-sm" id="btn-confirm-submit" type="button">
+          Ya, Kumpulkan
+        </button>
+</div>
+</div>
+</div>
+<!-- Teacher Help Toast Notification -->
+<div class="fixed bottom-6 right-6 z-40 bg-surface-card border-2 border-tone-info text-text-primary px-space-lg py-space-md rounded-2xl shadow-xl flex items-center gap-3 hidden transition-all" id="help-toast" role="alert">
+<span class="material-symbols-outlined text-tone-info text-headline-md">info</span>
+<div>
+<div class="font-headline-sm text-headline-sm">Panggilan Terkirim!</div>
+<div class="font-body-md text-body-md text-text-muted">Guru pengawas telah diberitahu untuk mendatangi mej тестиmu.</div>
+</div>
+</div>
+</div>
+<script>
+  // Dynamic Choice Card Selection Interaction
+  const choiceCards = document.querySelectorAll('.choice-card');
+  choiceCards.forEach(card => {
+    card.addEventListener('click', () => {
+      // Reset all cards
+      choiceCards.forEach(c => {
+        c.classList.remove('bg-canvas-peach', 'border-2', 'border-primary');
+        c.classList.add('bg-surface-card', 'border', 'border-border-subtle');
+        const badge = c.querySelector('.choice-badge');
+        badge.classList.remove('bg-primary', 'text-on-primary');
+        badge.classList.add('bg-canvas-peach', 'text-text-primary');
+        const checkIcon = c.querySelector('.choice-check');
+        checkIcon.classList.add('hidden');
+      });
+
+      // Highlight selected card
+      card.classList.remove('bg-surface-card', 'border-border-subtle');
+      card.classList.add('bg-canvas-peach', 'border-2', 'border-primary');
+      const badge = card.querySelector('.choice-badge');
+      badge.classList.remove('bg-canvas-peach', 'text-text-primary');
+      badge.classList.add('bg-primary', 'text-on-primary');
+      const checkIcon = card.querySelector('.choice-check');
+      checkIcon.classList.remove('hidden');
+
+      // Trigger Autosave Notification
+      const statusText = document.getElementById('save-status-text');
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      if (statusText) {
+        statusText.textContent = `✓ Tersimpan otomatis pk. ${timeStr}`;
+      }
+    });
+  });
+
+  // Modal Dialog Handlers
+  const modal = document.getElementById('submit-confirm-modal');
+  const btnOpen = document.getElementById('btn-open-submit-modal');
+  const btnCancel = document.getElementById('btn-cancel-modal');
+  const btnConfirm = document.getElementById('btn-confirm-submit');
+
+  if (btnOpen && modal) {
+    btnOpen.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+    });
+  }
+
+  if (btnCancel && modal) {
+    btnCancel.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+  }
+
+  if (btnConfirm && modal) {
+    btnConfirm.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      alert('Ulangan berhasil dikumpulkan. Hebat sudah berusaha!');
+    });
+  }
+
+  // Teacher Help Toast Trigger
+  const helpBtn = document.getElementById('btn-call-teacher');
+  const helpToast = document.getElementById('help-toast');
+  if (helpBtn && helpToast) {
+    helpBtn.addEventListener('click', () => {
+      helpToast.classList.remove('hidden');
+      setTimeout(() => {
+        helpToast.classList.add('hidden');
+      }, 4000);
+    });
+  }
+
+  // Anti-panic Timer Countdown Simulation
+  let remainingSeconds = 28 * 60 + 14;
+  const timerDisplay = document.getElementById('exam-timer');
+  if (timerDisplay) {
+    setInterval(() => {
+      if (remainingSeconds > 0) {
+        remainingSeconds--;
+        const m = Math.floor(remainingSeconds / 60);
+        const s = remainingSeconds % 60;
+        timerDisplay.textContent = `${m}m : ${String(s).padStart(2, '0')}d`;
+      }
+    }, 1000);
+  }
+</script></main>
+
+</body></html>

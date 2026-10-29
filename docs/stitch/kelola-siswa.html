@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "secondary-container": "#5d93ff",
+        "tone-success": "#1E9E64",
+        "outline": "#8d7167",
+        "secondary-fixed": "#d9e2ff",
+        "tertiary-container": "#db891c",
+        "on-background": "#201a1c",
+        "surface-container-low": "#fdf1f3",
+        "primary": "#a83900",
+        "surface-variant": "#ecdfe2",
+        "background": "#fff8f8",
+        "on-tertiary-fixed-variant": "#683d00",
+        "surface": "#fff8f8",
+        "on-primary-fixed": "#380d00",
+        "error": "#ba1a1a",
+        "primary-container": "#ff7034",
+        "on-error": "#ffffff",
+        "on-surface-variant": "#594139",
+        "on-surface": "#201a1c",
+        "on-secondary-container": "#002b68",
+        "error-container": "#ffdad6",
+        "border-active": "#FF7034",
+        "primary-fixed-dim": "#ffb59a",
+        "tertiary-fixed-dim": "#ffb86a",
+        "tone-danger-bg": "#FEECEC",
+        "tone-warning-bg": "#FFF4E5",
+        "surface-container-highest": "#ecdfe2",
+        "tone-info-bg": "#EEF4FD",
+        "on-error-container": "#93000a",
+        "surface-tint": "#a83900",
+        "surface-dim": "#e3d7d9",
+        "outline-variant": "#e1bfb4",
+        "tertiary": "#895200",
+        "surface-bright": "#fff8f8",
+        "text-primary": "#241F21",
+        "tone-warning": "#E8890C",
+        "on-secondary-fixed-variant": "#004398",
+        "surface-container-high": "#f2e5e7",
+        "surface-container": "#f7ebed",
+        "inverse-surface": "#352f31",
+        "tone-danger": "#E53E3E",
+        "surface-card": "#FFFFFF",
+        "on-secondary-fixed": "#001943",
+        "text-muted": "#695F63",
+        "border-subtle": "#F2E2D8",
+        "inverse-primary": "#ffb59a",
+        "primary-fixed": "#ffdbcf",
+        "on-secondary": "#ffffff",
+        "tertiary-fixed": "#ffdcbc",
+        "canvas-peach": "#FFF5EE",
+        "tone-success-bg": "#E8F8F0",
+        "surface-container-lowest": "#ffffff",
+        "on-primary": "#ffffff",
+        "canvas-peach-subtle": "#FFEADB",
+        "on-tertiary-container": "#4d2c00",
+        "secondary-fixed-dim": "#afc6ff",
+        "tone-info": "#2D68C4",
+        "on-primary-fixed-variant": "#802a00",
+        "on-tertiary": "#ffffff",
+        "on-primary-container": "#601d00",
+        "on-tertiary-fixed": "#2c1700",
+        "secondary": "#0d59c3",
+        "inverse-on-surface": "#faeef0"
+      },
+      fontFamily: {
+        "body-lg": ["Plus Jakarta Sans"],
+        "headline-lg": ["Plus Jakarta Sans"],
+        "headline-xl": ["Plus Jakarta Sans"],
+        "headline-sm": ["Plus Jakarta Sans"],
+        "label-md": ["Plus Jakarta Sans"],
+        "code-mono": ["JetBrains Mono"],
+        "label-sm": ["Plus Jakarta Sans"],
+        "headline-md": ["Plus Jakarta Sans"],
+        "label-lg": ["Plus Jakarta Sans"],
+        "body-md": ["Plus Jakarta Sans"]
+      }
+    }
+  }
+};</script></head><body class="bg-[#fcf8f7] font-body-md text-on-surface antialiased min-h-screen"><!-- Floating Sidebar Shell matching SCREEN_79 & SCREEN_14 --><aside class="fixed left-4 top-4 bottom-4 w-72 bg-white rounded-2xl shadow-[0_4px_24px_-4px_rgba(230,115,60,0.1),0_2px_8px_-2px_rgba(0,0,0,0.04)] border border-stone-200/70 z-50 flex flex-col justify-between p-5 overflow-hidden"><div class="flex flex-col gap-5"><div class="flex items-center justify-between pb-2 border-b border-stone-100"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-white font-headline-md text-lg font-bold shadow-[0_4px_12px_rgba(255,112,52,0.3)]">A</div><div class="flex flex-col"><span class="font-headline-sm text-base font-bold text-text-primary tracking-tight">Aksara</span><span class="font-label-sm text-xs text-text-muted">SD/MI Kelas VI</span></div></div><span class="px-2.5 py-1 rounded-full bg-canvas-peach-subtle text-primary font-label-sm text-xs font-semibold">Kelas 6</span></div><nav class="flex flex-col gap-1.5"><a class="h-11 flex items-center gap-3 px-3.5 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-text-primary transition-all font-label-md text-sm font-medium" data-path="dasbor" href="#"><span class="material-symbols-outlined text-[22px] text-stone-400">dashboard</span><span>Dasbor</span></a><a class="h-11 flex items-center gap-3 px-3.5 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-text-primary transition-all font-label-md text-sm font-medium" data-path="kelas" href="#"><span class="material-symbols-outlined text-[22px] text-stone-400">groups</span><span>Kelas</span></a><a aria-current="page" class="h-11 flex items-center gap-3 px-3.5 rounded-xl bg-primary-container text-white font-label-md text-sm font-bold shadow-[0_4px_16px_rgba(255,112,52,0.3)] transition-all" data-path="siswa" href="#"><span class="material-symbols-outlined text-[22px]">school</span><span>Siswa</span></a><a class="h-11 flex items-center gap-3 px-3.5 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-text-primary transition-all font-label-md text-sm font-medium" data-path="mapel-dan-bab" href="#"><span class="material-symbols-outlined text-[22px] text-stone-400">auto_stories</span><span>Mapel &amp; Bab</span></a><a class="h-11 flex items-center gap-3 px-3.5 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-text-primary transition-all font-label-md text-sm font-medium" data-path="materi" href="#"><span class="material-symbols-outlined text-[22px] text-stone-400">menu_book</span><span>Materi</span></a><a class="h-11 flex items-center gap-3 px-3.5 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-text-primary transition-all font-label-md text-sm font-medium" data-path="bank-soal" href="#"><span class="material-symbols-outlined text-[22px] text-stone-400">assignment_turned_in</span><span>Bank Soal</span></a><a class="h-11 flex items-center gap-3 px-3.5 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-text-primary transition-all font-label-md text-sm font-medium" data-path="ulangan" href="#"><span class="material-symbols-outlined text-[22px] text-stone-400">timer</span><span>Ulangan</span></a></nav></div><div class="flex flex-col gap-1.5 pt-4 border-t border-stone-100"><a class="h-11 flex items-center gap-3 px-3.5 rounded-xl text-stone-600 hover:bg-stone-50 hover:text-text-primary transition-all font-label-md text-sm font-medium" data-path="ganti-sandi" href="#"><span class="material-symbols-outlined text-[22px] text-stone-400">key</span><span>Ganti Sandi</span></a><a class="h-11 flex items-center gap-3 px-3.5 rounded-xl text-tone-danger hover:bg-tone-danger-bg transition-all font-label-md text-sm font-semibold" data-path="keluar" href="#"><span class="material-symbols-outlined text-[22px]">logout</span><span>Keluar</span></a></div></aside><!-- Main Content Viewport --><div class="pl-80 pr-6"><header class="fixed top-4 left-80 right-6 h-20 bg-white/95 backdrop-blur-xl rounded-2xl border border-stone-200/70 shadow-[0_4px_20px_-2px_rgba(230,115,60,0.06)] z-40 px-6 flex items-center justify-between"><div class="flex items-center gap-4 flex-1 max-w-md"><div class="w-full flex items-center bg-[#f7f3f1] rounded-xl px-4 py-2.5 text-text-muted focus-within:ring-2 focus-within:ring-primary-container focus-within:bg-white transition-all"><span class="material-symbols-outlined mr-2.5 text-[22px] text-stone-400">search</span><input class="w-full bg-transparent border-0 outline-none text-text-primary font-body-md text-sm placeholder:text-stone-400" placeholder="Cari materi, siswa, atau ulangan..." type="text"/></div></div><div class="flex items-center gap-5"><div class="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-canvas-peach-subtle text-primary font-label-sm text-xs font-semibold"><span class="material-symbols-outlined text-[17px]">calendar_today</span><span>T.A 2026/2027 · Semester Ganjil</span></div><button aria-label="Pemberitahuan" class="w-11 h-11 flex items-center justify-center rounded-xl bg-[#f7f3f1] text-stone-600 hover:bg-stone-200/60 transition-colors relative" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-primary-container ring-2 ring-white"></span></button><div class="flex items-center gap-3 pl-2 border-l border-stone-200"><img alt="Foto Profil Guru" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container/40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIlY6QM6_S5qiNroDMaT4CeKJcP6LP63RUAMS1u07LXusLma9g8UjCdtzevdOkkplc2JJImRiY71OW0wrnlIcQPhNR27U3jfAkWU3xZiWvJqPaKvplvfv323yi4b_xPTNOkVU2UMLipTsW9tpWMTt7oeRDSH2GaN-H72znJjLh-fK2ZD4vg6q8e_JiJo73ioJsfagjeo0FNmk1BlOfLMAVJNBoSq0qPrF2U-hjzvL4"/><div class="hidden sm:flex flex-col text-left"><span class="font-label-md text-sm font-bold text-text-primary leading-tight">Ibu Siti Rahayu, S.Pd.</span><span class="font-label-sm text-xs text-text-muted">Wali Kelas VI</span></div></div></div></header><main class="w-full pt-28 pb-16 min-h-screen"><div class="max-w-[1360px] mx-auto flex flex-col gap-6">
+<!-- Top Banner Header: Warm Peach Aesthetic -->
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-canvas-peach-subtle via-[#ffe6d6] to-canvas-peach p-6 md:p-8 border border-amber-200/60 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex flex-col gap-3 z-10 max-w-2xl">
+<div class="inline-flex items-center gap-2 w-fit px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm text-primary shadow-xs">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span class="font-label-sm text-xs font-bold uppercase tracking-wider">Panel Administrasi Siswa Kelas VI</span>
+</div>
+<h1 class="font-headline-xl text-2xl md:text-3xl font-extrabold text-text-primary tracking-tight">
+          Kelola Data Siswa
+        </h1>
+<p class="font-body-lg text-base text-text-muted leading-relaxed">
+          Daftar seluruh siswa terdaftar, pantau aktivitas perangkat, dan kelola sesi login siswa dengan kontrol cepat dan ramah sentuhan untuk bapak/ibu guru.
+        </p>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<div class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-tone-success font-label-md text-sm font-bold shadow-xs border border-emerald-100">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span>Sinkronisasi Siap &amp; Stabil</span>
+</div>
+</div>
+</div>
+<!-- 3 Quick Glance Metrics Cards (Spacious, Clear Hierarchy) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<div class="bg-white rounded-2xl p-5 border border-stone-200/60 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-xs text-text-muted uppercase tracking-wider font-semibold">Total Siswa Terdata</span>
+<div class="flex items-baseline gap-1.5 my-0.5">
+<span class="font-headline-xl text-3xl font-extrabold text-text-primary">56</span>
+<span class="font-label-md text-sm text-text-muted font-medium">Siswa Terdaftar</span>
+</div>
+<span class="font-label-sm text-xs text-tone-info font-semibold">VI-A (28) &amp; VI-B (28)</span>
+</div>
+<div class="w-14 h-14 rounded-2xl bg-tone-info-bg text-tone-info flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[30px]">groups</span>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-5 border border-stone-200/60 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-xs text-text-muted uppercase tracking-wider font-semibold">Kehadiran Login</span>
+<div class="flex items-baseline gap-1.5 my-0.5">
+<span class="font-headline-xl text-3xl font-extrabold text-tone-success">55</span>
+<span class="font-label-md text-sm text-tone-success font-medium">Siswa Aktif</span>
+</div>
+<span class="font-label-sm text-xs text-tone-success font-semibold">1 Siswa Izin Sakit</span>
+</div>
+<div class="w-14 h-14 rounded-2xl bg-tone-success-bg text-tone-success flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[30px]">check_circle</span>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-5 border border-amber-200/70 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-xs text-tertiary uppercase tracking-wider font-semibold">Peringatan Sesi Ganda</span>
+<div class="flex items-baseline gap-1.5 my-0.5">
+<span class="font-headline-xl text-3xl font-extrabold text-tone-warning">1</span>
+<span class="font-label-md text-sm text-tertiary font-medium">Perlu Ditinjau</span>
+</div>
+<span class="font-label-sm text-xs text-tone-warning font-semibold">Budi Santoso (Kelas VI-A)</span>
+</div>
+<div class="w-14 h-14 rounded-2xl bg-tone-warning-bg text-tone-warning flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[30px]">warning</span>
+</div>
+</div>
+</div>
+<!-- Informative Student Self-Login Notice Banner -->
+<div class="w-full bg-white rounded-2xl p-5 md:p-6 border border-stone-200/60 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-xl bg-tone-info-bg text-tone-info flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[26px]">lightbulb</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-base font-bold text-text-primary">Metode Masuk Mandiri Siswa SD</span>
+<p class="font-body-md text-sm text-text-muted">
+          Siswa masuk mandiri menggunakan <strong>Kode Kelas</strong> dan <strong>Nama Lengkap / NIS</strong> tanpa kata sandi demi kenyamanan dan efisiensi di ruang komputer sekolah.
+        </p>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0 self-end md:self-center">
+<div class="px-4 py-2.5 bg-[#fcf8f7] border border-stone-200/80 rounded-xl text-text-primary font-code-mono text-sm font-bold tracking-wider">
+        KODE: <span class="text-primary" id="projector-code">••••••</span>
+</div>
+<button class="h-11 px-4 rounded-xl bg-tone-info text-white font-label-md text-xs font-bold shadow-xs hover:opacity-95 transition-all flex items-center gap-2" id="toggle-code-btn" type="button">
+<span class="material-symbols-outlined text-[18px]" id="code-icon">visibility</span>
+<span id="code-btn-text">Buka Kode Proyektor</span>
+</button>
+</div>
+</div>
+<!-- Controls & Filter Toolbar -->
+<div class="w-full bg-white rounded-2xl p-5 md:p-6 border border-stone-200/60 shadow-xs flex flex-col xl:flex-row gap-4 items-stretch xl:items-center justify-between">
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+<!-- Class Selector -->
+<div class="relative min-w-[220px]">
+<select class="w-full h-11 pl-4 pr-10 rounded-xl bg-[#f7f3f1] border border-stone-200/60 text-text-primary font-label-md text-xs font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-white transition-all cursor-pointer" id="filter-kelas">
+<option value="all">Semua Siswa (56 Siswa)</option>
+<option selected="" value="vi-a">Kelas VI-A (28 Siswa)</option>
+<option value="vi-b">Kelas VI-B (28 Siswa)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 pointer-events-none text-[20px]">expand_more</span>
+</div>
+<!-- Search Input -->
+<div class="relative flex-1 flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-stone-400 text-[20px]">search</span>
+<input class="w-full h-11 pl-10 pr-10 rounded-xl bg-[#f7f3f1] border border-stone-200/60 text-text-primary font-body-md text-xs placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-white transition-all" id="search-student" placeholder="Cari nama atau NIS siswa..." type="text"/>
+<button aria-label="Bersihkan pencarian" class="absolute right-2.5 w-7 h-7 rounded-lg flex items-center justify-center text-stone-400 hover:text-stone-700 transition-colors" id="clear-search-btn" type="button">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
+<button class="h-11 px-4 rounded-xl bg-white border border-stone-200 text-text-primary font-label-md text-xs font-bold hover:bg-stone-50 transition-colors shadow-xs flex items-center gap-2 whitespace-nowrap" onclick="alert('Daftar presensi dan akun siswa berhasil diekspor ke format Excel (.xlsx)')" type="button">
+<span class="material-symbols-outlined text-[18px] text-stone-600">download</span>
+<span>Unduh Rekap Excel</span>
+</button>
+<button class="h-11 px-5 bg-primary-container text-white font-label-md text-xs font-bold rounded-xl shadow-[0_4px_12px_rgba(255,112,52,0.25)] hover:opacity-95 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap" id="toggle-fast-form-btn" type="button">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+<span>+ Tambah Siswa Baru</span>
+</button>
+</div>
+</div>
+<!-- Collapsible Inline Quick Add Form -->
+<div class="w-full bg-white rounded-2xl p-6 border border-amber-200 shadow-sm hidden transition-all" id="fast-add-form">
+<div class="flex items-center justify-between pb-4 mb-4 border-b border-stone-100">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">person_add</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-base font-bold text-text-primary">Tambah Siswa Cepat</h2>
+<span class="font-body-md text-xs text-text-muted">Nama siswa langsung otomatis digunakan untuk login tanpa sandi</span>
+</div>
+</div>
+<button class="w-9 h-9 rounded-xl bg-stone-100 text-stone-600 flex items-center justify-center hover:bg-stone-200 transition-colors" id="close-fast-form-btn" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<form class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end" onsubmit="event.preventDefault(); alert('Siswa baru berhasil didaftarkan ke sistem kelas!');">
+<div class="md:col-span-5 flex flex-col gap-1.5">
+<label class="font-label-md text-xs font-bold text-text-primary" for="input-nama">
+          Nama Lengkap Siswa <span class="text-tone-danger">*</span>
+</label>
+<input class="w-full h-11 px-4 rounded-xl bg-[#fcf8f7] border border-stone-200 text-text-primary font-body-md text-xs placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-container" id="input-nama" placeholder="Contoh: Ahmad Fauzi" required="" type="text"/>
+</div>
+<div class="md:col-span-3 flex flex-col gap-1.5">
+<label class="font-label-md text-xs font-bold text-text-primary" for="input-nis">
+          Nomor Induk Siswa (NIS) <span class="text-text-muted font-normal">(Opsional)</span>
+</label>
+<input class="w-full h-11 px-4 rounded-xl bg-[#fcf8f7] border border-stone-200 text-text-primary font-body-md text-xs placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-container" id="input-nis" placeholder="Contoh: 202401" type="text"/>
+</div>
+<div class="md:col-span-2 flex flex-col gap-1.5">
+<label class="font-label-md text-xs font-bold text-text-primary" for="input-kelas">
+          Rombel / Kelas <span class="text-tone-danger">*</span>
+</label>
+<select class="w-full h-11 px-3.5 rounded-xl bg-[#fcf8f7] border border-stone-200 text-text-primary font-label-md text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary-container" id="input-kelas">
+<option value="VI-A">Kelas VI-A</option>
+<option value="VI-B">Kelas VI-B</option>
+</select>
+</div>
+<div class="md:col-span-2">
+<button class="w-full h-11 px-4 bg-tone-success text-white font-label-md text-xs font-bold rounded-xl shadow-xs hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5" type="submit">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Simpan Siswa</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Dual-Column Layout: Left (8 Cols - Clean Isolated Student Cards), Right (4 Cols - Info & Lab Companion) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- Left Column: Student Cards List -->
+<div class="lg:col-span-8 flex flex-col gap-4" id="students-container">
+<!-- Student Card 1: Ahmad Fauzi -->
+<div class="bg-white rounded-2xl p-5 md:p-6 border border-stone-200/70 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 student-card" data-student-kelas="VI-A" data-student-name="Ahmad Fauzi" data-student-nis="202401">
+<div class="flex items-center gap-4 min-w-0">
+<div class="w-13 h-13 w-12 h-12 rounded-2xl bg-tone-info-bg text-tone-info flex items-center justify-center shrink-0 font-headline-md text-base font-bold">
+            AF
+          </div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-headline-sm text-base font-bold text-text-primary truncate">Ahmad Fauzi</span>
+<span class="px-2 py-0.5 rounded-md bg-stone-100 text-text-muted font-label-sm text-[11px] font-semibold">NIS: 202401</span>
+<span class="px-2.5 py-0.5 rounded-full bg-canvas-peach-subtle text-primary font-label-sm text-xs font-bold">Kelas VI-A</span>
+</div>
+<div class="flex flex-wrap items-center gap-2 text-text-muted font-body-md text-xs">
+<span class="inline-flex items-center gap-1.5 text-tone-success font-semibold">
+<span class="w-2 h-2 rounded-full bg-tone-success"></span> Aktif
+              </span>
+<span class="text-stone-300">•</span>
+<span class="inline-flex items-center gap-1.5 text-stone-500">
+<span class="material-symbols-outlined text-[16px] text-stone-400">laptop_chromebook</span>
+<span>1 Perangkat Terkoneksi (Chromebook Lab)</span>
+</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+<button class="h-10 px-3.5 rounded-xl bg-white border border-stone-200 text-text-primary font-label-md text-xs font-bold hover:bg-stone-50 transition-colors flex items-center gap-1.5 shadow-xs" type="button">
+<span class="material-symbols-outlined text-[17px] text-stone-500">edit</span>
+<span>Ubah Data</span>
+</button>
+<button class="h-10 px-3.5 rounded-xl bg-tone-danger-bg text-tone-danger font-label-md text-xs font-bold hover:bg-red-100 transition-colors flex items-center gap-1.5" onclick="confirmKickSession('Ahmad Fauzi')" type="button">
+<span class="material-symbols-outlined text-[17px]">logout</span>
+<span>Keluarkan</span>
+</button>
+</div>
+</div>
+<!-- Student Card 2: Budi Santoso (Audited Dual-Session Warning Card with Amber Border & Pill) -->
+<div class="bg-white rounded-2xl p-5 md:p-6 border-2 border-amber-300/80 shadow-xs hover:shadow-md transition-all flex flex-col gap-4 student-card" data-student-kelas="VI-A" data-student-name="Budi Santoso" data-student-nis="202402">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center gap-4 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-tone-warning-bg text-tone-warning flex items-center justify-center shrink-0 font-headline-md text-base font-bold ring-2 ring-amber-300">
+              BS
+            </div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-headline-sm text-base font-bold text-text-primary truncate">Budi Santoso</span>
+<span class="px-2 py-0.5 rounded-md bg-stone-100 text-text-muted font-label-sm text-[11px] font-semibold">NIS: 202402</span>
+<span class="px-2.5 py-0.5 rounded-full bg-canvas-peach-subtle text-primary font-label-sm text-xs font-bold">Kelas VI-A</span>
+<span class="px-2.5 py-0.5 rounded-full bg-tone-warning-bg text-tertiary font-label-sm text-xs font-bold inline-flex items-center gap-1 border border-amber-200">
+<span class="material-symbols-outlined text-[14px] text-tone-warning">warning</span> Sesi Ganda Terdeteksi
+                </span>
+</div>
+<div class="flex flex-wrap items-center gap-2 text-text-muted font-body-md text-xs">
+<span class="inline-flex items-center gap-1.5 text-tone-success font-semibold">
+<span class="w-2 h-2 rounded-full bg-tone-success"></span> Aktif
+                </span>
+<span class="text-stone-300">•</span>
+<span class="inline-flex items-center gap-1.5 text-tertiary font-medium">
+<span class="material-symbols-outlined text-[16px]">devices</span>
+<span>HP Android &amp; Komputer Lab</span>
+</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+<button class="h-10 px-3.5 rounded-xl bg-white border border-stone-200 text-text-primary font-label-md text-xs font-bold hover:bg-stone-50 transition-colors flex items-center gap-1.5 shadow-xs" type="button">
+<span class="material-symbols-outlined text-[17px] text-stone-500">edit</span>
+<span>Ubah Data</span>
+</button>
+<button class="h-10 px-4 rounded-xl bg-primary-container text-white font-label-md text-xs font-bold hover:opacity-90 active:scale-95 transition-all shadow-xs flex items-center gap-1.5" onclick="confirmKickSession('Budi Santoso', true)" type="button">
+<span class="material-symbols-outlined text-[18px]">security_update_warning</span>
+<span>Periksa &amp; Keluarkan Sesi</span>
+</button>
+</div>
+</div>
+<!-- Callout Alert Banner -->
+<div class="p-3.5 rounded-xl bg-tone-warning-bg/70 border border-amber-200/80 flex items-start gap-3">
+<span class="material-symbols-outlined text-tone-warning text-[20px] shrink-0 mt-0.5">report_problem</span>
+<div class="flex flex-col gap-0.5 text-xs text-tertiary">
+<span class="font-bold">Peringatan Keamanan Ujian:</span>
+<span>Masuk dari perangkat lain 2× minggu ini, terakhir <strong>Hari ini 08.15 WITA (HP Android)</strong> saat ujian di Lab sedang berjalan.</span>
+</div>
+</div>
+</div>
+<!-- Student Card 3: Citra Dewi -->
+<div class="bg-white rounded-2xl p-5 md:p-6 border border-stone-200/70 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 student-card" data-student-kelas="VI-A" data-student-name="Citra Dewi" data-student-nis="202403">
+<div class="flex items-center gap-4 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-tone-success-bg text-tone-success flex items-center justify-center shrink-0 font-headline-md text-base font-bold">
+            CD
+          </div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-headline-sm text-base font-bold text-text-primary truncate">Citra Dewi</span>
+<span class="px-2 py-0.5 rounded-md bg-stone-100 text-text-muted font-label-sm text-[11px] font-semibold">NIS: 202403</span>
+<span class="px-2.5 py-0.5 rounded-full bg-canvas-peach-subtle text-primary font-label-sm text-xs font-bold">Kelas VI-A</span>
+</div>
+<div class="flex flex-wrap items-center gap-2 text-text-muted font-body-md text-xs">
+<span class="inline-flex items-center gap-1.5 text-tone-success font-semibold">
+<span class="w-2 h-2 rounded-full bg-tone-success"></span> Aktif
+              </span>
+<span class="text-stone-300">•</span>
+<span class="inline-flex items-center gap-1 text-tone-info font-medium">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>Sesi aman · 1 PC Lab Sekolah</span>
+</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+<button class="h-10 px-3.5 rounded-xl bg-white border border-stone-200 text-text-primary font-label-md text-xs font-bold hover:bg-stone-50 transition-colors flex items-center gap-1.5 shadow-xs" type="button">
+<span class="material-symbols-outlined text-[17px] text-stone-500">edit</span>
+<span>Ubah Data</span>
+</button>
+<button class="h-10 px-3.5 rounded-xl bg-tone-danger-bg text-tone-danger font-label-md text-xs font-bold hover:bg-red-100 transition-colors flex items-center gap-1.5" onclick="confirmKickSession('Citra Dewi')" type="button">
+<span class="material-symbols-outlined text-[17px]">logout</span>
+<span>Keluarkan</span>
+</button>
+</div>
+</div>
+<!-- Student Card 4: Doni Pratama -->
+<div class="bg-white rounded-2xl p-5 md:p-6 border border-stone-200/70 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 student-card" data-student-kelas="VI-A" data-student-name="Doni Pratama" data-student-nis="202404">
+<div class="flex items-center gap-4 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-[#f7f3f1] text-text-primary flex items-center justify-center shrink-0 font-headline-md text-base font-bold">
+            DP
+          </div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-headline-sm text-base font-bold text-text-primary truncate">Doni Pratama</span>
+<span class="px-2 py-0.5 rounded-md bg-stone-100 text-text-muted font-label-sm text-[11px] font-semibold">NIS: 202404</span>
+<span class="px-2.5 py-0.5 rounded-full bg-canvas-peach-subtle text-primary font-label-sm text-xs font-bold">Kelas VI-A</span>
+</div>
+<div class="flex flex-wrap items-center gap-2 text-text-muted font-body-md text-xs">
+<span class="inline-flex items-center gap-1.5 text-tone-success font-semibold">
+<span class="w-2 h-2 rounded-full bg-tone-success"></span> Aktif
+              </span>
+<span class="text-stone-300">•</span>
+<span class="inline-flex items-center gap-1 text-stone-500">
+<span class="material-symbols-outlined text-[16px]">task_alt</span>
+<span>Catatan kendala ujian telah diselesaikan</span>
+</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+<button class="h-10 px-3.5 rounded-xl bg-white border border-stone-200 text-text-primary font-label-md text-xs font-bold hover:bg-stone-50 transition-colors flex items-center gap-1.5 shadow-xs" type="button">
+<span class="material-symbols-outlined text-[17px] text-stone-500">edit</span>
+<span>Ubah Data</span>
+</button>
+<button class="h-10 px-3.5 rounded-xl bg-tone-danger-bg text-tone-danger font-label-md text-xs font-bold hover:bg-red-100 transition-colors flex items-center gap-1.5" onclick="confirmKickSession('Doni Pratama')" type="button">
+<span class="material-symbols-outlined text-[17px]">logout</span>
+<span>Keluarkan</span>
+</button>
+</div>
+</div>
+<!-- Student Card 5: Eka Wardani (Status Sakit / Dispensasi) -->
+<div class="bg-white rounded-2xl p-5 md:p-6 border border-stone-200/70 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 student-card" data-student-kelas="VI-A" data-student-name="Eka Wardani" data-student-nis="202405">
+<div class="flex items-center gap-4 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-tone-warning-bg text-tone-warning flex items-center justify-center shrink-0 font-headline-md text-base font-bold">
+            EW
+          </div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-headline-sm text-base font-bold text-text-primary truncate">Eka Wardani</span>
+<span class="px-2 py-0.5 rounded-md bg-stone-100 text-text-muted font-label-sm text-[11px] font-semibold">NIS: 202405</span>
+<span class="px-2.5 py-0.5 rounded-full bg-canvas-peach-subtle text-primary font-label-sm text-xs font-bold">Kelas VI-A</span>
+</div>
+<div class="flex flex-wrap items-center gap-2 text-text-muted font-body-md text-xs">
+<span class="inline-flex items-center gap-1.5 text-tone-warning font-semibold">
+<span class="w-2 h-2 rounded-full bg-tone-warning"></span> Sakit / Dispensasi
+              </span>
+<span class="text-stone-300">•</span>
+<span class="inline-flex items-center gap-1 text-stone-400">
+<span class="material-symbols-outlined text-[16px]">phonelink_off</span>
+<span>Tidak ada perangkat terhubung</span>
+</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+<button class="h-10 px-3.5 rounded-xl bg-white border border-stone-200 text-text-primary font-label-md text-xs font-bold hover:bg-stone-50 transition-colors flex items-center gap-1.5 shadow-xs" type="button">
+<span class="material-symbols-outlined text-[17px] text-stone-500">edit</span>
+<span>Ubah Data</span>
+</button>
+<button class="h-10 px-3 rounded-xl bg-stone-100 text-stone-600 hover:bg-stone-200 font-label-md text-xs font-semibold transition-colors flex items-center gap-1" onclick="alert('Status Eka Wardani telah dinonaktifkan sementara.')" type="button">
+<span class="material-symbols-outlined text-[17px]">pause_circle</span>
+<span>Nonaktifkan</span>
+</button>
+</div>
+</div>
+<!-- Student Card 6: Fajar Nugraha (Kelas VI-B) -->
+<div class="bg-white rounded-2xl p-5 md:p-6 border border-stone-200/70 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 student-card" data-student-kelas="VI-B" data-student-name="Fajar Nugraha" data-student-nis="202406">
+<div class="flex items-center gap-4 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-secondary-fixed text-on-secondary-fixed font-headline-md text-base font-bold flex items-center justify-center shrink-0">
+            FN
+          </div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-headline-sm text-base font-bold text-text-primary truncate">Fajar Nugraha</span>
+<span class="px-2 py-0.5 rounded-md bg-stone-100 text-text-muted font-label-sm text-[11px] font-semibold">NIS: 202406</span>
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-xs font-bold">Kelas VI-B</span>
+</div>
+<div class="flex flex-wrap items-center gap-2 text-text-muted font-body-md text-xs">
+<span class="inline-flex items-center gap-1.5 text-tone-success font-semibold">
+<span class="w-2 h-2 rounded-full bg-tone-success"></span> Aktif
+              </span>
+<span class="text-stone-300">•</span>
+<span class="inline-flex items-center gap-1 text-stone-500">
+<span class="material-symbols-outlined text-[16px] text-stone-400">computer</span>
+<span>1 Sesi Aktif di Lab B</span>
+</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+<button class="h-10 px-3.5 rounded-xl bg-white border border-stone-200 text-text-primary font-label-md text-xs font-bold hover:bg-stone-50 transition-colors flex items-center gap-1.5 shadow-xs" type="button">
+<span class="material-symbols-outlined text-[17px] text-stone-500">edit</span>
+<span>Ubah Data</span>
+</button>
+<button class="h-10 px-3.5 rounded-xl bg-tone-danger-bg text-tone-danger font-label-md text-xs font-bold hover:bg-red-100 transition-colors flex items-center gap-1.5" onclick="confirmKickSession('Fajar Nugraha')" type="button">
+<span class="material-symbols-outlined text-[17px]">logout</span>
+<span>Keluarkan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column: Lab Status & Senior Teacher Companion Guidance -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Lab Computer Status Card -->
+<div class="bg-white rounded-2xl p-6 border border-stone-200/60 shadow-xs flex flex-col gap-4">
+<div class="flex items-center justify-between pb-1">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-xl bg-tone-success-bg text-tone-success flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">desktop_windows</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-base font-bold text-text-primary leading-tight">Status Ruang Komputer</h3>
+<span class="font-body-md text-xs text-text-muted">Sinkronisasi perangkat aktif</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tone-success-bg text-tone-success font-label-sm text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-tone-success animate-ping"></span> Terhubung
+          </span>
+</div>
+<p class="font-body-md text-xs text-text-muted leading-relaxed">
+          Pantauan langsung sinkronisasi perangkat siswa saat pengerjaan ulangan atau materi interaktif.
+        </p>
+<div class="p-4 rounded-xl bg-[#fcf8f7] border border-stone-100 flex flex-col gap-2">
+<div class="flex justify-between items-center text-xs">
+<span class="text-text-primary font-semibold">Tingkat Kehadiran Online</span>
+<span class="text-tone-success font-bold">98.2%</span>
+</div>
+<div class="w-full h-2.5 rounded-full bg-stone-200 overflow-hidden flex">
+<div class="h-full bg-tone-success" style="width: 98.2%;"></div>
+<div class="h-full bg-tone-warning" style="width: 1.8%;"></div>
+</div>
+<div class="flex justify-between text-[11px] text-text-muted pt-0.5">
+<span>55 siswa terhubung</span>
+<span>1 siswa izin</span>
+</div>
+</div>
+<button class="w-full h-11 px-4 rounded-xl bg-tone-danger-bg text-tone-danger hover:bg-red-100 font-label-md text-xs font-bold transition-colors flex items-center justify-center gap-2" onclick="confirmResetAllSessions()" type="button">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+<span>Reset Seluruh Sesi Kelas</span>
+</button>
+</div>
+<!-- Senior Teacher Quick Helper Tips Card -->
+<div class="bg-white rounded-2xl p-6 border border-stone-200/60 shadow-xs flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-canvas-peach-subtle text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">contact_support</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-base font-bold text-text-primary leading-tight">Panduan Singkat Guru</h3>
+<span class="font-label-sm text-xs text-text-muted">Prosedur pengelolaan sesi</span>
+</div>
+</div>
+<div class="flex flex-col gap-2.5 pt-1">
+<div class="p-3.5 rounded-xl bg-canvas-peach/80 border border-amber-100 flex items-start gap-3">
+<span class="material-symbols-outlined text-tone-success text-[18px] shrink-0 mt-0.5">check_circle</span>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-xs font-bold text-text-primary">NIS Bersifat Opsional</span>
+<span class="font-body-md text-xs text-stone-500 leading-normal">Cukup gunakan nama lengkap siswa jika NIS belum tercatat dari Dapodik.</span>
+</div>
+</div>
+<div class="p-3.5 rounded-xl bg-canvas-peach/80 border border-amber-100 flex items-start gap-3">
+<span class="material-symbols-outlined text-tone-warning text-[18px] shrink-0 mt-0.5">warning</span>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-xs font-bold text-text-primary">Sesi Ganda Terdeteksi</span>
+<span class="font-body-md text-xs text-stone-500 leading-normal">Siswa tidak dapat mengerjakan soal jika akun terbuka di dua gawai bersamaan.</span>
+</div>
+</div>
+<div class="p-3.5 rounded-xl bg-canvas-peach/80 border border-amber-100 flex items-start gap-3">
+<span class="material-symbols-outlined text-tone-info text-[18px] shrink-0 mt-0.5">info</span>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-xs font-bold text-text-primary">Ujian Terganggu?</span>
+<span class="font-body-md text-xs text-stone-500 leading-normal">Tekan 'Keluarkan' pada nama siswa untuk membebaskan koneksi agar siswa dapat login ulang.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Visual Classroom Snapshot Card -->
+<div class="bg-white rounded-2xl p-5 border border-stone-200/60 shadow-xs flex flex-col gap-3 overflow-hidden">
+<div class="relative h-44 rounded-xl overflow-hidden">
+<img alt="Lab Komputer SD Harapan Bangsa" class="w-full h-full object-cover" data-alt="Indonesian elementary school classroom with 6th-grade students happily collaborating on tablets and computers in a bright modern educational setting, soft warm peach ambient light, high contrast clean desks, teachers guiding patiently in background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDH3rqy409JkB3_idZSrm_rYyJRyK6hlblzGTt3_T1BvgsNlYq8zvAuH35J0Q_2x7F8REjfdva9ns73tjcxNxraDpLlBpbXi9sUJSIKm7WVKiOcOe_3jIoKcmh9lZITC4OsNik7BaN4aZkZ8-5yHTAj55jXgl4ehxL1gKvpiQxsFQI4CyMc0HJ6hZgLlpgldp9KfZtBiXoXy-xobl44il3meQvwCf4imnZ5W83_vP8Q"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-transparent flex items-end p-4">
+<span class="font-label-md text-xs font-bold text-white">Lab Komputer SD Harapan Bangsa</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs text-text-muted px-1">
+<span>Kapasitas: 32 Unit</span>
+<span class="text-tone-success font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tone-success"></span> Semua siap pakai
+            </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main></div><script>
+  // Fast Form Toggle Handler
+  const toggleBtn = document.getElementById('toggle-fast-form-btn');
+  const closeBtn = document.getElementById('close-fast-form-btn');
+  const formSection = document.getElementById('fast-add-form');
+
+  if (toggleBtn && formSection) {
+    toggleBtn.addEventListener('click', () => {
+      formSection.classList.toggle('hidden');
+      if (!formSection.classList.contains('hidden')) {
+        document.getElementById('input-nama')?.focus();
+        formSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  }
+
+  if (closeBtn && formSection) {
+    closeBtn.addEventListener('click', () => {
+      formSection.classList.add('hidden');
+    });
+  }
+
+  // Projector Safe-Code Reveal Handler
+  const toggleCodeBtn = document.getElementById('toggle-code-btn');
+  const projectorCodeSpan = document.getElementById('projector-code');
+  const codeIcon = document.getElementById('code-icon');
+  const codeBtnText = document.getElementById('code-btn-text');
+  let isCodeVisible = false;
+
+  if (toggleCodeBtn && projectorCodeSpan) {
+    toggleCodeBtn.addEventListener('click', () => {
+      isCodeVisible = !isCodeVisible;
+      if (isCodeVisible) {
+        projectorCodeSpan.textContent = 'AKS-6A';
+        codeIcon.textContent = 'visibility_off';
+        codeBtnText.textContent = 'Tutup Kode Proyektor';
+      } else {
+        projectorCodeSpan.textContent = '••••••';
+        codeIcon.textContent = 'visibility';
+        codeBtnText.textContent = 'Buka Kode Proyektor';
+      }
+    });
+  }
+
+  // Live Filtering & Search Filter for Students
+  const searchInput = document.getElementById('search-student');
+  const clearSearchBtn = document.getElementById('clear-search-btn');
+  const filterKelas = document.getElementById('filter-kelas');
+  const studentCards = document.querySelectorAll('.student-card');
+
+  function filterStudents() {
+    const query = (searchInput?.value || '').toLowerCase().trim();
+    const selectedClass = filterKelas?.value || 'all';
+
+    studentCards.forEach(card => {
+      const name = (card.getAttribute('data-student-name') || '').toLowerCase();
+      const nis = (card.getAttribute('data-student-nis') || '').toLowerCase();
+      const studentClass = (card.getAttribute('data-student-kelas') || '').toLowerCase();
+
+      const matchesQuery = name.includes(query) || nis.includes(query);
+      const matchesClass = (selectedClass === 'all') || 
+                           (selectedClass === 'vi-a' && studentClass === 'vi-a') ||
+                           (selectedClass === 'vi-b' && studentClass === 'vi-b');
+
+      if (matchesQuery && matchesClass) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', filterStudents);
+  }
+
+  if (clearSearchBtn && searchInput) {
+    clearSearchBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      filterStudents();
+      searchInput.focus();
+    });
+  }
+
+  if (filterKelas) {
+    filterKelas.addEventListener('change', filterStudents);
+  }
+
+  // Teacher Reassurance Action Handlers
+  function confirmKickSession(name, isSecurityWarning = false) {
+    const message = isSecurityWarning
+      ? `Konfirmasi Keamanan:\nKeluarkan paksa seluruh sesi login milik ${name}?\nSiswa harus memasukkan nama kembali di Chromebook ruang ujian.`
+      : `Keluarkan sesi aktif untuk ${name}?\nIni akan membebaskan slot login siswa di ruang kelas.`;
+    
+    if (confirm(message)) {
+      alert(`Sesi login untuk ${name} berhasil dihentikan. Siswa kini dapat masuk kembali secara aman.`);
+    }
+  }
+
+  function confirmResetAllSessions() {
+    if (confirm('Perhatian Guru:\nApakah Anda yakin ingin mengeluarkan seluruh sesi siswa di kelas ini?\nTindakan ini berguna jika terjadi pergantian jadwal kelas atau lab komputer.')) {
+      alert('Seluruh sesi siswa berhasil di-reset ke kondisi awal.');
+    }
+  }
+</script></body></html>

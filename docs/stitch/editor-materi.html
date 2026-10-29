@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aksara Guru - Editor Materi &amp; Panel Gambar</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-tertiary": "#ffffff",
+            "surface-bright": "#fff8f8",
+            "secondary-fixed-dim": "#afc6ff",
+            "on-primary-fixed": "#380d00",
+            "inverse-surface": "#352f31",
+            "tone-warning-bg": "#FFF4E5",
+            "surface-container-highest": "#ecdfe2",
+            "surface-tint": "#a83900",
+            "canvas-peach": "#FFF5EE",
+            "tone-danger-bg": "#FEECEC",
+            "primary": "#a83900",
+            "surface-container-lowest": "#ffffff",
+            "tone-success": "#1E9E64",
+            "tone-danger": "#E53E3E",
+            "on-secondary-fixed": "#001943",
+            "on-primary-fixed-variant": "#802a00",
+            "on-secondary-container": "#002b68",
+            "surface-container-low": "#fdf1f3",
+            "canvas-peach-subtle": "#FFEADB",
+            "on-tertiary-fixed-variant": "#683d00",
+            "on-primary": "#ffffff",
+            "tone-success-bg": "#E8F8F0",
+            "error": "#ba1a1a",
+            "tone-warning": "#E8890C",
+            "surface-variant": "#ecdfe2",
+            "surface-container": "#f7ebed",
+            "text-primary": "#241F21",
+            "secondary-container": "#5d93ff",
+            "border-subtle": "#F2E2D8",
+            "on-error-container": "#93000a",
+            "tertiary": "#895200",
+            "tone-info-bg": "#EEF4FD",
+            "primary-container": "#ff7034",
+            "outline-variant": "#e1bfb4",
+            "surface": "#fff8f8",
+            "inverse-on-surface": "#faeef0",
+            "surface-dim": "#e3d7d9",
+            "text-muted": "#695F63",
+            "tertiary-fixed": "#ffdcbc",
+            "primary-fixed-dim": "#ffb59a",
+            "secondary": "#0d59c3",
+            "on-secondary": "#ffffff",
+            "tertiary-container": "#db891c",
+            "on-error": "#ffffff",
+            "on-primary-container": "#601d00",
+            "primary-fixed": "#ffdbcf",
+            "surface-card": "#FFFFFF",
+            "border-active": "#FF7034",
+            "on-tertiary-fixed": "#2c1700",
+            "outline": "#8d7167",
+            "background": "#fff8f8",
+            "error-container": "#ffdad6",
+            "on-background": "#201a1c",
+            "on-tertiary-container": "#4d2c00",
+            "on-surface-variant": "#594139",
+            "inverse-primary": "#ffb59a",
+            "secondary-fixed": "#d9e2ff",
+            "on-surface": "#201a1c",
+            "tone-info": "#2D68C4",
+            "surface-container-high": "#f2e5e7",
+            "tertiary-fixed-dim": "#ffb86a",
+            "on-secondary-fixed-variant": "#004398"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            "sans": ["Plus Jakarta Sans", "sans-serif"],
+            "code-mono": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #fff8f8;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #241F21;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #e1bfb4;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-surface flex flex-col antialiased">
+<!-- LEFT SIDEBAR -->
+<aside class="fixed left-0 top-0 h-full w-72 bg-surface-card border-r border-border-subtle z-50 flex flex-col shadow-[0_2px_12px_rgba(36,31,33,0.03)]">
+<!-- Brand Header -->
+<div class="h-20 px-6 flex items-center gap-3 border-b border-border-subtle">
+<div class="w-11 h-11 rounded-xl bg-primary-container flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[26px]">school</span>
+</div>
+<div class="flex flex-col">
+<span class="font-extrabold text-lg text-text-primary tracking-tight leading-snug">Aksara Guru</span>
+<span class="text-xs text-text-muted font-medium">Portal SD/MI Kelas VI</span>
+</div>
+</div>
+<!-- Curriculum Pill Badge -->
+<div class="px-5 py-3">
+<div class="bg-tone-warning-bg rounded-xl px-3.5 py-2 flex items-center gap-2.5 border border-tone-warning/20">
+<span class="material-symbols-outlined text-tone-warning text-[20px]">verified</span>
+<span class="text-xs font-bold text-on-tertiary-container">Kurikulum Merdeka 2026</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
+<a class="flex items-center px-4 py-3 rounded-xl text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors gap-3.5 text-sm font-semibold" href="#">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>Dasbor
+      </a>
+<a class="flex items-center px-4 py-3 rounded-xl text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors gap-3.5 text-sm font-semibold" href="#">
+<span class="material-symbols-outlined text-[22px]">meeting_room</span>Kelas
+      </a>
+<a class="flex items-center px-4 py-3 rounded-xl text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors gap-3.5 text-sm font-semibold" href="#">
+<span class="material-symbols-outlined text-[22px]">groups</span>Siswa
+      </a>
+<a class="flex items-center px-4 py-3 rounded-xl text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors gap-3.5 text-sm font-semibold" href="#">
+<span class="material-symbols-outlined text-[22px]">menu_book</span>Mapel &amp; Bab
+      </a>
+<!-- Active Item -->
+<a class="flex items-center px-4 py-3 rounded-xl bg-primary-container text-on-primary font-bold shadow-sm transition-all gap-3.5 text-sm" href="#">
+<span class="material-symbols-outlined text-[22px]">description</span>Materi
+      </a>
+<a class="flex items-center px-4 py-3 rounded-xl text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors gap-3.5 text-sm font-semibold" href="#">
+<span class="material-symbols-outlined text-[22px]">quiz</span>Bank Soal
+      </a>
+<a class="flex items-center px-4 py-3 rounded-xl text-text-muted hover:bg-surface-container hover:text-text-primary transition-colors gap-3.5 text-sm font-semibold" href="#">
+<span class="material-symbols-outlined text-[22px]">assignment_turned_in</span>Ulangan
+      </a>
+</nav>
+<!-- Bottom Widget: Proyektor Mode -->
+<div class="p-4 border-t border-border-subtle bg-surface-container-low/60">
+<div class="bg-surface-card rounded-xl p-3.5 shadow-sm border border-border-subtle flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Mode Presentasi</span>
+<span class="text-sm font-bold text-text-primary">Proyektor Kelas</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-canvas-peach flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[22px]">tv</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- MAIN WRAPPER (Shifted for sidebar) -->
+<div class="pl-72 flex flex-col min-h-screen">
+<!-- TOP HEADER BAR -->
+<header class="h-20 bg-surface-card/90 backdrop-blur-md border-b border-border-subtle sticky top-0 z-40 px-8 flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+<!-- Search Input -->
+<div class="flex-1 max-w-lg mr-6">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-text-muted text-[22px] pointer-events-none">search</span>
+<input class="w-full h-11 pl-12 pr-4 rounded-xl bg-surface-container-low border border-border-subtle text-text-primary placeholder:text-text-muted/70 text-sm focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40 focus:border-border-active transition-all" placeholder="Cari materi, bank soal, atau siswa..." type="text"/>
+</div>
+</div>
+<!-- Header Right Utilities -->
+<div class="flex items-center gap-4">
+<!-- Academic Period Badge -->
+<div class="hidden xl:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-tone-info-bg border border-tone-info/20 text-tone-info">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span class="text-xs font-bold tracking-tight">T.A 2026/2027 · Semester Ganjil</span>
+</div>
+<!-- Notification Bell -->
+<button class="w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-text-muted hover:text-text-primary transition-colors relative border border-border-subtle" title="Notifikasi" type="button">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-tone-danger ring-2 ring-surface-card"></span>
+</button>
+<!-- Vertical Divider -->
+<div class="h-8 w-px bg-border-subtle mx-1"></div>
+<!-- Teacher Profile Card -->
+<div class="flex items-center gap-3 pl-1">
+<div class="text-right hidden sm:flex flex-col">
+<span class="text-sm font-bold text-text-primary leading-tight">Ibu Siti Rahayu, S.Pd.</span>
+<span class="text-xs font-semibold text-primary">Wali Kelas VI</span>
+</div>
+<div class="w-10 h-10 rounded-xl bg-primary-container text-on-primary flex items-center justify-center font-bold text-base shadow-sm ring-2 ring-primary-container/20">
+            SR
+          </div>
+</div>
+</div>
+</header>
+<!-- MAIN EDITING WORKSPACE -->
+<main class="flex-1 p-8 space-y-6">
+<!-- Top Action Bar & Page Title -->
+<div class="bg-surface-card p-6 rounded-2xl border border-border-subtle shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex flex-col gap-1.5 max-w-2xl">
+<!-- Breadcrumb -->
+<nav class="flex items-center gap-2 text-xs font-semibold text-text-muted">
+<a class="hover:text-primary transition-colors" href="#">Materi Pelajaran</a>
+<span class="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+<span class="text-primary font-bold">Ubah Modul Ajar</span>
+<span class="mx-1 text-border-subtle">•</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tone-warning-bg text-tone-warning border border-tone-warning/30 text-[11px] font-bold">
+<span class="w-2 h-2 rounded-full bg-tone-warning animate-pulse"></span>
+              Draf Aktif
+            </span>
+</nav>
+<h1 class="text-2xl font-extrabold text-text-primary tracking-tight mt-1">Editor Materi &amp; Panel Gambar</h1>
+<p class="text-sm text-text-muted leading-relaxed">
+            Tulis dan susun bahan bacaan digital ramah anak Fase C Kelas VI dengan ilustrasi terverifikasi dan instruksi kontekstual.
+          </p>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-wrap items-center gap-3">
+<button class="h-11 px-4 rounded-xl bg-surface-container-low hover:bg-canvas-peach border border-border-subtle text-text-primary font-bold text-sm flex items-center gap-2 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px] text-primary">visibility</span>
+<span>Pratinjau Siswa</span>
+</button>
+<button class="h-11 px-4 rounded-xl bg-tone-info-bg hover:bg-tone-info/10 text-tone-info border border-tone-info/20 font-bold text-sm flex items-center gap-2 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">task_alt</span>
+<span>Tandai Sudah Ditinjau</span>
+</button>
+<button class="h-11 px-5 rounded-xl bg-primary-container text-on-primary font-bold text-sm flex items-center gap-2 shadow-md hover:brightness-105 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">check</span>
+<span>✓ Terbitkan ke Siswa</span>
+</button>
+</div>
+</div>
+<!-- TWO-COLUMN WORKSPACE GRID -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- LEFT COLUMN (MAIN CONTENT & FORMS: 8 COLS) -->
+<div class="lg:col-span-8 space-y-6">
+<!-- 1. Metadata Form Card -->
+<div class="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm space-y-5">
+<div class="flex items-center gap-3 pb-3 border-b border-border-subtle">
+<div class="w-9 h-9 rounded-lg bg-canvas-peach text-primary flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[20px]">feed</span>
+</div>
+<div>
+<h2 class="text-base font-bold text-text-primary">1. Informasi Dasar &amp; Kurikulum</h2>
+<p class="text-xs text-text-muted">Kaitkan modul dengan capaian pembelajaran resmi Kelas VI</p>
+</div>
+</div>
+<div class="space-y-4">
+<!-- Judul Modul Ajar -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<label class="text-xs font-bold text-text-primary" for="input-title">
+                    Judul Modul Ajar <span class="text-tone-danger">*</span>
+</label>
+<span class="text-xs font-mono text-text-muted">58 / 120 karakter</span>
+</div>
+<input class="w-full h-11 px-4 rounded-xl bg-surface-container-low border border-border-subtle text-text-primary text-sm font-medium focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40 focus:border-border-active transition-all" id="input-title" type="text" value="Rangka Manusia dan Fungsinya: Sistem Gerak Pasif &amp; Aktif"/>
+</div>
+<!-- Mata Pelajaran & Bab (2-Col) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold text-text-primary" for="select-mapel">Mata Pelajaran</label>
+<div class="relative">
+<select class="w-full h-11 px-4 pr-10 rounded-xl bg-surface-container-low border border-border-subtle text-text-primary text-sm appearance-none focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40 focus:border-border-active font-medium" id="select-mapel">
+<option selected="">Ilmu Pengetahuan Alam dan Sosial (IPAS)</option>
+<option>Bahasa Indonesia</option>
+<option>Matematika Terapan</option>
+<option>Pendidikan Pancasila</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-text-muted pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold text-text-primary" for="select-bab">Bab Pembelajaran</label>
+<div class="relative">
+<select class="w-full h-11 px-4 pr-10 rounded-xl bg-surface-container-low border border-border-subtle text-text-primary text-sm appearance-none focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40 focus:border-border-active font-medium" id="select-bab">
+<option selected="">Bab 1: Bagaimana Tubuh Kita Bergerak?</option>
+<option>Bab 2: Mengenal Sistem Pernapasan Manusia</option>
+<option>Bab 3: Indonesiaku Kaya Ragam Budaya</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-text-muted pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Subbab & Sumber Buku (2-Col) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold text-text-primary" for="input-subbab">Subbab / Topik Spesifik</label>
+<input class="w-full h-11 px-4 rounded-xl bg-surface-container-low border border-border-subtle text-text-primary text-sm font-medium focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40 focus:border-border-active transition-all" id="input-subbab" type="text" value="Subbab 1.1: Rangka Manusia dan Bagian-Bagiannya"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold text-text-primary" for="input-sumber">Sumber Referensi / Buku Teks</label>
+<input class="w-full h-11 px-4 rounded-xl bg-surface-container-low border border-border-subtle text-text-primary text-sm font-medium focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40 focus:border-border-active transition-all" id="input-sumber" type="text" value="Buku IPAS Kemendikbudristek 2025, hal. 8-15"/>
+</div>
+</div>
+</div>
+</div>
+<!-- 2. Ringkasan Modul Card -->
+<div class="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">chat</span>
+<label class="text-sm font-bold text-text-primary" for="textarea-ringkasan">
+                  Ringkasan Modul (Pengantar Hangat untuk Anak Usia 11-12 Tahun) <span class="text-tone-danger">*</span>
+</label>
+</div>
+<span class="text-xs font-mono text-text-muted">382 / 1.000 Karakter</span>
+</div>
+<textarea class="w-full p-4 rounded-xl bg-surface-container-low border border-border-subtle text-text-primary text-sm leading-relaxed focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40 focus:border-border-active transition-all" id="textarea-ringkasan" rows="3">Halo Anak-Anak Hebat Kelas 6! Di modul ini, kita akan menjelajahi rangka tubuh kita yang luar biasa. Tubuh kita tersusun dari lebih dari 206 tulang yang melindungi otak, jantung, dan membantu kita berlari kencang. Yuk, kita kenali pembagian tulang tengkorak, tulang badan penyangga dada, serta tulang anggota gerak tangan dan kaki!</textarea>
+<p class="text-xs text-text-muted flex items-center gap-1.5">
+<span class="material-symbols-outlined text-tone-info text-[16px]">info</span>
+              Teks ini tampil pada pratinjau kartu bahan ajar di ponsel &amp; tablet siswa.
+            </p>
+</div>
+<!-- 3. Isi Materi Utama (Rich Markdown Editor) -->
+<div class="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-border-subtle">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-canvas-peach text-primary flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[20px]">edit_note</span>
+</div>
+<div>
+<h2 class="text-base font-bold text-text-primary">Isi Pembelajaran Utama (Markdown)</h2>
+<p class="text-xs text-text-muted">Gunakan pemformatan terstruktur ramah baca</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-tone-success-bg text-tone-success border border-tone-success/20">
+                Pemeriksa Sintaks Aktif
+              </span>
+</div>
+<!-- Toolbar Ergonomis -->
+<div class="flex flex-wrap items-center gap-1.5 p-2 bg-surface-container-low rounded-xl border border-border-subtle">
+<button class="px-3 h-9 rounded-lg bg-surface-card hover:bg-surface-container border border-border-subtle text-text-primary font-bold text-xs transition-colors" title="Heading 2" type="button">
+                H2
+              </button>
+<button class="px-3 h-9 rounded-lg bg-surface-card hover:bg-surface-container border border-border-subtle text-text-primary font-bold text-xs transition-colors" title="Heading 3" type="button">
+                H3
+              </button>
+<div class="h-6 w-px bg-border-subtle mx-1"></div>
+<button class="w-9 h-9 rounded-lg bg-surface-card hover:bg-surface-container border border-border-subtle text-text-primary font-bold text-sm flex items-center justify-center transition-colors" title="Tebal" type="button">
+                B
+              </button>
+<button class="w-9 h-9 rounded-lg bg-surface-card hover:bg-surface-container border border-border-subtle text-text-primary italic font-serif font-bold text-sm flex items-center justify-center transition-colors" title="Miring" type="button">
+                I
+              </button>
+<div class="h-6 w-px bg-border-subtle mx-1"></div>
+<button class="w-9 h-9 rounded-lg bg-surface-card hover:bg-surface-container border border-border-subtle text-text-primary flex items-center justify-center transition-colors" title="Daftar Poin" type="button">
+<span class="material-symbols-outlined text-[18px]">format_list_bulleted</span>
+</button>
+<button class="w-9 h-9 rounded-lg bg-surface-card hover:bg-surface-container border border-border-subtle text-text-primary flex items-center justify-center transition-colors" title="Daftar Angka" type="button">
+<span class="material-symbols-outlined text-[18px]">format_list_numbered</span>
+</button>
+<button class="w-9 h-9 rounded-lg bg-surface-card hover:bg-surface-container border border-border-subtle text-text-primary flex items-center justify-center transition-colors" title="Tabel" type="button">
+<span class="material-symbols-outlined text-[18px]">table_chart</span>
+</button>
+<button class="px-2.5 h-9 rounded-lg bg-surface-card hover:bg-canvas-peach border border-border-subtle text-primary font-bold text-xs flex items-center gap-1.5 transition-colors" title="Callout Kotak Fakta" type="button">
+<span class="material-symbols-outlined text-[16px]">lightbulb</span>
+<span>Kotak Fakta</span>
+</button>
+<div class="h-6 w-px bg-border-subtle mx-1"></div>
+<button class="px-3 h-9 rounded-lg bg-primary-container text-on-primary font-bold text-xs flex items-center gap-1.5 shadow-sm hover:brightness-105 active:scale-95 transition-all" onclick="insertSampleImage()" type="button">
+<span class="material-symbols-outlined text-[18px]">add_photo_alternate</span>
+<span>Sisipkan Gambar</span>
+</button>
+</div>
+<!-- Editor Textarea Area -->
+<div class="relative">
+<textarea class="w-full p-4 rounded-xl bg-surface-container-low border border-border-subtle font-code-mono text-sm leading-relaxed text-text-primary focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40 focus:border-border-active transition-all" id="markdown-editor" rows="15">## 1. Apa Itu Rangka Tubuh?
+
+Tubuh kita bisa berdiri tegak, melompat, dan menari berkat adanya **rangka tubuh**. Rangka adalah kumpulan tulang-tulang yang saling bersambungan membentuk pola kokoh di dalam tubuh kita.
+
+![Diagram Rangka Manusia](aksara-image:img-sd-801)
+
+### Tiga Kelompok Utama Tulang Manusia:
+1. **Tulang Tengkorak**: Terdiri dari tulang pipih yang bertugas melindungi otak kita yang sangat berharga dari benturan keras.
+2. **Tulang Badan**: Meliputi tulang belakang (tiang penyangga tubuh), tulang rusuk, dan tulang dada yang melindungi paru-paru serta jantung.
+3. **Tulang Anggota Gerak**:
+   - Anggota gerak atas (lengan, hasta, pengumpil, dan jari jemari tangan)
+   - Anggota gerak bawah (tulang paha, tempurung lutut, kering, betis, dan telapak kaki)
+
+&gt; **Tahukah Kamu? (Kotak Fakta Aksara)**
+&gt; Tulang paha (femur) adalah tulang terpanjang dan terkuat di tubuh anak-anak maupun orang dewasa!</textarea>
+</div>
+</div>
+<!-- 4. Bagian Tambahan (Collapsible Cards) -->
+<div class="space-y-4">
+<!-- Aktivitas Berpasangan -->
+<details class="group bg-surface-card rounded-2xl border border-border-subtle shadow-sm overflow-hidden" open="">
+<summary class="flex items-center justify-between p-5 cursor-pointer select-none hover:bg-surface-container-low/60 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-tone-success-bg text-tone-success flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[20px]">sports_handball</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-text-primary">Contoh &amp; Aktivitas Berpasangan</h3>
+<p class="text-xs text-text-muted">Aktivitas observasi fisik sederhana di kelas tanpa alat berat</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-open:rotate-180 transition-transform text-[22px]">expand_more</span>
+</summary>
+<div class="p-5 pt-0 border-t border-border-subtle/50 mt-2 space-y-2">
+<label class="text-xs font-semibold text-text-muted" for="practice-task">Panduan Praktik Siswa:</label>
+<textarea class="w-full p-3.5 rounded-xl bg-surface-container-low border border-border-subtle text-text-primary text-sm leading-relaxed focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40" id="practice-task" rows="4">Aktivitas Pasangan: "Menghitung Detak Sendi Siku dan Meraba Rusuk"
+1. Minta teman sebangkumu merentangkan tangan ke depan, lalu tekuk perlahan ke arah pundak.
+2. Sentuh bagian siku: Tulang apa yang terasa menonjol dan sendi apa yang bekerja?
+3. Tarik napas dalam-dalam lalu rabalah bagian samping dadamu. Rasakan bagaimana tulang rusuk terangkat melindungi paru-paru!</textarea>
+</div>
+</details>
+<!-- Latihan Mandiri -->
+<details class="group bg-surface-card rounded-2xl border border-border-subtle shadow-sm overflow-hidden" open="">
+<summary class="flex items-center justify-between p-5 cursor-pointer select-none hover:bg-surface-container-low/60 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-tone-warning-bg text-tone-warning flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[20px]">psychology_alt</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-text-primary">Latihan Pemahaman Mandiri</h3>
+<p class="text-xs text-text-muted">3 pertanyaan pemantik esai reflektif murid Fase C</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-open:rotate-180 transition-transform text-[22px]">expand_more</span>
+</summary>
+<div class="p-5 pt-0 border-t border-border-subtle/50 mt-2 space-y-2">
+<textarea class="w-full p-3.5 rounded-xl bg-surface-container-low border border-border-subtle text-text-primary text-sm leading-relaxed focus:bg-surface-card focus:outline-none focus:ring-2 focus:ring-primary-container/40" rows="4">1. Menurutmu, apa yang akan terjadi seandainya tubuh manusia hanya memiliki daging tanpa tulang penyangga?
+2. Mengapa tulang tengkorak kita memiliki sambungan yang tidak bisa digerakkan sama sekali?
+3. Sebutkan 2 kebiasaan sehat sehari-hari yang dapat menjaga tulang anak usia 11-12 tahun tetap tumbuh lurus dan padat!</textarea>
+</div>
+</details>
+</div>
+</div>
+<!-- RIGHT COLUMN (SIDEBAR PANELS: 4 COLS) -->
+<div class="lg:col-span-4 space-y-6">
+<!-- 1. Status & Alur Publikasi -->
+<div class="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm space-y-5">
+<div class="flex items-center justify-between pb-3 border-b border-border-subtle">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tone-info text-[22px]">alt_route</span>
+<h3 class="text-sm font-bold text-text-primary">Status &amp; Alur Publikasi</h3>
+</div>
+<span class="text-xs font-bold text-primary">Tahap 1 / 3</span>
+</div>
+<!-- Stepper Items -->
+<div class="relative pl-5 space-y-6">
+<!-- Line -->
+<div class="absolute left-3.5 top-3 bottom-3 w-0.5 bg-border-subtle"></div>
+<!-- Step 1: Draf Aktif -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-xs font-bold ring-4 ring-surface-card z-10 shadow-sm">
+                  1
+                </div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-text-primary leading-tight">Draf Guru (Aktif)</span>
+<span class="text-[11px] text-text-muted mt-0.5">Sedang ditulis &amp; diperbarui oleh Ibu Siti Rahayu</span>
+</div>
+</div>
+<!-- Step 2: Sudah Ditinjau -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-7 h-7 rounded-full bg-surface-container text-text-muted flex items-center justify-center text-xs font-bold ring-4 ring-surface-card z-10 border border-border-subtle">
+                  2
+                </div>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-text-muted leading-tight">Sudah Ditinjau</span>
+<span class="text-[11px] text-text-muted mt-0.5">Pemeriksaan bahasa &amp; kesesuaian ilustrasi</span>
+</div>
+</div>
+<!-- Step 3: Terbit -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-7 h-7 rounded-full bg-surface-container text-text-muted flex items-center justify-center text-xs font-bold ring-4 ring-surface-card z-10 border border-border-subtle">
+                  3
+                </div>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-text-muted leading-tight">Terbit ke Siswa</span>
+<span class="text-[11px] text-text-muted mt-0.5">Muncul di tablet/ponsel kelas VI-A &amp; VI-B</span>
+</div>
+</div>
+</div>
+<div class="p-3 rounded-xl bg-tone-info-bg/70 border border-tone-info/20 text-tone-info text-xs leading-relaxed flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] flex-shrink-0 mt-0.5">info</span>
+<span>Klik <strong>"✓ Terbitkan ke Siswa"</strong> untuk langsung meluncurkan modul ke dasbor baca murid.</span>
+</div>
+</div>
+<!-- 2. Panel Gambar Terintegrasi -->
+<div class="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-border-subtle">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">photo_library</span>
+<h3 class="text-sm font-bold text-text-primary">Panel Gambar Terintegrasi</h3>
+</div>
+<span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-surface-container text-text-muted">2 / 20</span>
+</div>
+<!-- Upload Area Button -->
+<label class="block p-5 rounded-xl border-2 border-dashed border-border-active/60 bg-canvas-peach hover:bg-canvas-peach-subtle transition-colors cursor-pointer text-center group">
+<div class="w-10 h-10 rounded-full bg-surface-card text-primary mx-auto flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform mb-2">
+<span class="material-symbols-outlined text-[22px]">cloud_upload</span>
+</div>
+<span class="text-xs font-bold text-text-primary block">Unggah Gambar Baru</span>
+<span class="text-[11px] text-text-muted block mt-0.5">Maks 4 MB · Format WebP, PNG, atau JPG</span>
+<span class="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full bg-tone-success-bg text-tone-success text-[10px] font-bold">
+<span class="material-symbols-outlined text-[13px]">bolt</span> Kompresi WebP Otomatis
+              </span>
+<input accept="image/*" class="hidden" type="file"/>
+</label>
+<!-- Image List -->
+<div class="space-y-4 pt-1">
+<!-- Image Item 1 -->
+<div class="p-3.5 rounded-xl bg-surface-container-low border border-border-subtle space-y-3">
+<div class="flex gap-3">
+<div class="w-20 h-20 rounded-lg overflow-hidden bg-surface-card border border-border-subtle flex-shrink-0">
+<img alt="Diagram Rangka Manusia" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu8b-BD2El_J_KOmAoxEfzFajQ_Tn0E2givpV9I91xRtjWK_WcGb-SuflsLpJdw_5KT7BpgQ_Fv2PEkMAiOA2kA1pz-8V0M3UPrctU_NHPFdz8TA1eZ-4KjzXXpFbUVC8iEzid3u52pB34uyFU2MA12PHvhd0b6PedgeyNr9rmns6dRWRNToaIDYtzQvJodBgn-pWYB8nG3IltnF7KcUgYuaxuCTelWywzwKKB64-w"/>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<h4 class="text-xs font-bold text-text-primary truncate">Diagram Rangka Manusia</h4>
+<p class="text-[11px] text-text-muted mt-0.5">ID: <code class="font-mono text-primary font-semibold">img-sd-801</code></p>
+</div>
+<div class="flex items-center gap-2 text-[11px]">
+<button class="text-primary hover:underline font-bold" type="button">Ubah Alt</button>
+<span class="text-border-subtle">•</span>
+<button class="text-tone-danger hover:underline font-medium" type="button">Hapus</button>
+</div>
+</div>
+</div>
+<!-- Alt Text Input Field -->
+<div>
+<label class="text-[10px] uppercase tracking-wider font-bold text-text-muted block mb-1">Teks Alt (Aksesibilitas &amp; Pembaca Layar):</label>
+<input class="w-full h-8 px-2.5 rounded-lg bg-surface-card border border-border-subtle text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-primary-container" type="text" value="Bagan anatomi kerangka manusia tampak depan lengkap dengan label"/>
+</div>
+<!-- Code Copy Box -->
+<div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-surface-card border border-border-subtle">
+<code class="text-[11px] font-mono text-primary font-semibold truncate">![Diagram Rangka Manusia](aksara-image:img-sd-801)</code>
+<button class="h-7 px-2.5 rounded-md bg-surface-container hover:bg-surface-container-high text-text-primary text-xs font-bold flex items-center gap-1 transition-colors flex-shrink-0" onclick="copyToClipboard('![Diagram Rangka Manusia](aksara-image:img-sd-801)', this)" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>Salin Kode Sisip</span>
+</button>
+</div>
+</div>
+<!-- Image Item 2 -->
+<div class="p-3.5 rounded-xl bg-surface-container-low border border-border-subtle space-y-3">
+<div class="flex gap-3">
+<div class="w-20 h-20 rounded-lg overflow-hidden bg-surface-card border border-border-subtle flex-shrink-0">
+<img alt="Tengkorak Manusia" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKRY56p3Po6TF9DDTkcHDON7SSt_UIytHz5fK6CAesQBq6JF6Q5RIIgtN4nf-4u109R---Ckta-_sUlJ63J1aTPUwENOge7-m6PvekExgGanNcELKv-cvCpeuWEJpzYGkJUBHTapjGDw4zRkOK5NIiwDBgUrAq2NwEeR8eSm-ZG4Cp7DCJSTpX_y-6Yxj9778c_99Rl2LuO3frAsPSn-qyZVwYLwdOIFR02oNrjjpT"/>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<h4 class="text-xs font-bold text-text-primary truncate">Tengkorak Manusia</h4>
+<p class="text-[11px] text-text-muted mt-0.5">ID: <code class="font-mono text-primary font-semibold">img-sd-802</code></p>
+</div>
+<div class="flex items-center gap-2 text-[11px]">
+<button class="text-primary hover:underline font-bold" type="button">Ubah Alt</button>
+<span class="text-border-subtle">•</span>
+<button class="text-tone-danger hover:underline font-medium" type="button">Hapus</button>
+</div>
+</div>
+</div>
+<!-- Alt Text Input Field -->
+<div>
+<label class="text-[10px] uppercase tracking-wider font-bold text-text-muted block mb-1">Teks Alt (Aksesibilitas &amp; Pembaca Layar):</label>
+<input class="w-full h-8 px-2.5 rounded-lg bg-surface-card border border-border-subtle text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-primary-container" type="text" value="Garis sutura pelindung otak pada tulang tengkorak manusia"/>
+</div>
+<!-- Code Copy Box -->
+<div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-surface-card border border-border-subtle">
+<code class="text-[11px] font-mono text-primary font-semibold truncate">![Tengkorak Manusia](aksara-image:img-sd-802)</code>
+<button class="h-7 px-2.5 rounded-md bg-surface-container hover:bg-surface-container-high text-text-primary text-xs font-bold flex items-center gap-1 transition-colors flex-shrink-0" onclick="copyToClipboard('![Tengkorak Manusia](aksara-image:img-sd-802)', this)" type="button">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>Salin Kode Sisip</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. Panduan Penulisan & Optimasi Kuota Siswa -->
+<div class="bg-canvas-peach rounded-2xl p-6 border border-border-subtle shadow-sm space-y-3">
+<div class="flex items-center gap-2 text-primary">
+<div class="w-8 h-8 rounded-lg bg-canvas-peach-subtle flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[20px]">lightbulb</span>
+</div>
+<h3 class="text-sm font-bold text-text-primary">Panduan Penulisan &amp; Optimasi Kuota</h3>
+</div>
+<p class="text-xs text-text-muted leading-relaxed">
+              Tips praktis agar bacaan mudah dipahami murid SD Fase C serta hemat data seluler:
+            </p>
+<ul class="space-y-2.5 text-xs text-text-primary pt-1">
+<li class="flex items-start gap-2 bg-surface-card/80 p-2.5 rounded-xl border border-border-subtle/60">
+<span class="material-symbols-outlined text-tone-success text-[18px] flex-shrink-0 mt-0.5">check_circle</span>
+<span><strong>Kalimat Pendek &amp; Jelas:</strong> Batasi maksimal 15-20 kata per kalimat untuk menjaga fokus anak.</span>
+</li>
+<li class="flex items-start gap-2 bg-surface-card/80 p-2.5 rounded-xl border border-border-subtle/60">
+<span class="material-symbols-outlined text-tone-success text-[18px] flex-shrink-0 mt-0.5">check_circle</span>
+<span><strong>Kontekstual &amp; Bergambar:</strong> Letakkan gambar diagram di awal paragraf penjelasan fungsi tulang.</span>
+</li>
+<li class="flex items-start gap-2 bg-surface-card/80 p-2.5 rounded-xl border border-border-subtle/60">
+<span class="material-symbols-outlined text-tone-success text-[18px] flex-shrink-0 mt-0.5">check_circle</span>
+<span><strong>Hemat Kuota Siswa:</strong> Sistem otomatis mengonversi gambar ke WebP (di bawah 150 KB) saat siswa mengakses materi di HP.</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+    function copyToClipboard(text, btnElement) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          const original = btnElement.innerHTML;
+          btnElement.innerHTML = `<span class="material-symbols-outlined text-[14px] text-tone-success">check</span><span class="text-tone-success">Tersalin!</span>`;
+          setTimeout(() => {
+            btnElement.innerHTML = original;
+          }, 1800);
+        });
+      }
+    }
+
+    function insertSampleImage() {
+      const editor = document.getElementById('markdown-editor');
+      if (!editor) return;
+      const tag = '\n\n![Diagram Rangka Manusia](aksara-image:img-sd-801)\n';
+      const pos = editor.selectionStart;
+      editor.value = editor.value.slice(0, pos) + tag + editor.value.slice(pos);
+      editor.focus();
+      editor.setSelectionRange(pos + tag.length, pos + tag.length);
+    }
+  </script>
+</body></html>
