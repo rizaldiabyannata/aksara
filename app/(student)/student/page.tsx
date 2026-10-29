@@ -47,7 +47,16 @@ function Row({ r }: { r: StudentQuizRow }) {
   } else if (rk === 2) {
     tone = "info";
     text = r.state === "REPLACEMENT" ? "Gurumu membukakan kesempatan baru untukmu" : r.hasAttempts ? "Kamu bisa mencoba lagi" : "Siap dikerjakan";
-    action = <StartButton quizId={r.quizId} title={r.title} label={r.hasAttempts ? "Ulangi" : "Mulai"} />;
+    action = (
+      <>
+        <StartButton quizId={r.quizId} title={r.title} label={r.hasAttempts ? "Ulangi" : "Mulai"} />
+        {r.resultsReleased && r.hasAttempts ? (
+          <Link href={`/student/quizzes/${r.quizId}/result`} className={buttonVariants({ size: "lg", variant: "outline" })} aria-label={`Lihat nilai ${r.title}`}>
+            Lihat nilai
+          </Link>
+        ) : null}
+      </>
+    );
   } else if (rk === 3) {
     tone = "success";
     text = "Nilaimu sudah keluar";
