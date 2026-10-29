@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
-import { GRACE_MS, grantReplacement, submitAttempt } from "@/lib/attempts";
+import { GRACE_MS, gradeEssay, grantReplacement, submitAttempt } from "@/lib/attempts";
 import { releaseResults } from "@/lib/results";
 import { getTeacherDashboard } from "@/lib/dashboard";
 import { makeMaterial, makeQuestion, makeStudent } from "../tests/factories";
@@ -44,8 +44,8 @@ describe("getTeacherDashboard", () => {
     const a = await started(r);
     await submitAttempt(r.student.id, r.quiz.id, a, at(10));
     expect(await grantReplacement(r.teacher.id, a, "Gangguan jaringan", at(15))).toEqual({ ok: true });
-    const kinds = (await getTeacherDashboard(at(20))).tasks.filter((t) => "quizId" in t && t.quizId === r.quiz.id);
-    expect(kinds).toEqual([]);
+    const tasks = (await getTeacherDashboard(at(20))).tasks.filter((t) => "quizId" in t && t.quizId === r.quiz.id);
+    expect(tasks).toEqual([]);
     expect((await releaseResults(r.teacher.id, r.quiz.id, at(30))).ok).toBe(false);
   });
 
@@ -90,5 +90,37 @@ describe("getTeacherDashboard", () => {
     expect(d.tasks).toEqual([{ kind: "REVIEWED_MATERIALS", count: 1 }]);
     // setup's own question is ACTIVE; the extra DRAFT one is not counted
     expect(d.counts).toEqual({ materialsPublished: 1, questionsActive: 1, activeStudents: 1 });
+  });
+  it("GRADE still counts after release (remedial retake), RELEASE does not", async () => {
+    const s = await setup({ maxAttempts: 2, scoringPolicy: "REMEDIAL", kkm: 70 }, [{ type: "ESSAY" }]);
+    const a1 = await started(s);
+    await submitAttempt(s.student.id, s.quiz.id, a1, at(10));
+    const ans = await prisma.attemptAnswer.findFirstOrThrow({ where: { attemptId: a1 }, select: { id: true } });
+    expect(await gradeEssay(s.teacher.id, ans.id, { points: "0", feedback: "" }, at(11))).toEqual({ ok: true });
+    expect(await releaseResults(s.teacher.id, s.quiz.id, at(20))).toEqual({ ok: true });
+    const a2 = await started(s, at(30));
+    await submitAttempt(s.student.id, s.quiz.id, a2, at(40));
+    expect((await getTeacherDashboard(at(50))).tasks).toEqual([
+      { kind: "GRADE", quizId: s.quiz.id, title: s.quiz.title, essays: 1 },
+    ]);
+  });
+
+  it("orders kinds RUNNING, GRADE, OTHER_DEVICE and titles ascending", async () => {
+    const z = await setup({ title: "A-awal" }, [{ type: "ESSAY" }]); // renamed below so it sorts last
+    const y = await setup({ title: "B-pertama" }, [{ type: "ESSAY" }]);
+    const zy = [z, y];
+    await prisma.quiz.update({ where: { id: z.quiz.id }, data: { title: "Z-akhir" } });
+    for (const s of zy) await submitAttempt(s.student.id, s.quiz.id, await started(s), at(10));
+    const r = await setup({ title: "R-berjalan" }, [{ type: "ESSAY" }]);
+    await started(r, at(15));
+    await prisma.auditLog.create({
+      data: { actorUserId: r.student.id, action: "STUDENT_SESSION_REPLACED", entityType: "User", entityId: r.student.id, createdAt: at(16) },
+    });
+    expect((await getTeacherDashboard(at(20))).tasks).toEqual([
+      { kind: "RUNNING", quizId: r.quiz.id, title: "R-berjalan", inProgress: 1 },
+      { kind: "GRADE", quizId: y.quiz.id, title: "B-pertama", essays: 1 },
+      { kind: "GRADE", quizId: z.quiz.id, title: "Z-akhir", essays: 1 },
+      { kind: "OTHER_DEVICE", students: 1 },
+    ]);
   });
 });

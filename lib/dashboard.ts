@@ -15,7 +15,7 @@ export async function getTeacherDashboard(now: Date = new Date()) {
   await finalizeExpiredAttempts({}, now);
   const quizzes = await prisma.quiz.findMany({
     where: { status: "PUBLISHED", attempts: { some: {} } },
-    orderBy: { title: "asc" },
+    orderBy: [{ title: "asc" }, { id: "asc" }],
     select: {
       id: true, title: true, resultsReleasedAt: true,
       attempts: {
