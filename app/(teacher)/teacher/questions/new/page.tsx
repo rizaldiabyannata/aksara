@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Soal baru" };
 export default function NewQuestionPage({ searchParams }: PageProps<"/teacher/questions/new">) {
   return (
     <section className="flex flex-col gap-6">
-      <PageHeader eyebrow="Bank soal" title="Soal baru" />
+      <PageHeader title="Soal baru" />
       <Suspense fallback={<p className="text-base">Memuat…</p>}>
         <NewForm searchParams={searchParams} />
       </Suspense>
@@ -30,7 +30,7 @@ async function NewForm({ searchParams }: { searchParams: Promise<Record<string, 
   if (typeof type !== "string" || !Object.hasOwn(TYPE_LABEL, type)) {
     // GET form: choosing a type reloads /teacher/questions/new?type=…, which renders the form.
     return (
-      <Card className="text-base!">
+      <Card>
         <CardContent>
           <form method="get" action="/teacher/questions/new" className="flex flex-col gap-5">
             <fieldset className="flex flex-col gap-3">

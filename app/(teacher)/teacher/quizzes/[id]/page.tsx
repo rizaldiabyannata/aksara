@@ -116,9 +116,13 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
   return (
     <section className="flex flex-col gap-8">
       <PageHeader
-        eyebrow={quiz.subjectName}
         title={quiz.title}
-        description={<Status tone={STATUS_TONE[quiz.status]}>{STATUS_LABEL[quiz.status]}</Status>}
+        description={
+          <span className="flex flex-wrap items-center gap-2">
+            {quiz.subjectName}
+            <Status tone={STATUS_TONE[quiz.status]}>{STATUS_LABEL[quiz.status]}</Status>
+          </span>
+        }
       />
       <nav aria-label="Bagian halaman" className="flex flex-wrap gap-2">
         {[...(recap ? [["#pemantauan", "Pemantauan & Nilai"]] : []), ["#soal", "Soal & Kunci"], ["#setelan", "Setelan"]].map(([href, label]) => (
@@ -179,7 +183,7 @@ function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boo
   const counted = count("FINAL") + count("NEEDS_GRADING");
   const ready = counted > 0 && (absent === 0 || !open);
   return (
-    <Card aria-labelledby="langkah" role="region" className="gap-3 border-2 border-primary/40 px-(--card-spacing) text-base!">
+    <Card aria-labelledby="langkah" role="region" className="gap-3 border-2! border-primary/40! px-(--card-spacing)">
       <h2 id="langkah" className="text-xl font-semibold">Langkah berikutnya</h2>
       {running > 0 ? (
         <p>{running} siswa sedang mengerjakan.</p>
@@ -204,7 +208,7 @@ function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boo
 function Summary({ recap }: { recap: QuizRecap }) {
   const n = (st: RecapState) => recap.rows.filter((r) => r.state === st).length;
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard label="Belum mulai" value={n("NOT_STARTED")} hint="siswa" icon={HourglassIcon} tone="info" />
       <StatCard label="Sedang mengerjakan" value={n("IN_PROGRESS")} hint="siswa" icon={PlayCircleIcon} tone="primary" />
       <StatCard label="Perlu dinilai" value={n("NEEDS_GRADING")} hint="siswa" icon={Edit02Icon} tone="warning" />
@@ -220,7 +224,7 @@ function Results({ quizId, recap, open }: { quizId: string; recap: QuizRecap; op
   // Not offered in "Langkah berikutnya" yet: keep release reachable, but not as the main action.
   const early = !resultsReleasedAt && counted > 0 && absent > 0 && open;
   return (
-    <Card className="gap-3 px-(--card-spacing) text-base!">
+    <Card className="gap-3 px-(--card-spacing)">
       <p>
         {resultsReleasedAt ? `Dirilis ${formatWita(resultsReleasedAt)}.` : "Belum dirilis. Siswa belum bisa melihat nilai."}
       </p>

@@ -32,7 +32,7 @@ export function Markdown({ source, images }: { source: string; images: ImageView
           th: ({ children }) => <th className="border px-2 py-1 text-left font-semibold">{children}</th>,
           td: ({ children }) => <td className="border px-2 py-1">{children}</td>,
           blockquote: ({ children }) => (
-            <blockquote className="border-l-4 pl-4 text-muted-foreground">{children}</blockquote>
+            <blockquote className="rounded-xl bg-secondary px-4 py-3">{children}</blockquote>
           ),
           code: ({ children }) => (
             <code className="rounded bg-muted px-1 py-0.5 font-mono text-sm">{children}</code>

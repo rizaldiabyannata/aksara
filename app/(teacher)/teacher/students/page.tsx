@@ -27,7 +27,6 @@ export default function StudentsPage({ searchParams }: { searchParams: Params })
   return (
     <section className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Data siswa"
         title="Kelola Siswa"
         description="Tambah siswa, cari, dan atur sesi masuk mereka."
       />

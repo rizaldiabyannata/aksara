@@ -23,7 +23,6 @@ export default function QuestionsPage({ searchParams }: PageProps<"/teacher/ques
   return (
     <section className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Evaluasi pembelajaran"
         title="Bank soal"
         description="Kumpulan soal untuk latihan dan ulangan."
         actions={
@@ -86,7 +85,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
     Object.entries(m).map(([k, l]) => <option key={k} value={k}>{l}</option>);
   return (
     <>
-      <Card size="sm" className="text-base!">
+      <Card size="sm">
         <CardContent>
           <details open={filtered}>
             <summary className="flex min-h-11 cursor-pointer items-center font-semibold">Saring soal</summary>
@@ -122,7 +121,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
           const name = snippet(r.prompt) || TYPE_LABEL[r.type];
           return (
             <li key={r.id}>
-              <Card className="text-base!">
+              <Card>
                 <CardContent className="flex flex-col gap-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary">{TYPE_LABEL[r.type]}</Badge>

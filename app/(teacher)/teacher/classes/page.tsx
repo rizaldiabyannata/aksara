@@ -22,7 +22,6 @@ export default function ClassesPage() {
   return (
     <section className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Ruang kelas"
         title="Kelola Kelas"
         description="Atur kelas, kode masuk, dan sesi siswa."
       />

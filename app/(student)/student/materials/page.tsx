@@ -37,7 +37,7 @@ async function Tree() {
               {s.name}
             </h2>
             {s.chapters.map((c) => (
-              <Card key={c.id} className="text-base!">
+              <Card key={c.id}>
                 <CardHeader>
                   <CardTitle>
                     <h3 className="text-lg font-bold">

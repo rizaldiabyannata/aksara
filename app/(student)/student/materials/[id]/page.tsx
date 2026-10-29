@@ -24,7 +24,7 @@ async function Read({ params }: { params: Promise<{ id: string }> }) {
   const material = await getPublishedMaterial(id);
   if (!material) notFound();
   return (
-    <Card className="mx-auto w-full max-w-3xl text-base!">
+    <Card className="mx-auto w-full max-w-3xl">
       <CardContent>
         <MaterialView material={material} />
       </CardContent>

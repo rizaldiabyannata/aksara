@@ -217,7 +217,7 @@ export function QuestionForm({
   return (
     <form action={formAction} className="flex max-w-3xl flex-col gap-4">
       <input type="hidden" name="type" value={type} />
-      <Card className="text-base!">
+      <Card>
         <CardContent className="flex flex-col gap-4">
           <h2 className="text-lg font-semibold">Soal</h2>
           {sel("chapterId", "Bab", (
@@ -243,12 +243,12 @@ export function QuestionForm({
           <FormField id="sourceReference" name="sourceReference" label="Sumber (opsional)" autoComplete="off" defaultValue={v("sourceReference")} error={e?.sourceReference} />
         </CardContent>
       </Card>
-      <Card className="text-base!">
+      <Card>
         <CardContent>
           <KeyFields type={type} v={v} e={e} />
         </CardContent>
       </Card>
-      <Card className="text-base!">
+      <Card>
         <CardContent className="flex flex-col gap-4">
           <h2 className="text-lg font-semibold">Parameter soal</h2>
           <FormField id="defaultPoints" name="defaultPoints" label="Poin (1 sampai 100)" required inputMode="numeric" autoComplete="off" defaultValue={v("defaultPoints") || "1"} error={e?.defaultPoints} />
@@ -260,7 +260,7 @@ export function QuestionForm({
           ))}
         </CardContent>
       </Card>
-      <Card className="text-base!">
+      <Card>
         <CardContent className="flex flex-col gap-4">
           <h2 className="text-lg font-semibold">Pembahasan dan verifikasi</h2>
           <Area name="explanation" label="Pembahasan (opsional)" rows={4} v={v("explanation")} error={e?.explanation} mono />

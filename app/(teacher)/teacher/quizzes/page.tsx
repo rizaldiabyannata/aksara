@@ -42,7 +42,7 @@ async function List() {
     <ul className="flex flex-col gap-4">
       {rows.map((r) => (
         <li key={r.id}>
-          <Card className="text-base!">
+          <Card>
             <CardContent className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Status tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</Status>

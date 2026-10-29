@@ -37,7 +37,6 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Bank soal"
         title="Pratinjau soal"
         actions={
           <Link href={`/teacher/questions/${id}`} className={buttonVariants({ variant: "outline" })}>
@@ -52,7 +51,7 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
       </div>
       <section aria-labelledby="siswa-heading" className="flex flex-col gap-3">
         <h2 id="siswa-heading" className="text-lg font-semibold">Tampilan siswa</h2>
-        <Card className="text-base!">
+        <Card>
           <CardContent>
             <QuestionView question={toPublicQuestion(q)} />
           </CardContent>
@@ -60,7 +59,7 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
       </section>
       <section aria-labelledby="kunci-heading" className="flex flex-col gap-3">
         <h2 id="kunci-heading" className="text-lg font-semibold">Kunci dan pembahasan</h2>
-        <Card className="text-base!">
+        <Card>
           <CardContent>
             <dl className="flex flex-col gap-3">
               {key !== null && (

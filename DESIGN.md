@@ -182,7 +182,7 @@ Satu keluarga huruf, dibedakan lewat ketebalan. Judul tebal (700–800) dengan t
 - **Headline MD** (700, 1.375rem): judul kartu dan seksi.
 - **Body** (400, 1.125rem): isi, termasuk teks soal. Panjang baris dibatasi sekitar 70ch.
 - **Body SM** (400, 1rem): keterangan pendukung. Ini ukuran terkecil.
-- **Label** (600, 1rem): tombol, chip, label form, dan eyebrow (dengan huruf kapital dan tracking lebar).
+- **Label** (600, 1rem): tombol, chip, label form, dan label kartu statistik. Tidak ada eyebrow di atas judul; judul cukup berdiri sendiri.
 - **Mono** (500, 1rem, tracking 0.05em): kode dan timer. Boleh dibesarkan, misalnya untuk tampilan kode kelas di proyektor.
 
 **The Enam-Belas Rule.** Tidak ada teks di bawah 16 px, termasuk caption, chip, dan footer.
@@ -221,7 +221,7 @@ Lengkungannya lembut dan konsisten:
 Chip status berbentuk pil, memakai latar `-soft`, teks tone gelap, dan ikon di depan, misalnya "Sedang berlangsung", "Menunggu penilaian", atau "Siap dirilis". Teks boleh membungkus ke baris berikutnya di HP.
 
 ### Cards / Containers
-Kartu putih bersudut 16 px dengan padding 24 px, bayangan hangat tipis, dan garis peach opsional. Judul kartu memakai Headline MD. Kartu statistik berisi eyebrow, angka Metric, keterangan, dan ikon di dalam kotak bulat ber-latar `-soft`.
+Kartu putih bersudut 16 px dengan padding 24 px, bayangan hangat tipis, dan garis peach opsional. Judul kartu memakai Headline MD. Kartu statistik berisi label, angka Metric, keterangan, dan ikon di dalam kotak bulat ber-latar `-soft`.
 
 ### Inputs / Fields
 Input putih setinggi 48 px dengan garis kontrol dan sudut 12 px. Label ditaruh di atas input (Label 600). Saat fokus, garis berubah menjadi oranye bata dan ring muncul. Pesan galat ditulis dengan teks merah bata dan ikon.

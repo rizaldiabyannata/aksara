@@ -36,7 +36,6 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
   return (
     <section className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Bank soal"
         title="Ubah soal"
         description={
           <span className="flex flex-col gap-2">

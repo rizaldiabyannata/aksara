@@ -100,7 +100,7 @@ async function Dashboard() {
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {QUICK.map(({ href, label, icon }) => (
-              <Link key={href} href={href} className={buttonVariants({ variant: "outline" }) + " justify-start"}>
+              <Link key={href} href={href} className={buttonVariants({ variant: "outline" }) + " justify-start!"}>
                 <HugeiconsIcon icon={icon} aria-hidden="true" />
                 {label}
               </Link>
@@ -123,8 +123,10 @@ function TaskItem({ task }: { task: TeacherTask }) {
   return (
     <li>
       <Card>
-        <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Status tone={tone}>{text}</Status>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0 flex-1 basis-60">
+            <Status tone={tone}>{text}</Status>
+          </div>
           <Link
             href={href}
             className={buttonVariants({ variant: tone === "success" ? "success" : "default" })}

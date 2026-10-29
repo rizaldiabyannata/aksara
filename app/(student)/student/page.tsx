@@ -76,7 +76,7 @@ function Row({ r }: { r: StudentQuizRow }) {
   }
   return (
     <li>
-      <Card className={rk === 1 ? "border-2! border-primary! text-base! shadow-raised!" : "text-base!"}>
+      <Card className={rk === 1 ? "border-2! border-primary! shadow-raised!" : undefined}>
         <CardHeader>
           {rk === 1 ? <p className="font-semibold text-primary-strong">Lanjutkan ulangan</p> : null}
           <CardTitle>{r.title}</CardTitle>

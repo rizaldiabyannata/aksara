@@ -24,7 +24,7 @@ export function CreateQuizForm({ subjects }: { subjects: { id: string; name: str
   const e = state?.fieldErrors;
   return (
     <form action={action} className="flex max-w-xl flex-col gap-4">
-      <Card className="text-base!">
+      <Card>
         <CardContent className="flex flex-col gap-4">
           <FormField name="title" label="Judul" required maxLength={150} defaultValue={state?.values?.title ?? ""} error={e?.title} />
           <div className="flex flex-col gap-2">

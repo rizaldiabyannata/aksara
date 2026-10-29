@@ -13,11 +13,10 @@ describe("PageHeader", () => {
     expect(html).toContain("Daftar kelas");
     expect(html).not.toContain('data-slot="page-actions"');
   });
-  it("renders eyebrow and actions", () => {
+  it("renders actions", () => {
     const html = renderToStaticMarkup(
-      createElement(PageHeader, { title: "T", eyebrow: "Guru", actions: createElement("button", null, "Tambah") }),
+      createElement(PageHeader, { title: "T", actions: createElement("button", null, "Tambah") }),
     );
-    expect(html).toContain("Guru");
     expect(html).toContain('data-slot="page-actions"');
     expect(html).toContain("Tambah");
   });
