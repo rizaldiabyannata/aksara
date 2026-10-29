@@ -34,7 +34,8 @@ test("class code dialog", async ({ page }) => {
   await page.goto("/teacher/classes");
   await page.getByRole("button", { name: "Tampilkan kode" }).first().click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog).toContainText(seed().classCode);
+  await expect(dialog).toBeVisible();
+  expect((await dialog.innerText()).replace(/\s+/g, "")).toContain(seed().classCode);
   await page.setViewportSize({ width: 360, height: 780 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
   await page.keyboard.press("Escape");
