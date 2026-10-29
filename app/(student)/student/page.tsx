@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Markdown } from "@/components/material-view";
 import { Status, type StatusTone } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +27,7 @@ export default function StudentDashboardPage() {
 function rank(r: StudentQuizRow) {
   if (r.state === "IN_PROGRESS") return 1;
   if (r.state === "AVAILABLE" || r.state === "REPLACEMENT") return 2;
-  if (r.resultsReleased) return 3;
+  if (r.resultsReleased && r.hasAttempts) return 3;
   if (r.state === "SCHEDULED") return 4;
   return 5;
 }
@@ -68,7 +69,7 @@ function Row({ r }: { r: StudentQuizRow }) {
   } else if (rk === 4) {
     text = `Mulai ${r.startsAt ? formatWita(r.startsAt) : ""}`.trim();
   } else {
-    text = "Nilaimu akan muncul setelah gurumu membagikannya";
+    text = r.hasAttempts ? "Nilaimu akan muncul setelah gurumu membagikannya" : "Ulangan ini sudah ditutup.";
   }
   return (
     <li>
@@ -80,6 +81,14 @@ function Row({ r }: { r: StudentQuizRow }) {
         </CardHeader>
         <CardContent className="flex flex-col items-start gap-3">
           <Status tone={tone}>{text}</Status>
+          {rk <= 2 ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                {r.durationMinutes} menit · {r.questionCount} soal
+              </p>
+              {r.instructions ? <Markdown source={r.instructions} images={[]} /> : null}
+            </>
+          ) : null}
           {action}
         </CardContent>
       </Card>
