@@ -42,13 +42,13 @@ describe("loginStudentAction", () => {
     const cls = await makeClass();
     expect(
       await loginStudentAction(undefined, form({ classCode: cls.code, identity: "tidak ada" })),
-    ).toEqual({ message: "Kode kelas atau nama/NIS tidak cocok." });
+    ).toEqual({ message: "Kode kelas atau nama belum cocok. Coba periksa lagi, ya." });
     expect(cookieJar.has("aksara_session")).toBe(false);
   });
 
   it("treats missing fields as empty instead of throwing", async () => {
     expect(await loginStudentAction(undefined, new FormData())).toEqual({
-      message: "Kode kelas atau nama/NIS tidak cocok.",
+      message: "Kode kelas atau nama belum cocok. Coba periksa lagi, ya.",
     });
   });
 

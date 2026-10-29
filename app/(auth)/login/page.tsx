@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Status } from "@/components/status";
 import {
   Card,
   CardContent,
@@ -21,10 +21,10 @@ export default function StudentLoginPage({ searchParams }: PageProps<"/login">) 
       <Suspense fallback={null}>
         <ReasonNotice searchParams={searchParams} />
       </Suspense>
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>
-            <h1 className="text-xl font-semibold">Masuk ke Aksara</h1>
+            <h1 className="text-3xl font-semibold">Masuk ke Aksara</h1>
           </CardTitle>
           <CardDescription>Tulis kode kelas dari gurumu, lalu NIS atau namamu.</CardDescription>
         </CardHeader>
@@ -34,7 +34,7 @@ export default function StudentLoginPage({ searchParams }: PageProps<"/login">) 
         <CardFooter className="justify-center">
           <Link
             href="/teacher/login"
-            className="inline-flex min-h-11 items-center px-2 text-sm underline underline-offset-4"
+            className="inline-flex min-h-11 items-center px-2 text-muted-foreground underline underline-offset-4"
           >
             Masuk sebagai guru
           </Link>
@@ -48,10 +48,10 @@ async function ReasonNotice({ searchParams }: Pick<PageProps<"/login">, "searchP
   const { alasan } = await searchParams;
   if (alasan !== "perangkat-lain") return null;
   return (
-    <Alert className="w-full max-w-sm">
-      <AlertDescription className="text-foreground">
+    <div className="w-full max-w-md">
+      <Status tone="warning">
         Akunmu baru saja masuk dari perangkat lain. Kalau itu bukan kamu, beri tahu guru.
-      </AlertDescription>
-    </Alert>
+      </Status>
+    </div>
   );
 }

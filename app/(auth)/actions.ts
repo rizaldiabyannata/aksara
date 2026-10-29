@@ -39,7 +39,7 @@ export async function loginStudentAction(
         identity: field(formData, "identity"),
         ip,
       }),
-    "Kode kelas atau nama/NIS tidak cocok.",
+    "Kode kelas atau nama belum cocok. Coba periksa lagi, ya.",
   );
   if (!("ok" in result)) return result;
   redirect("/student");

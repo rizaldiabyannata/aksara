@@ -33,7 +33,7 @@ export function StudentLoginForm() {
         onChange={(e) => setIdentity(e.target.value)}
       />
       <FormMessage message={state?.message} />
-      <Button type="submit" className="h-11 w-full text-base" disabled={pending} aria-busy={pending}>
+      <Button type="submit" size="lg" className="w-full" disabled={pending} aria-busy={pending}>
         {pending ? "Sedang masuk…" : "Masuk"}
       </Button>
     </form>
