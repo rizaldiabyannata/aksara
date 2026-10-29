@@ -15,6 +15,7 @@ import { getQuizForTeacher } from "@/lib/quizzes";
 import { getQuizRecap, type QuizRecap, type RecapState } from "@/lib/results";
 import { listChapterOptions } from "@/lib/subjects";
 import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
+import { AutoRefresh } from "./auto-refresh";
 import { MonitorList } from "./monitor-list";
 import { STATUS_LABEL, STATUS_TONE } from "../labels";
 import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, ResultsControls, SettingsForm } from "../quiz-forms";
@@ -122,6 +123,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
 
           <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex flex-col gap-3">
             <h2 id="pemantauan" className="text-xl font-semibold">Pemantauan</h2>
+            <AutoRefresh active={recap.rows.some((r) => r.state === "IN_PROGRESS")} renderedAt={new Date().toISOString()} />
             <MonitorList recap={recap} quizId={id} classFilter={one(sp.kelas)} />
           </section>
 
