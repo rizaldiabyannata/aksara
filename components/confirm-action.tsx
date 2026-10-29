@@ -25,6 +25,8 @@ type ConfirmProps = {
   destructive?: boolean;
   /** Make the trigger the page's main button (default variant, large). */
   primary?: boolean;
+  /** Green trigger for release-style actions. */
+  success?: boolean;
   /** Accessible name for the trigger when `trigger` alone is not unique on the page. */
   triggerLabel?: string;
 };
@@ -38,6 +40,7 @@ export function ConfirmAction({
   confirm,
   destructive,
   primary,
+  success,
   triggerLabel,
 }: ConfirmProps) {
   const [state, dispatch, pending] = useActionState(action, undefined);
@@ -49,9 +52,9 @@ export function ConfirmAction({
         <AlertDialogTrigger
           render={
             <Button
-              variant={primary ? "default" : destructive ? "destructive" : "outline"}
-              size={primary ? "lg" : undefined}
-              className={primary ? "aria-disabled:opacity-50" : "h-11 aria-disabled:opacity-50"}
+              variant={success ? "success" : primary ? "default" : destructive ? "destructive" : "outline"}
+              size={primary || success ? "lg" : undefined}
+              className={primary || success ? "aria-disabled:opacity-50" : "h-11 aria-disabled:opacity-50"}
               aria-disabled={pending || undefined}
               aria-busy={pending || undefined}
               aria-label={triggerLabel}

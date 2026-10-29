@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { CheckmarkCircle02Icon, Edit02Icon, HourglassIcon, PlayCircleIcon } from "@hugeicons/core-free-icons";
+import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
 import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { requireTeacher } from "@/lib/auth/guard";
 import { listClasses } from "@/lib/classes";
@@ -54,7 +58,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
   const recap = published ? await getQuizRecap(id) : null;
   const setelan = (
     <>
-      <section aria-labelledby="setelan" className="flex flex-col gap-3">
+      <section aria-labelledby="setelan" className="flex scroll-mt-4 flex-col gap-3">
         <h2 id="setelan" className="text-xl font-semibold">Setelan</h2>
         <SettingsForm
           id={id}
@@ -80,18 +84,18 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
         <ClassesForm id={id} classes={classes} selected={quiz.classIds} published={published} />
       </section>
 
-      <section aria-labelledby="soal" className="flex flex-col gap-3">
+      <section aria-labelledby="soal" className="flex scroll-mt-4 flex-col gap-3">
         <h2 id="soal" className="text-xl font-semibold">Soal</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground">
           {quiz.questions.length} soal · total {total} poin · {essays} uraian
         </p>
         <ol className="flex flex-col gap-3">
           {quiz.questions.map((x, i) => (
-            <li key={x.id} className="flex flex-col gap-3 rounded-lg border p-3">
+            <li key={x.id} className="flex flex-col gap-3 rounded-xl border bg-card p-4">
               <p className="font-medium">{i + 1}. {snippet(x.prompt) || TYPE_LABEL[x.type]}</p>
               <Badge variant="outline" className="self-start">{TYPE_LABEL[x.type]}</Badge>
               {published ? (
-                <p className="text-sm">{x.points} poin</p>
+                <p>{x.points} poin</p>
               ) : (
                 <QuestionControls
                   id={id} qqId={x.id} n={i + 1} prompt={snippet(x.prompt)} points={x.points}
@@ -111,17 +115,23 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
   );
   return (
     <section className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">{quiz.title}</h1>
-        <Status tone={STATUS_TONE[quiz.status]}>{STATUS_LABEL[quiz.status]}</Status>
-        <Badge variant="outline">{quiz.subjectName}</Badge>
-      </div>
+      <PageHeader
+        eyebrow={quiz.subjectName}
+        title={quiz.title}
+        description={<Status tone={STATUS_TONE[quiz.status]}>{STATUS_LABEL[quiz.status]}</Status>}
+      />
+      <nav aria-label="Bagian halaman" className="flex flex-wrap gap-2">
+        {[...(recap ? [["#pemantauan", "Pemantauan & Nilai"]] : []), ["#soal", "Soal & Kunci"], ["#setelan", "Setelan"]].map(([href, label]) => (
+          <a key={href} href={href} className={buttonVariants({ variant: "outline", className: "h-11" })}>{label}</a>
+        ))}
+      </nav>
 
       {recap ? (
         <>
+          <Summary recap={recap} />
           <NextStep id={id} recap={recap} open={!quiz.endsAt || quiz.endsAt > new Date()} />
 
-          <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex flex-col gap-3">
+          <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex scroll-mt-4 flex-col gap-3">
             <h2 id="pemantauan" className="text-xl font-semibold">Pemantauan</h2>
             <AutoRefresh active={recap.rows.some((r) => r.state === "IN_PROGRESS")} renderedAt={new Date().toISOString()} />
             <MonitorList recap={recap} quizId={id} classFilter={one(sp.kelas)} />
@@ -132,7 +142,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
             <Results quizId={id} recap={recap} open={!quiz.endsAt || quiz.endsAt > new Date()} />
           </section>
 
-          <details className="flex flex-col gap-8 rounded-lg border p-3">
+          <details className="flex flex-col gap-8 rounded-2xl border bg-card p-4 shadow-card">
             <summary className="flex min-h-11 cursor-pointer items-center text-lg font-semibold">Lihat setelan ulangan</summary>
             <div className="mt-3 flex flex-col gap-8">
               {setelan}
@@ -169,7 +179,7 @@ function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boo
   const counted = count("FINAL") + count("NEEDS_GRADING");
   const ready = counted > 0 && (absent === 0 || !open);
   return (
-    <section aria-labelledby="langkah" className="flex flex-col gap-3 rounded-lg border-2 p-4">
+    <Card aria-labelledby="langkah" role="region" className="gap-3 border-2 border-primary/40 px-(--card-spacing) text-base!">
       <h2 id="langkah" className="text-xl font-semibold">Langkah berikutnya</h2>
       {running > 0 ? (
         <p>{running} siswa sedang mengerjakan.</p>
@@ -187,7 +197,19 @@ function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boo
         <p>{absent} siswa belum mengerjakan.</p>
       )}
       {released && <ResultsControls id={id} released open={open} />}
-    </section>
+    </Card>
+  );
+}
+
+function Summary({ recap }: { recap: QuizRecap }) {
+  const n = (st: RecapState) => recap.rows.filter((r) => r.state === st).length;
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <StatCard label="Belum mulai" value={n("NOT_STARTED")} hint="siswa" icon={HourglassIcon} tone="info" />
+      <StatCard label="Sedang mengerjakan" value={n("IN_PROGRESS")} hint="siswa" icon={PlayCircleIcon} tone="primary" />
+      <StatCard label="Perlu dinilai" value={n("NEEDS_GRADING")} hint="siswa" icon={Edit02Icon} tone="warning" />
+      <StatCard label="Selesai" value={n("FINAL")} hint="siswa" icon={CheckmarkCircle02Icon} tone="success" />
+    </div>
   );
 }
 
@@ -198,7 +220,7 @@ function Results({ quizId, recap, open }: { quizId: string; recap: QuizRecap; op
   // Not offered in "Langkah berikutnya" yet: keep release reachable, but not as the main action.
   const early = !resultsReleasedAt && counted > 0 && absent > 0 && open;
   return (
-    <>
+    <Card className="gap-3 px-(--card-spacing) text-base!">
       <p>
         {resultsReleasedAt ? `Dirilis ${formatWita(resultsReleasedAt)}.` : "Belum dirilis. Siswa belum bisa melihat nilai."}
       </p>
@@ -206,7 +228,7 @@ function Results({ quizId, recap, open }: { quizId: string; recap: QuizRecap; op
       <a href={`/api/exports/${quizId}`} download className={buttonVariants({ variant: "outline", className: "h-11 self-start" })}>
         Unduh Excel
       </a>
-    </>
+    </Card>
   );
 }
 
@@ -251,13 +273,13 @@ async function AddPanel({
       {rows.length === 0 && <p className="text-muted-foreground">Tidak ada soal aktif yang cocok.</p>}
       <ul className="flex flex-col gap-3">
         {rows.map((r) => (
-          <li key={r.id} className="flex flex-col gap-2 rounded-lg border p-3">
+          <li key={r.id} className="flex flex-col gap-2 rounded-xl border bg-card p-4">
             <p className="font-medium">{snippet(r.prompt) || TYPE_LABEL[r.type]}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground">
               {TYPE_LABEL[r.type]} · {DIFFICULTY_LABEL[r.difficulty]} · {r.chapterTitle} · {r.defaultPoints} poin
             </p>
             {chosen.includes(r.id) ? (
-              <p className="text-sm">Sudah dipilih</p>
+              <p>Sudah dipilih</p>
             ) : (
               <AddQuestionButton id={quizId} questionId={r.id} label={snippet(r.prompt) || TYPE_LABEL[r.type]} />
             )}

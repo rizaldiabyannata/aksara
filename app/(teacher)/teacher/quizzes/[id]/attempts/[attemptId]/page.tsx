@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { PageHeader } from "@/components/page-header";
+import { Status } from "@/components/status";
+import { Card } from "@/components/ui/card";
 import { Markdown } from "@/components/material-view";
 import { QuestionView } from "@/components/question-view";
 import { requireTeacher } from "@/lib/auth/guard";
@@ -33,13 +36,16 @@ async function Detail({ params }: { params: Promise<{ id: string; attemptId: str
       <Link href={`/teacher/quizzes/${id}`} className="inline-flex min-h-11 items-center self-start underline">
         Kembali ke ulangan
       </Link>
+      <PageHeader
+        eyebrow={a.quizTitle}
+        title={a.studentName}
+        description={`${a.className} · percobaan ${a.attemptNumber}`}
+      />
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">{a.studentName}</h1>
-        <p>{a.quizTitle} · {a.className} · percobaan {a.attemptNumber}</p>
         <p>{a.submittedAt ? `Dikumpulkan ${formatWita(a.submittedAt)}` : "Masih dikerjakan."}</p>
         {a.replaced && <p>Percobaan ini diganti ({a.replacementReason}), jadi tidak dihitung.</p>}
         {a.score !== null && !a.replaced && (
-          <p className="text-lg font-medium">
+          <p className="text-lg font-bold">
             {pending > 0
               ? `Nilai sementara ${formatScore(a.score)}: ${pending} uraian belum dinilai`
               : `Nilai ${formatScore(a.score)}`}
@@ -50,8 +56,14 @@ async function Detail({ params }: { params: Promise<{ id: string; attemptId: str
         {a.questions.map((q) => {
           const essay = q.question.type === "ESSAY";
           return (
-            <li key={q.quizQuestionId} className="flex flex-col gap-3 rounded-lg border p-3">
-              <h2 className="font-medium">Soal {q.number} · {TYPE_LABEL[q.question.type]} · {q.points} poin</h2>
+            <li key={q.quizQuestionId}>
+             <Card className="gap-3 px-(--card-spacing) text-base!">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-bold">Soal {q.number} · {TYPE_LABEL[q.question.type]} · {q.points} poin</h2>
+                {essay ? (
+                  q.manualPoints === null ? <Status tone="warning">Belum dinilai</Status> : <Status tone="success">Sudah dinilai</Status>
+                ) : null}
+              </div>
               <QuestionView question={q.question} />
               <dl className="grid gap-1 sm:grid-cols-[10rem_1fr]">
                 <dt className="font-medium">Jawaban siswa</dt>
@@ -76,6 +88,7 @@ async function Detail({ params }: { params: Promise<{ id: string; attemptId: str
                 <EssayGradeForm answerId={q.answerId} n={q.number} max={q.points} points={q.manualPoints}
                   feedback={q.feedback} blank={q.answer === null} />
               )}
+             </Card>
             </li>
           );
         })}

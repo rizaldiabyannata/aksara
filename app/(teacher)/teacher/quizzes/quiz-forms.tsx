@@ -237,6 +237,7 @@ export function ResultsControls({ id, released, open, primary = true }: { id: st
       action={releaseResultsAction.bind(null, id)}
       trigger="Rilis hasil"
       primary={primary}
+      success={primary}
       title="Rilis hasil ke siswa?"
       description={
         "Siswa bisa melihat nilai, jawaban, dan (bila diizinkan) kunci serta pembahasan." +

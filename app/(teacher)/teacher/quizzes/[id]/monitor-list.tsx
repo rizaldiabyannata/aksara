@@ -31,9 +31,9 @@ function Scores({ row, quiz }: { row: RecapRow; quiz: QuizRecap["quiz"] }) {
   if (recap === null) return <p className="text-muted-foreground">Belum ada nilai</p>;
   return (
     <div className="flex flex-col">
-      <span className="font-medium">Nilai {final ? "" : "sementara "}{formatScore(recap)}</span>
+      <span className="text-lg font-bold">Nilai {final ? "" : "sementara "}{formatScore(recap)}</span>
       {quiz.scoringPolicy === "REMEDIAL" && highest !== null && highest > recap && (
-        <span className="text-sm text-muted-foreground">Nilai asli {formatScore(highest)}</span>
+        <span className="text-muted-foreground">Nilai asli {formatScore(highest)}</span>
       )}
     </div>
   );
@@ -49,7 +49,7 @@ function Tuntas({ row, kkm }: { row: RecapRow; kkm: number | null }) {
 function Attempts({ row, quizId, released }: { row: RecapRow; quizId: string; released: boolean }) {
   return (
     <details className="mt-3">
-      <summary className="flex min-h-11 cursor-pointer items-center underline">Lihat percobaan</summary>
+      <summary className="flex min-h-11 cursor-pointer items-center font-semibold text-primary-strong underline">Lihat percobaan</summary>
       {row.attempts.length === 0 ? (
         <p className="py-2 text-muted-foreground">{row.name} belum mengerjakan.</p>
       ) : (
@@ -58,7 +58,7 @@ function Attempts({ row, quizId, released }: { row: RecapRow; quizId: string; re
             const href = `/teacher/quizzes/${quizId}/attempts/${a.attemptId}`;
             const who = `${row.name}, percobaan ${a.attemptNumber}`;
             return (
-              <li key={a.attemptId} className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border p-3">
+              <li key={a.attemptId} className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border bg-muted/40 p-3">
                 <p className="font-medium">Percobaan {a.attemptNumber}</p>
                 <p>
                   {a.replaced ? ATTEMPT_LABEL.replaced : a.status === "IN_PROGRESS" ? ATTEMPT_LABEL.running : ATTEMPT_LABEL.done}
@@ -117,11 +117,11 @@ export function MonitorList({ recap, quizId, classFilter }: { recap: QuizRecap; 
       ) : (
         <ul className="flex flex-col gap-3">
           {rows.map((r) => (
-            <li key={r.studentId} className="rounded-lg border p-3">
+            <li key={r.studentId} className="rounded-2xl border bg-card p-4 shadow-card">
               <div className="grid gap-3 md:grid-cols-5 md:items-center">
                 <div>
-                  <p className="font-medium">{r.name}</p>
-                  <p className="text-sm text-muted-foreground">{r.className}{r.nis && ` · NIS ${r.nis}`}</p>
+                  <p className="text-lg font-bold">{r.name}</p>
+                  <p className="text-muted-foreground">{r.className}{r.nis && ` · NIS ${r.nis}`}</p>
                 </div>
                 <div><StateStatus row={r} now={now} /></div>
                 <p>Percobaan {r.attemptsUsed}/{quiz.maxAttempts}</p>
