@@ -5,6 +5,7 @@ import { ConfirmAction } from "@/components/confirm-action";
 import { Feedback } from "@/components/form-feedback";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import type { FormState } from "@/lib/form-state";
 import type { QuizDetail } from "@/lib/quizzes";
@@ -23,19 +24,23 @@ export function CreateQuizForm({ subjects }: { subjects: { id: string; name: str
   const e = state?.fieldErrors;
   return (
     <form action={action} className="flex max-w-xl flex-col gap-4">
-      <FormField name="title" label="Judul" required maxLength={150} defaultValue={state?.values?.title ?? ""} error={e?.title} />
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="subjectId">Mata pelajaran</Label>
-        <select id="subjectId" name="subjectId" required defaultValue={state?.values?.subjectId ?? ""}
-          className={controlClass} aria-invalid={e?.subjectId ? true : undefined}
-          aria-describedby={e?.subjectId ? "subjectId-error" : undefined}>
-          <option value="" disabled>Pilih mata pelajaran</option>
-          {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
-        {e?.subjectId && <p id="subjectId-error" className="text-sm text-destructive">{e.subjectId}</p>}
-      </div>
-      <Feedback state={state} />
-      <Button type="submit" className="h-11 text-base" disabled={pending}>Buat ulangan</Button>
+      <Card className="text-base!">
+        <CardContent className="flex flex-col gap-4">
+          <FormField name="title" label="Judul" required maxLength={150} defaultValue={state?.values?.title ?? ""} error={e?.title} />
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="subjectId">Mata pelajaran</Label>
+            <select id="subjectId" name="subjectId" required defaultValue={state?.values?.subjectId ?? ""}
+              className={controlClass} aria-invalid={e?.subjectId ? true : undefined}
+              aria-describedby={e?.subjectId ? "subjectId-error" : undefined}>
+              <option value="" disabled>Pilih mata pelajaran</option>
+              {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+            {e?.subjectId && <p id="subjectId-error" className="text-base text-destructive">{e.subjectId}</p>}
+          </div>
+          <Feedback state={state} />
+          <Button type="submit" className="h-12 self-start text-base" disabled={pending}>Buat ulangan</Button>
+        </CardContent>
+      </Card>
     </form>
   );
 }
