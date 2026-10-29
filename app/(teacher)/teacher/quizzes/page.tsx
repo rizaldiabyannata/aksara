@@ -28,7 +28,7 @@ export default function QuizzesPage() {
 async function List() {
   await requireTeacher();
   const rows = await listQuizzes();
-  if (rows.length === 0) return <p className="text-muted-foreground">Belum ada ulangan.</p>;
+  if (rows.length === 0) return <p className="text-muted-foreground">Belum ada ulangan. Tekan Buat ulangan untuk membuat yang pertama.</p>;
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((r) => (

@@ -80,29 +80,32 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
     Object.entries(m).map(([k, l]) => <option key={k} value={k}>{l}</option>);
   return (
     <>
-      <form method="get" className="grid gap-3 sm:grid-cols-3 sm:items-end">
-        {sel("subjectId", "Mapel", "Semua mapel", subjectId,
-          subjects.map((x) => <option key={x.id} value={x.id}>{x.name}</option>))}
-        {sel("chapterId", "Bab", "Semua bab", chapterId,
-          chapters.map((c) => <option key={c.id} value={c.id}>{c.label}</option>))}
-        {sel("subchapterId", "Subbab", "Semua subbab", subchapterId,
-          chapters.map((c) => (
-            <optgroup key={c.id} label={c.label}>
-              {c.subchapters.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </optgroup>
-          )))}
-        {sel("type", "Tipe", "Semua tipe", type, labels(TYPE_LABEL))}
-        {sel("difficulty", "Kesulitan", "Semua tingkat", difficulty, labels(DIFFICULTY_LABEL))}
-        {sel("status", "Status", "Semua status", status, labels(STATUS_LABEL))}
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="f-q">Kata kunci</Label>
-          <Input id="f-q" name="q" defaultValue={q ?? ""} autoComplete="off" className="h-11" />
-        </div>
-        <Button type="submit" className="h-11 text-base">Terapkan</Button>
-      </form>
+      <details open={filtered} className="rounded-lg border p-3">
+        <summary className="flex min-h-11 cursor-pointer items-center font-medium">Saring soal</summary>
+        <form method="get" className="mt-3 grid gap-3 sm:grid-cols-3 sm:items-end">
+          {sel("subjectId", "Mapel", "Semua mapel", subjectId,
+            subjects.map((x) => <option key={x.id} value={x.id}>{x.name}</option>))}
+          {sel("chapterId", "Bab", "Semua bab", chapterId,
+            chapters.map((c) => <option key={c.id} value={c.id}>{c.label}</option>))}
+          {sel("subchapterId", "Subbab", "Semua subbab", subchapterId,
+            chapters.map((c) => (
+              <optgroup key={c.id} label={c.label}>
+                {c.subchapters.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+              </optgroup>
+            )))}
+          {sel("type", "Tipe", "Semua tipe", type, labels(TYPE_LABEL))}
+          {sel("difficulty", "Kesulitan", "Semua tingkat", difficulty, labels(DIFFICULTY_LABEL))}
+          {sel("status", "Status", "Semua status", status, labels(STATUS_LABEL))}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="f-q">Kata kunci</Label>
+            <Input id="f-q" name="q" defaultValue={q ?? ""} autoComplete="off" />
+          </div>
+          <Button type="submit">Terapkan</Button>
+        </form>
+      </details>
 
       {rows.length === 0 && (
-        <p className="text-muted-foreground">{filtered ? "Tidak ada soal yang cocok." : "Belum ada soal."}</p>
+        <p className="text-muted-foreground">{filtered ? "Tidak ada soal yang cocok." : "Belum ada soal. Tekan Soal baru untuk menambah."}</p>
       )}
       <ul className="flex flex-col gap-3">
         {rows.map((r) => (

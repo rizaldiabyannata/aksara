@@ -134,7 +134,7 @@ function KeyFields({
                 name="correct"
                 value={id}
                 defaultChecked={correct.includes(id)}
-                className="size-5"
+                className="size-6"
               />
               <span>Benar<span className="sr-only"> untuk opsi {id.toUpperCase()}</span></span>
             </label>
@@ -151,7 +151,7 @@ function KeyFields({
         <legend className="px-1 font-medium">Jawaban yang benar</legend>
         {[["true", "Benar"], ["false", "Salah"]].map(([val, label]) => (
           <label key={val} className="flex min-h-11 items-center gap-2">
-            <input type="radio" name="correct" value={val} defaultChecked={v("correct") === val} className="size-5" />
+            <input type="radio" name="correct" value={val} defaultChecked={v("correct") === val} className="size-6" />
             {label}
           </label>
         ))}
@@ -164,8 +164,8 @@ function KeyFields({
       <fieldset className="flex flex-col gap-3 rounded-lg border p-3" aria-describedby={describedBy}>
         <legend className="px-1 font-medium">Jawaban yang diterima</legend>
         <Area name="accepted" label="Jawaban diterima (satu per baris)" rows={4} v={v("accepted")} />
-        <label className="flex min-h-11 items-center gap-2">
-          <input type="checkbox" name="caseSensitive" defaultChecked={v("caseSensitive") === "on"} className="size-5" />
+        <label className="flex min-h-11 items-center gap-3">
+          <input type="checkbox" name="caseSensitive" defaultChecked={v("caseSensitive") === "on"} className="size-6" />
           Huruf besar dan kecil dibedakan
         </label>
         {errors}

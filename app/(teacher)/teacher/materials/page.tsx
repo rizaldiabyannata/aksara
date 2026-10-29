@@ -80,7 +80,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
         <Button type="submit" className="h-11 text-base">Terapkan</Button>
       </form>
 
-      {rows.length === 0 && <p className="text-muted-foreground">Belum ada materi yang cocok.</p>}
+      {rows.length === 0 && <p className="text-muted-foreground">Belum ada materi yang cocok. Ubah saringan, atau tekan Materi baru untuk menambah.</p>}
       <ul className="flex flex-col gap-3">
         {rows.map((m, i) => {
           const sameChapter = (j: number) => rows[j]?.chapterId === m.chapterId;

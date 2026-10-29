@@ -59,12 +59,12 @@ export function SettingsForm({ id, q }: { id: string; q: Settings }) {
     const on = v ? v[name] === "on" : q[name];
     return (
       <div className="flex flex-col gap-1">
-        <div className="flex min-h-11 items-center gap-3">
-          {lockedField(name, on ? "on" : "")}
+        {lockedField(name, on ? "on" : "")}
+        <label htmlFor={name} className="flex min-h-11 items-center gap-3">
           <input id={name} type="checkbox" name={name} defaultChecked={on} disabled={locked}
-            className="size-5" aria-describedby={e?.[name] ? `${name}-error` : undefined} />
-          <Label htmlFor={name}>{label}</Label>
-        </div>
+            className="size-6" aria-describedby={e?.[name] ? `${name}-error` : undefined} />
+          <span className="font-medium">{label}</span>
+        </label>
         {e?.[name] && <p id={`${name}-error`} className="text-sm text-destructive">{e[name]}</p>}
       </div>
     );
@@ -128,12 +128,12 @@ export function ClassesForm({
         {classes.map((c) => {
           const lock = published && selected.includes(c.id);
           return (
-            <div key={c.id} className="flex min-h-11 items-center gap-3">
+            <label key={c.id} htmlFor={`class-${c.id}`} className="flex min-h-11 items-center gap-3">
               {lock && <input type="hidden" name="classId" value={c.id} />}
               <input id={`class-${c.id}`} type="checkbox" name="classId" value={c.id}
-                defaultChecked={selected.includes(c.id)} disabled={lock} className="size-5" />
-              <Label htmlFor={`class-${c.id}`}>{c.name}{c.isActive ? "" : " (nonaktif)"}</Label>
-            </div>
+                defaultChecked={selected.includes(c.id)} disabled={lock} className="size-6" />
+              <span className="font-medium">{c.name}{c.isActive ? "" : " (nonaktif)"}</span>
+            </label>
           );
         })}
       </fieldset>

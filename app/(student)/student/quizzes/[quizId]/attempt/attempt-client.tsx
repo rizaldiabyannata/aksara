@@ -30,7 +30,7 @@ type Props = { attemptId: string; quizId: string; quizTitle: string; deadlineAt:
 type Phase = "running" | "done" | "closed";
 
 const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
-const CHOICE = "flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border p-3 has-[:checked]:border-2 has-[:checked]:font-medium has-[:focus-visible]:ring-2";
+const CHOICE = "flex min-h-12 cursor-pointer items-start gap-3 rounded-lg border p-3 has-[:checked]:border-2 has-[:checked]:font-medium has-[:focus-visible]:ring-2";
 const SESSION_ENDED_MSG = "Sesimu berakhir. Masuk lagi untuk melanjutkan.";
 const TEXT_DEBOUNCE_MS = 800;
 const FLUSH_TIMEOUT_MS = 5000;
@@ -334,7 +334,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
               <input
                 type="radio"
                 name={`q-${q.id}`}
-                className="mt-1 size-5"
+                className="mt-1 size-6"
                 checked={!!a && "optionId" in a && a.optionId === o.id}
                 onChange={() => choose(q.id, { optionId: o.id })}
               />
@@ -346,7 +346,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
             <label key={o.id} className={CHOICE}>
               <input
                 type="checkbox"
-                className="mt-1 size-5"
+                className="mt-1 size-6"
                 checked={selected.includes(o.id)}
                 onChange={(e) => {
                   const ids = e.target.checked ? [...selected, o.id] : selected.filter((id) => id !== o.id);
@@ -362,7 +362,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
               <input
                 type="radio"
                 name={`q-${q.id}`}
-                className="mt-1 size-5"
+                className="mt-1 size-6"
                 checked={!!a && "value" in a && a.value === v}
                 onChange={() => choose(q.id, { value: v })}
               />
@@ -373,7 +373,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
           <input
             type="text"
             aria-label={`Jawaban soal ${q.number}`}
-            className="h-12 rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
+            className="h-12 w-full rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
             maxLength={200}
             autoComplete="off"
             value={a && "text" in a ? a.text : ""}
@@ -384,7 +384,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
         {q.type === "ESSAY" && (
           <textarea
             aria-label={`Jawaban soal ${q.number}`}
-            className="min-h-40 py-2 rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
+            className="min-h-40 w-full py-2 rounded-lg border-2 border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
             maxLength={5000}
             value={a && "text" in a ? a.text : ""}
             onChange={(e) => typeText(q.id, e.target.value)}
@@ -394,14 +394,14 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
       </fieldset>
 
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" className="h-11" disabled={index === 0} onClick={() => go(index - 1)}>
+        <Button variant="outline" disabled={index === 0} onClick={() => go(index - 1)}>
           Sebelumnya
         </Button>
-        <Button variant="outline" className="h-11" disabled={index === questions.length - 1} onClick={() => go(index + 1)}>
+        <Button variant="outline" disabled={index === questions.length - 1} onClick={() => go(index + 1)}>
           Berikutnya
         </Button>
-        <Button className="h-11" disabled={submitting} onClick={() => { commitPending(); setConfirmOpen(true); }}>
-          Kumpulkan
+        <Button size="lg" disabled={submitting} onClick={() => { commitPending(); setConfirmOpen(true); }}>
+          Kumpulkan jawaban
         </Button>
       </div>
       <p role="alert" className="text-sm">
