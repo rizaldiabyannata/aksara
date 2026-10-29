@@ -2,7 +2,8 @@
 import { prisma } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
 import { finalizeExpiredAttempts, IMAGE_VIEW, SCORED_SELECT, toScored, UNGRADED } from "@/lib/attempts";
-import type { ScoringPolicy } from "@/lib/generated/prisma/enums";
+import { Prisma } from "@/lib/generated/prisma/client";
+import type { AttemptStatus, ScoringPolicy } from "@/lib/generated/prisma/enums";
 import type { StoredAnswer } from "@/lib/grading";
 import type { ImageView } from "@/lib/materials";
 import { lockQuiz, type AnswerKeySnapshot, type QuestionSnapshot } from "@/lib/quizzes";
@@ -56,13 +57,28 @@ export async function unreleaseResults(actorId: string, quizId: string): Promise
   });
 }
 
+export type RecapState = "NOT_STARTED" | "IN_PROGRESS" | "WAITING_REPLACEMENT" | "NEEDS_GRADING" | "FINAL";
+export const RECAP_STATE_LABEL: Record<RecapState, string> = {
+  NOT_STARTED: "Belum mulai", IN_PROGRESS: "Sedang dikerjakan", WAITING_REPLACEMENT: "Menunggu percobaan pengganti",
+  NEEDS_GRADING: "Belum final", FINAL: "Final",
+};
+export type RecapAttempt = {
+  attemptId: string; attemptNumber: number; status: AttemptStatus; replaced: boolean;
+  score: number | null; pendingEssays: number; startedAt: Date; submittedAt: Date | null;
+};
+
 export type RecapRow = {
+  state: RecapState;
+  running: { deadlineAt: Date; answered: number; total: number } | null;
+  attempts: RecapAttempt[];
   studentId: string; name: string; nis: string | null; className: string;
   attemptsUsed: number; recap: Recap; earnedPoints: number | null; maxPoints: number | null;
   status: string; lastSubmittedAt: Date | null;
 };
 export type QuizRecap = {
-  quiz: { title: string; subjectName: string; scoringPolicy: ScoringPolicy; kkm: number | null; resultsReleasedAt: Date | null };
+  quiz: { title: string; subjectName: string; scoringPolicy: ScoringPolicy; kkm: number | null; resultsReleasedAt: Date | null;
+    maxAttempts: number; classes: { id: string; name: string }[];
+  };
   rows: RecapRow[];
 };
 
@@ -72,8 +88,10 @@ export async function getQuizRecap(quizId: string, now: Date = new Date()): Prom
   const quiz = await prisma.quiz.findUnique({
     where: { id: quizId },
     select: {
-      title: true, scoringPolicy: true, kkm: true, resultsReleasedAt: true,
-      subject: { select: { name: true } }, classes: { select: { classId: true } },
+      title: true, scoringPolicy: true, kkm: true, resultsReleasedAt: true, maxAttempts: true,
+      subject: { select: { name: true } },
+      classes: { select: { classId: true, class: { select: { id: true, name: true } } }, orderBy: { class: { name: "asc" } } },
+      _count: { select: { questions: true } },
     },
   });
   if (!quiz) return null;
@@ -93,14 +111,21 @@ export async function getQuizRecap(quizId: string, now: Date = new Date()): Prom
         where: { quizId },
         orderBy: { attemptNumber: "asc" },
         select: {
-          ...SCORED_SELECT, submittedAt: true, replacedBy: { select: { id: true } },
+          ...SCORED_SELECT, id: true, attemptNumber: true, startedAt: true, deadlineAt: true, submittedAt: true, replacedBy: { select: { id: true } },
           _count: { select: { answers: { where: UNGRADED } } },
         },
       },
     },
   });
+  const answeredBy = new Map(
+    (await prisma.attemptAnswer.groupBy({
+      by: ["attemptId"], _count: { _all: true },
+      where: { answer: { not: Prisma.AnyNull }, attempt: { quizId, status: "IN_PROGRESS" } },
+    })).map((g) => [g.attemptId, g._count._all]),
+  );
   return {
     quiz: {
+      maxAttempts: quiz.maxAttempts, classes: quiz.classes.map((c) => c.class),
       title: quiz.title, subjectName: quiz.subject.name, scoringPolicy: quiz.scoringPolicy, kkm: quiz.kkm,
       resultsReleasedAt: quiz.resultsReleasedAt,
     },
@@ -109,12 +134,13 @@ export async function getQuizRecap(quizId: string, now: Date = new Date()): Prom
       const counted = as.filter((a) => a.status === "SUBMITTED" && !a.replacementGrantedAt);
       const recap = computeRecap(as.map(toScored), quiz);
       const pending = counted.reduce((n, a) => n + a._count.answers, 0);
-      let status: string;
-      if (as.some((a) => a.status === "IN_PROGRESS")) status = "Sedang dikerjakan";
-      else if (as.some((a) => a.replacementGrantedAt && !a.replacedBy)) status = "Menunggu percobaan pengganti";
-      else if (counted.length === 0) status = "Belum mulai";
-      else if (!recap.final) status = `Belum final – ${pending} uraian belum dinilai`;
-      else status = "Final";
+      const run = as.find((a) => a.status === "IN_PROGRESS");
+      let state: RecapState;
+      if (run) state = "IN_PROGRESS";
+      else if (as.some((a) => a.replacementGrantedAt && !a.replacedBy)) state = "WAITING_REPLACEMENT";
+      else if (counted.length === 0) state = "NOT_STARTED";
+      else if (!recap.final) state = "NEEDS_GRADING";
+      else state = "FINAL";
       const basis = recap.basis;
       return {
         studentId: s.id, name: s.displayName, nis: s.nis, className: s.class?.name ?? "",
@@ -122,7 +148,18 @@ export async function getQuizRecap(quizId: string, now: Date = new Date()): Prom
         recap,
         earnedPoints: basis && basis.earnedCenti / 100,
         maxPoints: basis && basis.maxPoints,
-        status,
+        state,
+        status: state === "NEEDS_GRADING" ? `${RECAP_STATE_LABEL[state]} – ${pending} uraian belum dinilai` : RECAP_STATE_LABEL[state],
+        running: run ? { deadlineAt: run.deadlineAt, answered: answeredBy.get(run.id) ?? 0, total: quiz._count.questions } : null,
+        attempts: as.map((a) => {
+          const submitted = a.status === "SUBMITTED";
+          const sc = toScored(a);
+          return {
+            attemptId: a.id, attemptNumber: a.attemptNumber, status: a.status, replaced: a.replacementGrantedAt !== null,
+            score: submitted ? attemptScore(sc.earnedCenti, sc.maxPoints) : null,
+            pendingEssays: submitted ? a._count.answers : 0, startedAt: a.startedAt, submittedAt: a.submittedAt,
+          };
+        }),
         lastSubmittedAt: counted.reduce<Date | null>((m, a) => (a.submittedAt && (!m || a.submittedAt > m) ? a.submittedAt : m), null),
       };
     }),

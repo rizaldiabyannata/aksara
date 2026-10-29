@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
-import { gradeEssay, grantReplacement, saveAnswer, submitAttempt } from "@/lib/attempts";
+import { GRACE_MS, gradeEssay, grantReplacement, saveAnswer, submitAttempt } from "@/lib/attempts";
 import { getQuizRecap, getStudentResult, releaseResults, unreleaseResults } from "@/lib/results";
 import { makeStudent } from "../tests/factories";
-import { at, setup, started } from "../tests/quiz-setup";
+import { setStudentActive } from "@/lib/students";
+import { at, DUR, min, setup, started } from "../tests/quiz-setup";
 
 vi.mock("@/lib/storage", () => import("../tests/storage-fake").then((m) => m.storageMock()));
 
@@ -121,5 +122,41 @@ describe("getQuizRecap", () => {
     expect(by.get(idle.id)).toMatchObject({ status: "Belum mulai", attemptsUsed: 0 });
     expect(by.get(s.student.id)).toMatchObject({ status: "Belum final – 1 uraian belum dinilai", recap: { final: false } });
     expect(await getQuizRecap("nope")).toBeNull();
+  });
+});
+
+describe("getQuizRecap monitoring fields", () => {
+  it("not started, running with answered count, expired is not running", async () => {
+    const s = await setup({}, [{}, {}]);
+    const idle = await makeStudent(s.cls.id);
+    const id = await started(s, at(0));
+    await saveAnswer(s.student.id, id, { quizQuestionId: s.qqs[0].id, answer: { optionId: "a" } }, at(1));
+    const by = async (t: number) => new Map(((await getQuizRecap(s.quiz.id, at(t)))?.rows ?? []).map((r) => [r.studentId, r]));
+    const now = await by(min(5));
+    expect(now.get(idle.id)).toMatchObject({ state: "NOT_STARTED", running: null, attempts: [] });
+    expect(now.get(s.student.id)).toMatchObject({ state: "IN_PROGRESS", running: { answered: 1, total: 2 } });
+    const later = await by(min(DUR) + GRACE_MS + 1);
+    expect(later.get(s.student.id)).toMatchObject({ state: "FINAL", running: null });
+    expect(later.get(s.student.id)?.attempts).toHaveLength(1);
+  });
+
+  it("NEEDS_GRADING with an ungraded essay; kkm null gives passed null; quiz carries maxAttempts and classes", async () => {
+    const s = await setup({ kkm: null }, [{ type: "ESSAY" }]);
+    const id = await started(s, at(0));
+    await submitAttempt(s.student.id, s.quiz.id, id, at(10));
+    const r = await getQuizRecap(s.quiz.id, at(20));
+    expect(r?.quiz).toMatchObject({ maxAttempts: 1, classes: [{ id: s.cls.id, name: s.cls.name }] });
+    const row = r?.rows.find((x) => x.studentId === s.student.id);
+    expect(row).toMatchObject({ state: "NEEDS_GRADING", recap: { passed: null }, status: "Belum final – 1 uraian belum dinilai" });
+    expect(row?.attempts[0]).toMatchObject({ attemptId: id, pendingEssays: 1, score: 0, replaced: false });
+  });
+
+  it("inactive student with an attempt is still listed", async () => {
+    const s = await setup();
+    await submitAttempt(s.student.id, s.quiz.id, await started(s, at(0)), at(10));
+    expect(await setStudentActive(s.teacher.id, s.student.id, false)).toEqual({ ok: true });
+    const row = (await getQuizRecap(s.quiz.id, at(20)))?.rows.find((x) => x.studentId === s.student.id);
+    expect(row).toMatchObject({ state: "FINAL" });
+    expect(row?.attempts[0].score).toBe(0);
   });
 });
