@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> Status: rencana disetujui 2026-10-29, branch `tahap-6-dasbor-desain`. Belum dieksekusi.
+> Status: dibangun di branch `tahap-6-dasbor-desain` (2026-10-30). Vitest 604/1, E2E 4/4 (alur siswa, alur guru, sapuan 360 px + keyboard), lint/tsc/build bersih. Task 15–22 dikerjakan langsung oleh controller (dispatch subagent ditolak classifier auto mode); review akhir terpisah.
 
 **Goal:** Dasbor guru menjawab "apa yang perlu saya lakukan sekarang?", dasbor siswa menampilkan ulangannya, pemantauan per siswa menurut F11, dan fondasi desain yang mudah dibaca diterapkan ke semua halaman.
 
