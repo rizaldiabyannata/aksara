@@ -393,40 +393,8 @@ export async function listStudentQuizzes(
   });
 }
 
-export type AttemptRow = {
-  attemptId: string; studentName: string; className: string; attemptNumber: number; slot: number;
-  status: AttemptStatus; submitReason: SubmitReason | null; replaced: boolean; startedAt: Date; submittedAt: Date | null;
-  score: number | null; gradingStatus: GradingStatus | null; pendingEssays: number;
-};
-
 // After gradeAttempt every objective row has objectivePoints, so these are exactly the essays still to grade.
 export const UNGRADED = { objectivePoints: null, manualPoints: null } as const;
-
-export async function listQuizAttempts(quizId: string, now: Date = new Date()): Promise<AttemptRow[]> {
-  await finalizeExpiredAttempts({ quizId }, now);
-  const rows = await prisma.quizAttempt.findMany({
-    where: { quizId },
-    orderBy: [{ student: { displayName: "asc" } }, { attemptNumber: "asc" }],
-    select: {
-      ...SCORED_SELECT,
-      id: true, attemptNumber: true, submitReason: true, startedAt: true, submittedAt: true,
-      student: { select: { displayName: true, class: { select: { name: true } } } },
-      _count: { select: { answers: { where: UNGRADED } } },
-    },
-  });
-  return rows.map((r) => {
-    const sc = toScored(r);
-    const submitted = r.status === "SUBMITTED";
-    return {
-      attemptId: r.id, studentName: r.student.displayName, className: r.student.class?.name ?? "",
-      attemptNumber: r.attemptNumber, slot: r.slot, status: r.status, submitReason: r.submitReason,
-      replaced: r.replacementGrantedAt !== null, startedAt: r.startedAt, submittedAt: r.submittedAt,
-      score: submitted ? attemptScore(sc.earnedCenti, sc.maxPoints) : null,
-      gradingStatus: r.gradingStatus,
-      pendingEssays: submitted ? r._count.answers : 0,
-    };
-  });
-}
 
 const REASON_MSG = "Alasan wajib diisi, 5 sampai 300 huruf.";
 const reasonSchema = z.object({

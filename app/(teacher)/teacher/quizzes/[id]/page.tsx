@@ -9,14 +9,13 @@ import { Label } from "@/components/ui/label";
 import { requireTeacher } from "@/lib/auth/guard";
 import { listClasses } from "@/lib/classes";
 import type { Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
-import { listQuizAttempts } from "@/lib/attempts";
-import { formatScore, formatWita, toWitaInput } from "@/lib/format";
+import { formatWita, toWitaInput } from "@/lib/format";
 import { listQuestions } from "@/lib/questions";
 import { getQuizForTeacher } from "@/lib/quizzes";
 import { getQuizRecap, type QuizRecap, type RecapState } from "@/lib/results";
 import { listChapterOptions } from "@/lib/subjects";
 import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
-import { AttemptsTable } from "./attempts-table";
+import { MonitorList } from "./monitor-list";
 import { STATUS_LABEL, STATUS_TONE } from "../labels";
 import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, ResultsControls, SettingsForm } from "../quiz-forms";
 
@@ -123,7 +122,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
 
           <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex flex-col gap-3">
             <h2 id="pemantauan" className="text-xl font-semibold">Pemantauan</h2>
-            <Monitor quizId={id} />
+            <MonitorList recap={recap} quizId={id} classFilter={one(sp.kelas)} />
           </section>
 
           <section aria-labelledby="hasil" className="flex flex-col gap-3">
@@ -185,69 +184,16 @@ function NextStep({ id, recap, open }: { id: string; recap: QuizRecap; open: boo
   );
 }
 
-const ATTEMPT_LABEL = { running: "Sedang dikerjakan", done: "Terkumpul", timeout: "Waktu habis", replaced: "Diganti" };
-
-// Fresh read each render: listQuizAttempts finalizes expired attempts before listing.
-async function Monitor({ quizId }: { quizId: string }) {
-  const rows = (await listQuizAttempts(quizId)).map((r) => ({
-    attemptId: r.attemptId, studentName: r.studentName, className: r.className, attemptNumber: r.attemptNumber,
-    replaced: r.replaced,
-    status: r.replaced ? ATTEMPT_LABEL.replaced
-      : r.status === "IN_PROGRESS" ? ATTEMPT_LABEL.running
-      : r.submitReason === "TIMEOUT" ? ATTEMPT_LABEL.timeout : ATTEMPT_LABEL.done,
-    startedAt: formatWita(r.startedAt), submittedAt: r.submittedAt ? formatWita(r.submittedAt) : "",
-    score: r.score === null || r.replaced ? ""
-      : r.pendingEssays > 0 ? `Sementara ${formatScore(r.score)}: ${r.pendingEssays} uraian belum dinilai`
-      : formatScore(r.score),
-    href: `/teacher/quizzes/${quizId}/attempts/${r.attemptId}`,
-  }));
-  return <AttemptsTable rows={rows} />;
-}
-
-// Not final yet → every score says so, not only the recap column (PRD §7.9).
-const shown = (n: number | null, final: boolean) => (n === null ? "-" : `${final ? "" : "Sementara "}${formatScore(n)}`);
-
-// Same rows as the "Rekap Nilai" sheet, so the app and the Excel file always agree.
 function Results({ quizId, recap }: { quizId: string; recap: QuizRecap }) {
-  const { resultsReleasedAt, kkm } = recap.quiz;
+  const { resultsReleasedAt } = recap.quiz;
   return (
     <>
       <p>
         {resultsReleasedAt ? `Dirilis ${formatWita(resultsReleasedAt)}.` : "Belum dirilis. Siswa belum bisa melihat nilai."}
       </p>
-      <div className="flex flex-wrap gap-3">
-        <a href={`/api/exports/${quizId}`} download className={buttonVariants({ variant: "outline", className: "h-11" })}>
-          Unduh Excel
-        </a>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <caption className="sr-only">Rekap nilai per siswa</caption>
-          <thead>
-            <tr className="border-b">
-              {["Siswa", "Kelas", "Percobaan", "Nilai utama", "Tertinggi asli", "Nilai rekap", "Ketuntasan", "Status"].map((h) => (
-                <th key={h} scope="col" className="p-2 font-medium">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {recap.rows.map((r) => (
-              <tr key={r.studentId} className="border-b">
-                <th scope="row" className="p-2 font-medium">{r.name}</th>
-                <td className="p-2">{r.className}</td>
-                <td className="p-2">{r.attemptsUsed}</td>
-                <td className="p-2">{shown(r.recap.primary, r.recap.final)}</td>
-                <td className="p-2">{shown(r.recap.highest, r.recap.final)}</td>
-                <td className="p-2">{shown(r.recap.recap, r.recap.final)}</td>
-                <td className="p-2">
-                  {kkm === null || r.recap.passed === null || !r.recap.final ? "-" : r.recap.passed ? "Tuntas" : "Belum tuntas"}
-                </td>
-                <td className="p-2">{r.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <a href={`/api/exports/${quizId}`} download className={buttonVariants({ variant: "outline", className: "h-11 self-start" })}>
+        Unduh Excel
+      </a>
     </>
   );
 }

@@ -159,4 +159,16 @@ describe("getQuizRecap monitoring fields", () => {
     expect(row).toMatchObject({ state: "FINAL" });
     expect(row?.attempts[0].score).toBe(0);
   });
+
+  it("per-attempt score and pendingEssays follow grading; a granted replacement flags the attempt", async () => {
+    const s = await setup({ maxAttempts: 2 }, [{}, { type: "ESSAY", points: 4 }]);
+    const id = await started(s, at(0));
+    await submitAttempt(s.student.id, s.quiz.id, id, at(10));
+    const first = async (t: number) => (await getQuizRecap(s.quiz.id, at(t)))?.rows[0].attempts[0];
+    expect(await first(20)).toMatchObject({ score: 0, pendingEssays: 1, replaced: false });
+    expect(await gradeEssay(s.teacher.id, await essayId(id), { points: "2,5" }, at(30))).toEqual({ ok: true });
+    expect(await first(40)).toMatchObject({ score: 50, pendingEssays: 0 });
+    await grantReplacement(s.teacher.id, id, "Alasan sah", at(50));
+    expect(await first(60)).toMatchObject({ replaced: true });
+  });
 });

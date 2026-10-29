@@ -7,7 +7,6 @@ import {
   getAttemptView,
   gradeEssay,
   grantReplacement,
-  listQuizAttempts,
   listStudentQuizzes,
   saveAnswer,
   startAttempt,
@@ -439,18 +438,6 @@ describe("listStudentQuizzes replacement edge cases", () => {
   });
 });
 
-describe("listQuizAttempts", () => {
-  it("finalizes expired attempts and flags replaced ones", async () => {
-    const s = await setup({ maxAttempts: 2 });
-    const a1 = await started(s);
-    const rows = await listQuizAttempts(s.quiz.id, at(min(DUR) + GRACE_MS));
-    expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ attemptId: a1, studentName: s.student.displayName, className: s.cls.name, attemptNumber: 1, slot: 1, status: "SUBMITTED", submitReason: "TIMEOUT", replaced: false });
-    await grantReplacement(s.teacher.id, a1, "Alasan sah", at(min(DUR) + GRACE_MS));
-    expect((await listQuizAttempts(s.quiz.id))[0].replaced).toBe(true);
-  });
-});
-
 const essayRow = (attemptId: string, quizQuestionId: string) =>
   prisma.attemptAnswer.findUniqueOrThrow({ where: { attemptId_quizQuestionId: { attemptId, quizQuestionId } } });
 
@@ -463,11 +450,10 @@ describe("essay grading", () => {
   };
 
   it("submit adds a blank row for an unanswered essay only; attempt is pending", async () => {
-    const { s, id, ans } = await graded();
+    const { id, ans } = await graded();
     expect(ans.answer).toBeNull();
     expect(await prisma.attemptAnswer.count({ where: { attemptId: id } })).toBe(1);
     expect((await attemptRow(id)).gradingStatus).toBe("PENDING_MANUAL_GRADING");
-    expect((await listQuizAttempts(s.quiz.id, at(2000)))[0]).toMatchObject({ score: 0, pendingEssays: 1 });
   });
 
   it("validates points 0..max with up to 2 decimals", async () => {
@@ -480,7 +466,6 @@ describe("essay grading", () => {
     const row = await essayRow(id, s.qqs[1].id);
     expect([row.manualPoints?.toNumber(), row.teacherFeedback, row.gradedById]).toEqual([2.5, "UMPAN-BALIK", s.teacher.id]);
     expect((await attemptRow(id)).gradingStatus).toBe("FINAL");
-    expect((await listQuizAttempts(s.quiz.id, at(3000)))[0]).toMatchObject({ score: 50, pendingEssays: 0 });
   });
 
   it("audits each change once, without the feedback; stays FINAL", async () => {
