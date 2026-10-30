@@ -133,9 +133,9 @@ components:
 
 Aksara terasa seperti ruang kelas pada pagi hari: terang, lega, dan ramah. Kanvasnya peach yang lembut, bukan putih klinis. Setiap kelompok isi duduk di kartu putih bersudut besar yang terangkat tipis dari kanvas. Oranye dipakai untuk hal yang perlu dikerjakan *sekarang*, misalnya tombol utama, item navigasi aktif, atau pilihan jawaban siswa. Selebihnya tenang.
 
-Desain ini dirancang untuk dua pembaca sekaligus, yaitu anak kelas 6 dan guru senior. Karena itu huruf berukuran besar (isi 18 px, terkecil 16 px), target sentuh lapang (48 px), dan setiap status ditulis dengan kata-kata, tidak hanya dengan warna. Kepadatannya sedang: satu tindakan utama per kartu, dan angka penting ditampilkan besar.
+Desain ini dirancang untuk dua pembaca sekaligus, yaitu anak kelas 6 dan guru senior. Target sentuh lapang (48 px), dan setiap status ditulis dengan kata-kata, tidak hanya dengan warna. Kepadatannya sedang: satu tindakan utama per kartu, dan angka penting ditampilkan besar.
 
-Sumber visualnya adalah mockup Stitch di `docs/stitch/`. Perbedaan dengan mockup hanya untuk aksesibilitas: oranye terang mockup tidak dipakai di bawah teks, label kecil 14 px dinaikkan menjadi 16 px, dan ikon memakai Hugeicons.
+Sumber visualnya adalah mockup Stitch di `docs/stitch/`. Sejak Tahap 7c tampilan mengikuti mockup seidentik mungkin: tema Stitch (warna, skala huruf termasuk label 10–14 px, jarak) dicerminkan 1:1 di `@theme` sehingga markup mockup bisa disalin apa adanya. Perbedaan yang tersisa: tombol oranye memakai `#ea580c` (bukan `#ff7034`) dan ikon memakai Hugeicons.
 
 **Key Characteristics:**
 - Kanvas peach, kartu putih, bayangan hangat yang sangat tipis.
@@ -148,7 +148,7 @@ Sumber visualnya adalah mockup Stitch di `docs/stitch/`. Perbedaan dengan mockup
 Palet ini hangat: satu oranye bata sebagai suara tindakan, di atas netral peach dan cokelat-keabuan.
 
 ### Primary
-- **Oranye Bata** (`primary`, `#ea580c`): isi tombol utama, item navigasi aktif, dan focus ring. Dipilih sedekat mungkin dengan oranye Stitch: teks putih di atasnya 3.56:1 (mendekati AA), jadi labelnya selalu tebal. Teks berwarna tetap memakai `primary-strong`.
+- **Oranye Bata** (`primary`, `#ea580c`; juga `primary-container` di tema Stitch): isi tombol utama, item navigasi aktif, dan focus ring. Dipilih sedekat mungkin dengan oranye Stitch: teks putih di atasnya 3.56:1 (mendekati AA), jadi labelnya selalu tebal. Teks berwarna tetap memakai `primary-strong`.
 - **Oranye Bata Tua** (`primary-strong`): teks berwarna aksen, link, label tombol sekunder, dan angka sorotan.
 - **Oranye Senja** (`accent-decor`): khusus dekorasi. Dipakai untuk isi bar progres, garis aksen di samping judul seksi, latar ikon besar, dan tanda nomor soal aktif. Teks tidak pernah diletakkan di atas warna ini.
 - **Peach Pilihan** (`primary-soft`): latar keadaan terpilih, misalnya opsi jawaban siswa.
@@ -185,7 +185,7 @@ Satu keluarga huruf, dibedakan lewat ketebalan. Judul tebal (700–800) dengan t
 - **Label** (600, 1rem): tombol, chip, label form, dan label kartu statistik. Tidak ada eyebrow di atas judul; judul cukup berdiri sendiri.
 - **Mono** (500, 1rem, tracking 0.05em): kode dan timer. Boleh dibesarkan, misalnya untuk tampilan kode kelas di proyektor.
 
-**The Enam-Belas Rule.** Tidak ada teks di bawah 16 px, termasuk caption, chip, dan footer.
+**The Skala-Stitch Rule.** Ukuran huruf memakai skala Stitch (`text-label-sm`, `text-body-md`, `text-headline-*`, dan 10/11 px untuk chip), atas keputusan user di Tahap 7c.
 
 ## Layout
 
@@ -241,7 +241,6 @@ Kartu soal punya chip nomor ("Nomor 5 dari 15") dan chip tipe di atasnya. Teks s
 
 ### Don't:
 - **Don't** letakkan teks di atas `accent-decor` (#ff7034). Kontrasnya hanya 2.76:1.
-- **Don't** pakai ukuran teks di bawah 16 px.
 - **Don't** salin data contoh mockup (nama guru, jumlah siswa, judul bab) ke produk.
 - **Don't** pakai ikon Material Symbols. Gunakan Hugeicons.
 - **Don't** pakai bayangan pada kartu yang ada di dalam kartu lain.

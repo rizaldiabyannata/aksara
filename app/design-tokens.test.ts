@@ -53,10 +53,21 @@ describe("design tokens", () => {
     }
   });
 
-  it("no text token below 1rem", () => {
-    const sizes = [...css.matchAll(/--text-([\w-]+):\s*([\d.]+)rem/g)].filter(([, n]) => !n.includes("line-height"));
-    expect(sizes.length).toBeGreaterThan(0);
-    for (const [, n, v] of sizes) expect(parseFloat(v), `--text-${n}`).toBeGreaterThanOrEqual(1);
+  // Tahap 7c: the user chose Stitch's exact type scale (10–14 px labels included), so there is no 16 px floor anymore.
+  // Stitch's theme is mirrored 1:1 so its markup can be ported verbatim. Overrides: names that collide with ours
+  // (primary/secondary/background keep their app meaning) and the filled orange, kept at #ea580c by user decision.
+  it("mirrors the Stitch theme", () => {
+    const cfg = readFileSync("docs/stitch/dasbor-guru.html", "utf8").match(/tailwind\.config = (\{[\s\S]*?\})\s*<\/script>/)![1];
+    const theme = css.match(/@theme inline\s*{([\s\S]*?)\n}/)![1];
+    const val = (k: string) => theme.match(new RegExp(`--${k}:\\s*([^;]+);`))?.[1].trim();
+    const override: Record<string, string> = { "primary-container": "#ea580c", "border-active": "#ea580c" };
+    const colors = [...cfg.matchAll(/"([\w-]+)": "(#[0-9a-fA-F]{6})"/g)].filter(([, k]) => !["primary", "secondary", "background"].includes(k));
+    expect(colors.length).toBeGreaterThan(50);
+    for (const [, k, v] of colors) expect(val(`color-${k}`)?.toLowerCase(), k).toBe((override[k] ?? v).toLowerCase());
+    for (const [, k, size] of cfg.matchAll(/"([\w-]+)": \[ "([\d.]+rem)"/g)) expect(val(`text-${k}`), k).toBe(size);
+    const spacing = cfg.match(/"spacing": \{([\s\S]*?)\}/)![1];
+    for (const [, k, v] of spacing.matchAll(/"([\w-]+)": "([\d.]+rem)"/g)) expect(val(`spacing-${k}`), k).toBe(v);
+    expect(val("color-brand-blue")).toBe("#0d59c3");
   });
 
   it("accent-decor is never a text color", () => {
