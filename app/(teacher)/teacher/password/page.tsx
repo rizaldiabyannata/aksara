@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { LockPasswordIcon, Key01Icon, Shield01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { requireTeacher } from "@/lib/auth/guard";
+import { AvatarForm } from "./avatar-form";
 import { PasswordForm } from "./password-form";
 
 export const metadata: Metadata = { title: "Ganti Kata Sandi" };
@@ -53,6 +54,10 @@ async function ChangePassword() {
           <PasswordForm />
         </div>
         <div className="lg:col-span-5 flex flex-col gap-space-lg">
+          <section aria-labelledby="foto-profil" className="bg-surface-card rounded-2xl p-space-lg md:p-space-xl shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07)]">
+            <h2 id="foto-profil" className="font-headline-sm text-headline-sm text-text-primary mb-space-md">Foto profil</h2>
+            <AvatarForm displayName={user.displayName} imageId={user.avatarImageId} />
+          </section>
           <div className="bg-surface-card rounded-2xl p-space-lg md:p-space-xl shadow-[0_4px_20px_-2px_rgba(230,115,60,0.05)] flex items-start gap-space-md">
             <div className="w-9 h-9 rounded-lg bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
               <HugeiconsIcon icon={Shield01Icon} aria-hidden="true" className="size-6" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { GuidePanel } from "@/components/guide-panel";
 import { startTransition, useActionState } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
@@ -294,6 +295,14 @@ export function QuestionForm({
         </Sec>
       </div>
       <div className="lg:col-span-4 flex flex-col gap-space-lg">
+        <GuidePanel
+          title="Pedoman Mengisi Soal"
+          items={[
+            { head: "Kunci jawaban", body: "Kunci hanya terlihat oleh Anda. Siswa tidak pernah menerimanya saat mengerjakan." },
+            { head: "Tanpa kunci otomatis", body: "Soal uraian tidak punya kunci otomatis. Anda yang memberi nilainya setelah siswa mengumpulkan." },
+            { head: "Setelah ulangan terbit", body: "Mengubah soal di sini tidak mengubah ulangan yang sudah terbit." },
+          ]}
+        />
         <Sec icon={Settings02Icon} title="Parameter Soal" hint="Konfigurasi bobot dan tingkat kesulitan">
           <fieldset className="flex flex-col gap-1.5">
             <legend className={labelClass}>Tingkat Kesulitan</legend>

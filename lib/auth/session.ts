@@ -14,6 +14,8 @@ export type SessionUser = {
   displayName: string;
   classId: string | null;
   mustChangePassword: boolean;
+  nis: string | null;
+  avatarImageId: string | null;
 };
 
 type Db = Prisma.TransactionClient | typeof prisma;
@@ -53,6 +55,8 @@ export async function findSession(
           displayName: true,
           classId: true,
           mustChangePassword: true,
+          nis: true,
+          avatarImageId: true,
           isActive: true,
           class: { select: { isActive: true } },
         },

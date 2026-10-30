@@ -60,6 +60,7 @@ async function Attempt({ params }: { params: PageProps<"/student/quizzes/[quizId
       attemptId={view.attemptId}
       quizId={view.quizId}
       quizTitle={view.quizTitle}
+      participant={{ name: user.displayName, nis: user.nis }}
       deadlineAt={view.deadlineAt}
       serverNow={view.serverNow}
       questions={questions}

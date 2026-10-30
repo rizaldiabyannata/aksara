@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert02Icon, ArrowLeft01Icon, ArrowRight01Icon, CheckmarkCircle02Icon, Clock01Icon, Flag02Icon, GridViewIcon, InformationCircleIcon, Calculator01Icon, AlarmClockIcon, Tick02Icon, CloudIcon } from "@hugeicons/core-free-icons";
+import { Alert02Icon, ArrowLeft01Icon, ArrowRight01Icon, CheckmarkCircle02Icon, Clock01Icon, Flag02Icon, GridViewIcon, InformationCircleIcon, Calculator01Icon, AlarmClockIcon, Tick02Icon, CloudIcon, UserIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -27,7 +27,7 @@ type Q = {
   prompt: ReactNode;
   options: { id: string; node: ReactNode }[] | null;
 };
-type Props = { attemptId: string; quizId: string; quizTitle: string; deadlineAt: string; serverNow: string; questions: Q[] };
+type Props = { attemptId: string; quizId: string; quizTitle: string; participant: { name: string; nis: string | null }; deadlineAt: string; serverNow: string; questions: Q[] };
 type Phase = "running" | "done" | "closed";
 
 const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
@@ -90,7 +90,7 @@ const clock = (ms: number) => {
 };
 const hhmm = (d: Date) => d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 
-export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, serverNow, questions }: Props) {
+export function AttemptClient({ attemptId, quizId, quizTitle, participant, deadlineAt, serverNow, questions }: Props) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, StoredAnswer | null>>(() =>
     Object.fromEntries(questions.map((q) => [q.id, q.answer])),
@@ -649,6 +649,16 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
               })}
             </ul>
           </nav>
+          <div className="flex w-full items-center gap-space-md rounded-2xl bg-surface-card p-space-md shadow-sm">
+            <div aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-canvas-peach text-primary-strong">
+              <HugeiconsIcon icon={UserIcon} className="size-7" />
+            </div>
+            <div className="flex min-w-0 flex-col">
+              <span className="font-label-sm text-label-sm text-text-muted">Peserta Ujian:</span>
+              <span className="truncate font-headline-sm text-headline-sm text-text-primary">{participant.name}</span>
+              {participant.nis && <span className="font-body-md text-body-md text-text-muted">NIS: {participant.nis}</span>}
+            </div>
+          </div>
         </aside>
       </div>
       <p role="alert" className="font-label-md text-label-md text-tone-danger">

@@ -23,6 +23,8 @@ import { listClasses } from "@/lib/classes";
 import { attendanceToday } from "@/lib/attendance";
 import { getTeacherDashboard, type TeacherTask } from "@/lib/dashboard";
 import { taskLine } from "@/lib/task-text";
+import { ClassroomIllustration } from "@/components/illustrations";
+import { tipOfWeek } from "@/lib/tips";
 import { ClassCodeDialog } from "./classes/class-code-dialog";
 
 export const metadata: Metadata = { title: "Dasbor Guru" };
@@ -38,6 +40,23 @@ export default function TeacherDashboardPage() {
 const Icon = ({ icon, className }: { icon: IconSvgElement; className: string }) => (
   <HugeiconsIcon icon={icon} aria-hidden="true" className={className} />
 );
+
+function Tip({ now }: { now: Date }) {
+  const tip = tipOfWeek(now);
+  return (
+    <section className="bg-gradient-to-br from-surface-card to-canvas-peach-subtle/50 rounded-2xl p-space-lg shadow-sm flex flex-col gap-space-sm">
+      <h2 className="flex items-center gap-space-sm font-label-md text-label-md font-bold text-primary-strong">
+        <Icon icon={InformationCircleIcon} className="size-[22px]" />
+        Tips Pengajaran Minggu Ini
+      </h2>
+      <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">{tip.text}</p>
+      <Link href={tip.href} className="inline-flex min-h-11 items-center gap-1 font-label-md text-label-md font-bold text-primary-strong hover:underline focus-visible:ring-[3px] focus-visible:ring-ring outline-none">
+        {tip.cta}
+        <Icon icon={ArrowRight01Icon} className="size-4" />
+      </Link>
+    </section>
+  );
+}
 
 async function Dashboard() {
   const user = await requireTeacher();
@@ -64,6 +83,7 @@ async function Dashboard() {
             )}
           </p>
         </div>
+        <ClassroomIllustration className="hidden h-32 w-auto shrink-0 md:block" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
@@ -131,6 +151,8 @@ async function Dashboard() {
               ))}
             </div>
           )}
+
+          <Tip now={new Date()} />
 
           <div className="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-space-md">
             <div className="flex items-center justify-between">

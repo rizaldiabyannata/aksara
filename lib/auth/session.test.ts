@@ -16,7 +16,7 @@ afterEach(() => {
 const HOUR = 3600_000;
 
 describe("sessions", () => {
-  it("finds a new session with exactly the 5 SessionUser keys", async () => {
+  it("finds a new session with exactly the 7 SessionUser keys", async () => {
     const c = await makeClass();
     const s = await makeStudent(c.id);
     const { token } = await createSession(prisma, s);
@@ -24,7 +24,7 @@ describe("sessions", () => {
     expect(r.status).toBe("ok");
     if (r.status !== "ok") return;
     expect(Object.keys(r.user).sort()).toEqual(
-      ["classId", "displayName", "id", "mustChangePassword", "role"].sort(),
+      ["avatarImageId", "classId", "displayName", "id", "mustChangePassword", "nis", "role"].sort(),
     );
     expect(r.user.id).toBe(s.id);
   });

@@ -215,13 +215,67 @@ export async function removeImage(actorId: string, id: string): Promise<{ ok: tr
   return { ok: true };
 }
 
+/** Teacher profile photo (D7). The old image row and object go once the new one is saved. */
+export async function setTeacherAvatar(
+  teacherId: string,
+  file: Uint8Array,
+): Promise<{ ok: true; id: string } | NotFound | { ok: false; error: "UNSUPPORTED" | "TOO_LARGE" }> {
+  const teacher = await prisma.user.findFirst({
+    where: { id: teacherId, role: "TEACHER" },
+    select: { displayName: true },
+  });
+  if (!teacher) return { ok: false, error: "NOT_FOUND" };
+  const p = await processUpload(file);
+  if (!p.ok) return p;
+  const { image } = p;
+  const storageKey = `images/${randomUUID()}.${image.ext}`;
+  await putImage(storageKey, image.data, image.mimeType);
+  try {
+    const { id, oldKey } = await prisma.$transaction(async (tx) => {
+      const old = await tx.user.findUnique({ where: { id: teacherId }, select: { avatarImage: { select: { id: true, storageKey: true } } } });
+      const row = await tx.image.create({
+        data: {
+          storageKey,
+          mimeType: image.mimeType,
+          sizeBytes: image.data.length,
+          width: image.width,
+          height: image.height,
+          altText: `Foto profil ${teacher.displayName}`,
+          createdById: teacherId,
+        },
+        select: { id: true },
+      });
+      await tx.user.update({ where: { id: teacherId }, data: { avatarImageId: row.id } });
+      if (old?.avatarImage) await tx.image.delete({ where: { id: old.avatarImage.id } });
+      return { id: row.id, oldKey: old?.avatarImage?.storageKey };
+    });
+    if (oldKey) await removeObject(oldKey, "avatar-lama");
+    return { ok: true, id };
+  } catch (e) {
+    await removeObject(storageKey, "belum-tersimpan");
+    throw e;
+  }
+}
+
+export async function removeTeacherAvatar(teacherId: string): Promise<void> {
+  const key = await prisma.$transaction(async (tx) => {
+    const u = await tx.user.findUnique({ where: { id: teacherId }, select: { avatarImage: { select: { id: true, storageKey: true } } } });
+    if (!u?.avatarImage) return null;
+    await tx.image.delete({ where: { id: u.avatarImage.id } }); // FK SetNull clears User.avatarImageId
+    return u.avatarImage.storageKey;
+  });
+  if (key) await removeObject(key, "avatar");
+}
+
 /** Presigned URL for the caller, or null (unknown id or not allowed). Never expose storageKey. */
 export async function imageRedirectTarget(user: SessionUser, id: string, now: Date = new Date()): Promise<string | null> {
   const img = await prisma.image.findUnique({
     where: { id },
-    select: { storageKey: true, material: { select: { status: true } } },
+    select: { storageKey: true, material: { select: { status: true } }, avatarOf: { select: { id: true } } },
   });
   if (!img) return null;
+  // A profile photo is private to its owner, even from other teachers.
+  if (img.avatarOf.length) return img.avatarOf.some((u) => u.id === user.id) ? presignGet(img.storageKey) : null;
   if (!canStudentViewImage({ role: user.role, materialStatus: img.material?.status ?? null })) {
     // Not a visible material image: a student may still see a frozen image of a quiz they are (a) taking or
     // (b) have submitted after release. No finalize here: the deadline + grace is checked in the query itself.

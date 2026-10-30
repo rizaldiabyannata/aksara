@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { GuidePanel } from "@/components/guide-panel";
 import { Suspense } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
@@ -347,6 +348,15 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
               ))}
             </div>
           </div>
+          <GuidePanel
+            title="Kaidah Penilaian Soal"
+            items={[
+              { head: "Pilihan ganda majemuk", body: "Nilai penuh hanya jika semua pilihan yang benar dipilih. Kurang atau lebih satu pilihan, nilainya nol." },
+              { head: "Isian singkat", body: "Jawaban dicocokkan persis setelah spasi dirapikan. Atur sendiri apakah huruf besar dan kecil dibedakan." },
+              { head: "Uraian", body: "Dinilai manual oleh Anda. Hasil ulangan belum final sebelum semua uraian dinilai." },
+              { head: "Soal yang sudah dipakai", body: "Ulangan yang sudah terbit menyimpan salinan soalnya, jadi mengedit soal di sini tidak mengubahnya." },
+            ]}
+          />
         </aside>
       </div>
     </>

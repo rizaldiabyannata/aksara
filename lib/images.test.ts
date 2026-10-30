@@ -8,6 +8,8 @@ import {
   imageRedirectTarget,
   removeImage,
   updateImageMeta,
+  setTeacherAvatar,
+  removeTeacherAvatar,
 } from "@/lib/images";
 import { prisma } from "@/lib/db";
 import { objects } from "../tests/storage-fake";
@@ -407,5 +409,55 @@ describe("student access to frozen quiz images", () => {
     expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBeNull();
     await prisma.quizAttempt.update({ where: { id: a.id }, data: { objectiveScore: 1 } });
     expect(await imageRedirectTarget(c.asStudent, c.img.id, at(3000))).toBe(c.url);
+  });
+});
+
+describe("teacher avatar", () => {
+  const png = (w = 40) => sharp({ create: { width: w, height: w, channels: 3, background: "#09c" } }).png().toBuffer();
+  const avatarOf = async (id: string) => (await prisma.user.findUniqueOrThrow({ where: { id } })).avatarImageId;
+
+  it("owner reads it; other teacher and student get null", async () => {
+    const { user: t } = await makeTeacher();
+    const { user: other } = await makeTeacher();
+    const s = await makeStudent((await makeClass()).id);
+    const r = await setTeacherAvatar(t.id, await png());
+    if (!r.ok) throw new Error(r.error);
+    expect(await avatarOf(t.id)).toBe(r.id);
+    const img = await prisma.image.findUniqueOrThrow({ where: { id: r.id } });
+    expect(img.altText).toBe(`Foto profil ${t.displayName}`);
+    expect(img.materialId).toBeNull();
+    expect(await imageRedirectTarget({ ...t, classId: null } as never, r.id)).toContain("https://r2.test/");
+    expect(await imageRedirectTarget({ ...other, classId: null } as never, r.id)).toBeNull();
+    expect(await imageRedirectTarget({ ...s } as never, r.id)).toBeNull();
+  });
+
+  it("replacing removes the old image and its object", async () => {
+    const { user: t } = await makeTeacher();
+    const a = await setTeacherAvatar(t.id, await png());
+    const b = await setTeacherAvatar(t.id, await png(50));
+    if (!a.ok || !b.ok) throw new Error("upload");
+    expect(await prisma.image.findUnique({ where: { id: a.id } })).toBeNull();
+    expect(objects.size).toBe(1);
+    expect(await avatarOf(t.id)).toBe(b.id);
+  });
+
+  it("refuses non-images and oversized files, keeping the old avatar", async () => {
+    const { user: t } = await makeTeacher();
+    const a = await setTeacherAvatar(t.id, await png());
+    expect(await setTeacherAvatar(t.id, Buffer.from("bukan gambar"))).toEqual({ ok: false, error: "UNSUPPORTED" });
+    const noisy = await sharp(Buffer.alloc(1500 * 1500 * 3, 0).map(() => Math.floor(Math.random() * 256)), {
+      raw: { width: 1500, height: 1500, channels: 3 },
+    }).png({ compressionLevel: 0 }).toBuffer();
+    expect(await setTeacherAvatar(t.id, noisy)).toEqual({ ok: false, error: "TOO_LARGE" });
+    if (a.ok) expect(await avatarOf(t.id)).toBe(a.id);
+  });
+
+  it("remove clears the field and deletes the object", async () => {
+    const { user: t } = await makeTeacher();
+    await setTeacherAvatar(t.id, await png());
+    await removeTeacherAvatar(t.id);
+    expect(await avatarOf(t.id)).toBeNull();
+    expect(objects.size).toBe(0);
+    expect(await prisma.image.count()).toBe(0);
   });
 });

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowRight01Icon, HelpCircleIcon, TaskDone01Icon } from "@hugeicons/core-free-icons";
+import { ClassroomIllustration } from "@/components/illustrations";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Status } from "@/components/status";
 import { StudentLoginForm } from "./student-login-form";
@@ -46,6 +47,7 @@ export default function StudentLoginPage({ searchParams }: PageProps<"/login">) 
                 <p className="font-body-md text-body-md text-text-muted leading-relaxed">Tanyakan kepada gurumu. Kodenya ditulis di papan tulis.</p>
               </div>
             </div>
+            <ClassroomIllustration className="hidden h-auto w-full max-w-sm self-center lg:block" />
           </div>
           <div className="w-full lg:col-span-7 order-1 lg:order-2">
             <div className="bg-surface-card rounded-3xl p-space-xl sm:p-space-2xl shadow-[0_12px_36px_-4px_rgba(230,115,60,0.12)] flex flex-col gap-space-lg relative">

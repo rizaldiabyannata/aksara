@@ -40,10 +40,14 @@ function initials(name: string) {
 
 async function Profile({ compact }: { compact?: boolean }) {
   const user = await requireTeacher();
-  const avatar = (
+  const size = compact ? "size-8" : "size-11";
+  const avatar = user.avatarImageId ? (
+    // eslint-disable-next-line @next/next/no-img-element -- presigned redirect; alt is the profile label
+    <img src={`/api/images/${user.avatarImageId}`} alt={`Foto profil ${user.displayName}`} className={`${size} shrink-0 rounded-full object-cover ring-2 ring-primary-container`} />
+  ) : (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-full bg-primary-strong text-on-primary font-label-md text-label-md ring-2 ring-primary-container ${compact ? "size-8" : "size-11"}`}
+      className={`flex shrink-0 items-center justify-center rounded-full bg-primary-strong text-on-primary font-label-md text-label-md ring-2 ring-primary-container ${size}`}
     >
       {initials(user.displayName)}
     </span>
