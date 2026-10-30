@@ -37,5 +37,7 @@ describe("searchAll", () => {
   it("treats % and _ literally", async () => {
     await makeClass({ name: "Kelas A" });
     expect((await searchAll("%%")).classes).toHaveLength(0);
+    await makeClass({ name: "Kelas 6_B 100%" });
+    expect((await searchAll("6_b 100%")).classes.map((c) => c.name)).toEqual(["Kelas 6_B 100%"]);
   });
 });

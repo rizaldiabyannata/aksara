@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { useLayoutEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export function StartButton({ quizId, title, label, needsToken = false }: { quizId: string; title: string; label: "Mulai" | "Lanjutkan" | "Ulangi"; needsToken?: boolean }) {
+export function StartButton({ quizId, title, label, needsToken: tokenAtRender = false }: { quizId: string; title: string; label: "Mulai" | "Lanjutkan" | "Ulangi"; needsToken?: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [token, setToken] = useState("");
+  // The teacher may switch the token on after this list rendered; the server's TOKEN_* reply reveals the field.
+  const [needsToken, setNeedsToken] = useState(tokenAtRender);
   // cacheComponents keeps this state when the list is hidden; reset it when hidden so coming back isn't stuck on "Membuka…".
   useLayoutEffect(() => () => setBusy(false), []);
 
@@ -27,11 +29,12 @@ export function StartButton({ quizId, title, label, needsToken = false }: { quiz
         setBusy(false);
         return;
       }
-      const body = (await res.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+      const body = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; message?: string } | null;
       if (res.ok && body?.ok) {
         router.push(`/student/quizzes/${encodeURIComponent(quizId)}/attempt`);
         return; // keep the button disabled while navigating
       }
+      if (body?.error?.startsWith("TOKEN_")) setNeedsToken(true);
       setMessage(body?.message ?? "Ada masalah. Coba lagi sebentar lagi.");
     } catch {
       setMessage("Tidak ada sambungan internet. Coba lagi.");
