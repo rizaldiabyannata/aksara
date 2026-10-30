@@ -13,6 +13,13 @@ const STATE: Record<RecapState, { tone: StatusTone; label: string }> = {
   NEEDS_GRADING: { tone: "warning", label: "Perlu dinilai" },
   FINAL: { tone: "success", label: "Selesai" },
 };
+const CHIP: Record<StatusTone, string> = {
+  neutral: "bg-surface-container-high text-text-muted",
+  info: "bg-tone-info-bg text-tone-info",
+  warning: "bg-tone-warning-bg font-semibold text-tone-warning",
+  success: "bg-tone-success-bg text-tone-success",
+  danger: "bg-tone-danger-bg text-tone-danger",
+};
 const ATTEMPT_LABEL = { running: "Sedang dikerjakan", done: "Terkumpul", replaced: "Diganti" };
 const selectClass =
   "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring";
@@ -20,23 +27,11 @@ const selectClass =
 function StateStatus({ row, now }: { row: RecapRow; now: Date }) {
   const { tone, label } = STATE[row.state];
   const run = row.running;
-  if (!run) return <Status tone={tone}>{label}</Status>;
+  const chip = `inline-flex items-center gap-1.5 whitespace-normal rounded-full px-3 py-1 font-label-sm text-label-sm ${CHIP[tone]}`;
+  if (!run) return <span className={chip}>{label}</span>;
   // Inside the 60 s network grace the deadline is already past: say so instead of a negative time.
   const end = run.deadlineAt > now ? `selesai pukul ${formatWitaTime(run.deadlineAt)}` : "waktu habis";
-  return <Status tone={tone}>{label} · {run.answered}/{run.total} terjawab · {end}</Status>;
-}
-
-function Scores({ row, quiz }: { row: RecapRow; quiz: QuizRecap["quiz"] }) {
-  const { recap, highest, final } = row.recap;
-  if (recap === null) return <p className="text-muted-foreground">Belum ada nilai</p>;
-  return (
-    <div className="flex flex-col">
-      <span className="text-lg font-bold">Nilai {final ? "" : "sementara "}{formatScore(recap)}</span>
-      {quiz.scoringPolicy === "REMEDIAL" && highest !== null && highest > recap && (
-        <span className="text-muted-foreground">Nilai asli {formatScore(highest)}</span>
-      )}
-    </div>
-  );
+  return <span className={chip}>{label} · {end}</span>;
 }
 
 function Tuntas({ row, kkm }: { row: RecapRow; kkm: number | null }) {
@@ -113,42 +108,71 @@ export function MonitorList({ recap, quizId, classFilter }: { recap: QuizRecap; 
         </form>
       )}
       {rows.length === 0 ? (
-        <p className="text-muted-foreground">Belum ada siswa di kelas ini. Tambahkan siswa di halaman Siswa.</p>
+        <p className="font-body-md text-body-md text-text-muted">Belum ada siswa di kelas ini. Tambahkan siswa di halaman Siswa.</p>
       ) : (
-        <>
-        <div aria-hidden="true" className="hidden grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_repeat(3,minmax(0,0.8fr))] gap-3 rounded-xl bg-secondary px-4 py-3 text-sm font-bold tracking-wide text-muted-foreground uppercase lg:grid">
-          <span>Siswa</span><span>Status</span><span>Percobaan</span><span>Nilai</span><span>Ketuntasan</span>
-        </div>
-        <ul className="flex flex-col gap-3">
-          {rows.map((r) => (
-            <li key={r.studentId} className={`rounded-2xl border bg-card p-4 shadow-card ${r.state === "NEEDS_GRADING" ? "border-l-4 border-l-accent-decor" : ""}`}>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_repeat(3,minmax(0,0.8fr))] lg:items-center lg:gap-3">
-                <div className="col-span-2 flex items-center gap-3 lg:col-span-1">
-                  <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-soft font-bold text-primary-strong">
-                    {r.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-lg font-bold break-words">{r.name}</p>
-                    <p className="text-muted-foreground">{r.className}{r.nis && ` · NIS ${r.nis}`}</p>
+        <div className="flex min-w-0 flex-col gap-space-md">
+          {rows.map((r) => {
+            const run = r.running;
+            const pct = run ? Math.round((run.answered / Math.max(1, run.total)) * 100) : 0;
+            const { recap, final } = r.recap;
+            const initials = r.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+            return (
+              <div
+                key={r.studentId}
+                className={`flex min-w-0 flex-col gap-space-md rounded-2xl bg-surface-card p-space-lg shadow-sm transition-all hover:shadow-md ${r.state === "NEEDS_GRADING" ? "border-l-4 border-l-primary-container" : ""}`}
+              >
+                <div className="flex flex-col justify-between gap-space-md sm:flex-row sm:items-start">
+                  <div className="flex min-w-0 flex-1 items-start gap-space-md">
+                    <div aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-canvas-peach-subtle font-headline-md font-bold text-primary-strong">{initials}</div>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-headline-sm text-headline-sm text-text-primary">{r.name}</h3>
+                        {r.nis && <span className="whitespace-nowrap rounded-md bg-canvas-peach px-2.5 py-0.5 font-code-mono text-label-sm text-on-surface-variant">NIS {r.nis}</span>}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                        <StateStatus row={r} now={now} />
+                        <span className="whitespace-nowrap text-label-sm text-on-surface-variant">• {r.className}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="shrink-0 rounded-xl bg-canvas-peach/60 p-2.5 sm:bg-transparent sm:p-0 sm:text-right">
+                    {run ? (
+                      <>
+                        <span className="block font-headline-md font-bold leading-none text-primary-strong">{run.answered} / {run.total}</span>
+                        <span className="mt-1 block text-label-sm text-on-surface-variant">Soal Terjawab</span>
+                      </>
+                    ) : recap === null ? (
+                      <span className="block text-label-sm text-on-surface-variant">Belum ada nilai</span>
+                    ) : (
+                      <>
+                        <span className="block font-headline-md font-bold leading-none text-primary-strong">{formatScore(recap)}</span>
+                        <span className="mt-1 block text-label-sm text-on-surface-variant">{final ? "Nilai Akhir" : "Nilai Sementara"}</span>
+                        {quiz.scoringPolicy === "REMEDIAL" && r.recap.highest !== null && r.recap.highest > recap && (
+                          <span className="block text-label-sm text-on-surface-variant">Nilai asli {formatScore(r.recap.highest)}</span>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
-                <div className="col-span-2 flex flex-col gap-2 lg:col-span-1">
-                  <StateStatus row={r} now={now} />
-                  {r.running && (
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-secondary" aria-hidden="true">
-                      <div className="h-full rounded-full bg-accent-decor" style={{ width: `${Math.round((r.running.answered / Math.max(1, r.running.total)) * 100)}%` }} />
+                {run && (
+                  <div className="space-y-2 pt-1">
+                    <div className="h-3 w-full overflow-hidden rounded-full bg-canvas-peach" aria-hidden="true">
+                      <div className="h-full rounded-full bg-primary-container transition-all duration-500" style={{ width: `${pct}%` }} />
                     </div>
-                  )}
+                    <span className="text-label-sm font-medium text-on-surface-variant">Progress: {pct}% ({run.answered} dari {run.total} soal)</span>
+                  </div>
+                )}
+                <div className="flex flex-wrap items-center justify-between gap-space-md border-t border-border-subtle/50 pt-2">
+                  <span className="flex items-center gap-1.5 text-label-sm text-on-surface-variant">
+                    Percobaan {r.attemptsUsed}/{quiz.maxAttempts}
+                  </span>
+                  <Tuntas row={r} kkm={quiz.kkm} />
                 </div>
-                <p>Percobaan {r.attemptsUsed}/{quiz.maxAttempts}</p>
-                <Scores row={r} quiz={quiz} />
-                <div><Tuntas row={r} kkm={quiz.kkm} /></div>
+                <Attempts row={r} quizId={quizId} released={!!quiz.resultsReleasedAt} />
               </div>
-              <Attempts row={r} quizId={quizId} released={!!quiz.resultsReleasedAt} />
-            </li>
-          ))}
-        </ul>
-        </>
+            );
+          })}
+        </div>
       )}
     </div>
   );

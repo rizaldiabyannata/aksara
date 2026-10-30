@@ -4,6 +4,8 @@ import { useActionState } from "react";
 import { ConfirmAction } from "@/components/confirm-action";
 import { Feedback } from "@/components/form-feedback";
 import { FormField } from "@/components/form-field";
+import { FloppyDiskIcon, PencilEdit02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -78,34 +80,95 @@ export function CreateStudentForm({
   defaultClassId?: string;
 }) {
   const [state, formAction, pending] = useActionState(createStudentAction, undefined);
+  const INPUT =
+    "w-full h-11 px-4 rounded-xl bg-[#fcf8f7] border border-stone-200 text-text-primary font-body-md text-xs placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-container focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive";
+  const LABEL = "font-label-md text-xs font-bold text-text-primary";
+  const err = (id: string, e?: string) =>
+    e && (
+      <p id={`${id}-error`} className="text-sm text-destructive">
+        {e}
+      </p>
+    );
+  const classId = state?.values?.classId ?? defaultClassId;
   return (
-    <form action={formAction} className="flex flex-col gap-3">
-      <FormField
-        name="displayName"
-        label="Nama siswa"
-        autoComplete="off"
-        required
-        defaultValue={state?.values?.displayName}
-        error={state?.fieldErrors?.displayName}
-      />
-      <FormField
-        name="nis"
-        label="NIS (boleh dikosongkan)"
-        inputMode="numeric"
-        autoComplete="off"
-        defaultValue={state?.values?.nis}
-        error={state?.fieldErrors?.nis}
-      />
-      <ClassSelect
-        id="classId"
-        classes={classes}
-        defaultValue={state?.values?.classId ?? defaultClassId}
-        error={state?.fieldErrors?.classId}
-      />
-      <Feedback state={state} />
-      <Button type="submit" disabled={pending} aria-busy={pending}>
-        {pending ? "Sedang menyimpan…" : "Tambah siswa"}
-      </Button>
+    <form action={formAction} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+      <div className="md:col-span-5 flex flex-col gap-1.5">
+        <label className={LABEL} htmlFor="displayName">
+          Nama siswa <span className="text-tone-danger">*</span>
+        </label>
+        <input
+          id="displayName"
+          name="displayName"
+          type="text"
+          required
+          autoComplete="off"
+          placeholder="Contoh: Ahmad Fauzi"
+          defaultValue={state?.values?.displayName}
+          aria-invalid={state?.fieldErrors?.displayName ? true : undefined}
+          aria-describedby={state?.fieldErrors?.displayName ? "displayName-error" : undefined}
+          className={INPUT}
+        />
+        {err("displayName", state?.fieldErrors?.displayName)}
+      </div>
+      <div className="md:col-span-3 flex flex-col gap-1.5">
+        <label className={LABEL} htmlFor="nis">
+          NIS (boleh dikosongkan)
+        </label>
+        <input
+          id="nis"
+          name="nis"
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="Contoh: 202401"
+          defaultValue={state?.values?.nis}
+          aria-invalid={state?.fieldErrors?.nis ? true : undefined}
+          aria-describedby={state?.fieldErrors?.nis ? "nis-error" : undefined}
+          className={INPUT}
+        />
+        {err("nis", state?.fieldErrors?.nis)}
+      </div>
+      <div className="md:col-span-2 flex flex-col gap-1.5">
+        <label className={LABEL} htmlFor="classId">
+          Kelas <span className="text-tone-danger">*</span>
+        </label>
+        {/* React applies a select's defaultValue only on mount; the key remounts it when it changes. */}
+        <select
+          key={classId}
+          id="classId"
+          name="classId"
+          required
+          defaultValue={classId ?? ""}
+          className={`${INPUT} px-3.5 font-label-md font-medium`}
+          aria-invalid={state?.fieldErrors?.classId ? true : undefined}
+          aria-describedby={state?.fieldErrors?.classId ? "classId-error" : undefined}
+        >
+          <option value="" disabled>
+            Pilih kelas
+          </option>
+          {classes.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+              {c.isActive ? "" : " (nonaktif)"}
+            </option>
+          ))}
+        </select>
+        {err("classId", state?.fieldErrors?.classId)}
+      </div>
+      <div className="md:col-span-2">
+        <button
+          type="submit"
+          disabled={pending}
+          aria-busy={pending}
+          className="w-full h-11 px-4 bg-tone-success text-white font-label-md text-xs font-bold rounded-xl shadow-xs hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1.5 focus-visible:ring-[3px] focus-visible:ring-ring outline-none"
+        >
+          <HugeiconsIcon icon={FloppyDiskIcon} className="size-[18px]" aria-hidden="true" />
+          <span>{pending ? "Sedang menyimpan…" : "Tambah siswa"}</span>
+        </button>
+      </div>
+      <div className="md:col-span-12">
+        <Feedback state={state} />
+      </div>
     </form>
   );
 }
@@ -124,7 +187,12 @@ export function EditStudentDialog({
   const sid = student.id;
   return (
     <Dialog>
-      <DialogTrigger render={<Button variant="outline" className="h-11" />}>
+      <DialogTrigger
+        render={
+          <Button className="h-11! px-3.5! rounded-xl! bg-white! text-text-primary! border! border-stone-200! font-label-md text-xs font-bold hover:bg-stone-50! shadow-xs gap-1.5" />
+        }
+      >
+        <HugeiconsIcon icon={PencilEdit02Icon} className="size-[17px] text-stone-500" aria-hidden="true" />
         Ubah data
       </DialogTrigger>
       <DialogContent>

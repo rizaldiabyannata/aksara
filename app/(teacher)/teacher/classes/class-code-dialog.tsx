@@ -1,5 +1,7 @@
 "use client";
 
+import { Tv01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +20,10 @@ const groupCode = (code: string) => `${code.slice(0, 3)} ${code.slice(3)}`;
 export function ClassCodeDialog({ name, code }: { name: string; code: string }) {
   return (
     <Dialog>
-      <DialogTrigger render={<Button className="h-11 bg-info! font-bold text-primary-foreground hover:bg-info/90!" />}>Tampilkan kode</DialogTrigger>
+      <DialogTrigger render={<Button className="h-11! px-4! rounded-xl! bg-tone-info! text-white! font-label-md text-xs font-bold hover:opacity-90 active:scale-95 shadow-xs gap-2" />}>
+        <HugeiconsIcon icon={Tv01Icon} className="size-[18px]" aria-hidden="true" />
+        Tampilkan kode
+      </DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Kode kelas {name}</DialogTitle>

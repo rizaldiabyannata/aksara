@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Status } from "@/components/status";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { Markdown } from "@/components/material-view";
 import { QuestionView } from "@/components/question-view";
 import { requireTeacher } from "@/lib/auth/guard";
@@ -33,11 +32,11 @@ async function Detail({ params }: { params: Promise<{ id: string; attemptId: str
   const gradable = a.status === "SUBMITTED" && !a.replaced;
   const pending = a.questions.filter((q) => q.question.type === "ESSAY" && q.manualPoints === null).length;
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-space-lg px-space-lg py-space-md">
       <Link href={`/teacher/quizzes/${id}`} className="inline-flex min-h-11 items-center self-start underline">
         Kembali ke ulangan
       </Link>
-      <Card className="gap-4! px-(--card-spacing)">
+      <div className="relative flex flex-col gap-space-md overflow-hidden rounded-2xl bg-surface-card p-space-xl shadow-sm">
         <div className="flex flex-wrap items-center gap-4">
           <span aria-hidden="true" className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-lg font-bold text-primary-strong">
             {a.studentName.split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
@@ -66,13 +65,13 @@ async function Detail({ params }: { params: Promise<{ id: string; attemptId: str
               : `Nilai ${formatScore(a.score)}`}
           </p>
         )}
-      </Card>
+      </div>
       <ol className="flex flex-col gap-4">
         {a.questions.map((q) => {
           const essay = q.question.type === "ESSAY";
           return (
             <li key={q.quizQuestionId}>
-             <Card className="gap-4! px-(--card-spacing)">
+             <div className="flex flex-col gap-space-md rounded-2xl bg-surface-card p-space-lg shadow-sm transition-all hover:shadow-md">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="flex flex-wrap items-center gap-2 text-lg font-bold">
                   Soal {q.number}<span className="sr-only"> · {TYPE_LABEL[q.question.type]} · {q.points} poin</span>
@@ -84,7 +83,7 @@ async function Detail({ params }: { params: Promise<{ id: string; attemptId: str
                 ) : null}
               </div>
               <QuestionView question={q.question} />
-              <dl className="grid gap-1 rounded-xl bg-secondary p-4 sm:grid-cols-[10rem_1fr]">
+              <dl className="grid gap-1 rounded-xl bg-canvas-peach p-space-md sm:grid-cols-[10rem_1fr]">
                 <dt className="font-medium">Jawaban siswa</dt>
                 <dd className="whitespace-pre-wrap">{readable(q.question, q.answer)}</dd>
                 <dt className="font-medium">{essay ? "Rubrik" : "Kunci"}</dt>
@@ -107,7 +106,7 @@ async function Detail({ params }: { params: Promise<{ id: string; attemptId: str
                 <EssayGradeForm answerId={q.answerId} n={q.number} max={q.points} points={q.manualPoints}
                   feedback={q.feedback} blank={q.answer === null} />
               )}
-             </Card>
+             </div>
             </li>
           );
         })}

@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ViewIcon } from "@hugeicons/core-free-icons";
+import { Image01Icon, Route01Icon, ViewIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PageHeader } from "@/components/page-header";
 import { Status } from "@/components/status";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireTeacher } from "@/lib/auth/guard";
 import { extractImageIds } from "@/lib/images";
 import { formatWita } from "@/lib/format";
@@ -18,6 +17,11 @@ import { DeleteMaterialButton, MaterialForm, StatusButtons } from "../material-f
 import { STATUS_LABEL, STATUS_TONE } from "../status-label";
 
 const FLOW = ["DRAFT", "REVIEWED", "PUBLISHED"] as const;
+const FLOW_HINT = {
+  DRAFT: "Hanya Anda yang bisa melihat",
+  REVIEWED: "Isi sudah Anda periksa",
+  PUBLISHED: "Siswa kelas VI bisa membaca",
+} as const;
 
 export const metadata: Metadata = { title: "Ubah materi" };
 
@@ -38,7 +42,7 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
     [material.content, material.examples, material.exercises].join("\n"),
   );
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-6 p-8">
       <PageHeader
         title="Ubah materi"
         description={`${material.subjectName} · ${material.chapterTitle} · Diubah ${formatWita(material.updatedAt)}`}
@@ -49,31 +53,40 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
           </Link>
         }
       />
-      <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:items-start">
-        <MaterialForm chapters={chapters} material={material} />
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <h2 className="text-xl font-bold">Status</h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="lg:col-span-8 min-w-0"><MaterialForm chapters={chapters} material={material} /></div>
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          <div className="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+              <div className="flex items-center gap-2">
+                <HugeiconsIcon icon={Route01Icon} className="size-[22px] text-tone-info" aria-hidden="true" />
+                <h2 className="text-sm font-bold text-text-primary">Status &amp; Alur Publikasi</h2>
+              </div>
+              <span className="text-xs font-bold text-primary-strong">Tahap {FLOW.indexOf(material.status) + 1} / 3</span>
+            </div>
+            <div className="flex flex-col gap-4">
               <div>
                 <Status tone={STATUS_TONE[material.status]}>{STATUS_LABEL[material.status]}</Status>
               </div>
-              <ol className="flex flex-col gap-3">
-                {FLOW.map((st, n) => (
-                  <li key={st} aria-current={st === material.status ? "step" : undefined} className="flex items-center gap-3">
-                    <span
-                      aria-hidden="true"
-                      className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-bold ${st === material.status ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
-                    >
-                      {n + 1}
-                    </span>
-                    <span className={st === material.status ? "font-bold" : "text-muted-foreground"}>{STATUS_LABEL[st]}</span>
-                  </li>
-                ))}
+              <ol className="relative pl-5 space-y-6">
+                <div aria-hidden="true" className="absolute left-3.5 top-3 bottom-3 w-0.5 bg-border-subtle" />
+                {FLOW.map((st, n) => {
+                  const on = st === material.status;
+                  return (
+                    <li key={st} aria-current={on ? "step" : undefined} className="relative flex items-start gap-3.5">
+                      <span
+                        aria-hidden="true"
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-surface-card z-10 ${on ? "bg-primary-container text-on-primary shadow-sm" : "bg-surface-container text-text-muted border border-border-subtle"}`}
+                      >
+                        {n + 1}
+                      </span>
+                      <span className="flex flex-col">
+                        <span className={`text-sm leading-tight ${on ? "font-bold text-text-primary" : "font-semibold text-text-muted"}`}>{STATUS_LABEL[st]}</span>
+                        <span className="text-[11px] text-text-muted mt-0.5">{FLOW_HINT[st]}</span>
+                      </span>
+                    </li>
+                  );
+                })}
               </ol>
               <StatusButtons
                 id={id}
@@ -82,19 +95,14 @@ async function Edit({ params }: { params: Promise<{ id: string }> }) {
                   canTransition(material.status, to),
                 )}
               />
-            </CardContent>
-          </Card>
-          <section aria-labelledby="gambar-heading">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  <h2 id="gambar-heading" className="text-xl font-bold">Gambar</h2>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ImagePanel owner="materialId" ownerId={id} images={material.images} referencedIds={referencedIds} />
-              </CardContent>
-            </Card>
+            </div>
+          </div>
+          <section aria-labelledby="gambar-heading" className="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-border-subtle">
+              <HugeiconsIcon icon={Image01Icon} className="size-[22px] text-primary-strong" aria-hidden="true" />
+              <h2 id="gambar-heading" className="text-sm font-bold text-text-primary">Panel Gambar</h2>
+            </div>
+            <ImagePanel owner="materialId" ownerId={id} images={material.images} referencedIds={referencedIds} />
           </section>
         </div>
       </div>

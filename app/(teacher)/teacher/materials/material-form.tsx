@@ -7,7 +7,6 @@ import { FormField } from "@/components/form-field";
 import { ArrowDown01Icon, ArrowUp01Icon, Book02Icon, File01Icon, Note01Icon, TaskEdit01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import type { FormState } from "@/lib/form-state";
 import type { MaterialStatus } from "@/lib/generated/prisma/enums";
@@ -38,7 +37,7 @@ type Defaults = {
 };
 
 const controlClass =
-  "w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive";
+  "w-full rounded-xl bg-surface-container-low border border-border-subtle px-4 text-text-primary text-base focus:bg-surface-card outline-none focus-visible:border-border-active focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive transition-all";
 const HELP =
   "Bisa pakai Markdown: **tebal**, *miring*, daftar dengan -, tabel. Sisipkan gambar dengan kode dari panel Gambar.";
 
@@ -50,11 +49,11 @@ const ICON: Record<"content" | "examples" | "exercises", IconSvgElement> = {
 
 function SectionTitle({ icon, children }: { icon: IconSvgElement; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 border-b border-border pb-3">
-      <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary-strong">
-        <HugeiconsIcon icon={icon} />
-      </span>
-      <p className="text-lg font-bold">{children}</p>
+    <div className="flex items-center gap-3 pb-3 border-b border-border-subtle">
+      <div aria-hidden="true" className="w-9 h-9 rounded-lg bg-canvas-peach text-primary-strong flex items-center justify-center font-bold">
+        <HugeiconsIcon icon={icon} className="size-5" />
+      </div>
+      <p className="text-base font-bold text-text-primary">{children}</p>
     </div>
   );
 }
@@ -86,9 +85,8 @@ export function MaterialForm({
     ["exercises", "Latihan (opsional)", false, 6],
   ] as const;
   return (
-    <form action={formAction} className="flex w-full max-w-3xl flex-col gap-4">
-      <Card>
-      <CardContent className="flex flex-col gap-4">
+    <form action={formAction} className="flex w-full flex-col gap-6">
+      <div className="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm flex flex-col gap-5">
       <SectionTitle icon={File01Icon}>Informasi dasar</SectionTitle>
       <FormField id="title" name="title" label="Judul" required autoComplete="off" defaultValue={v("title")} error={e?.title} />
       <div className="flex flex-col gap-2">
@@ -148,11 +146,9 @@ export function MaterialForm({
         </select>
         <Err id="subchapterId-error" text={e?.subchapterId} />
       </div>
-      </CardContent>
-      </Card>
+      </div>
       {longText.map(([name, label, required, rows]) => (
-        <Card key={name}>
-        <CardContent className="flex flex-col gap-2">
+        <div key={name} className="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm flex flex-col gap-3">
           <SectionTitle icon={ICON[name]}>{label}</SectionTitle>
           <Label htmlFor={name} className="sr-only">{label}</Label>
           <textarea
@@ -169,16 +165,13 @@ export function MaterialForm({
             {HELP}
           </p>
           <Err id={`${name}-error`} text={e?.[name]} />
-        </CardContent>
-        </Card>
+        </div>
       ))}
-      <Card>
-      <CardContent className="flex flex-col gap-4">
+      <div className="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm flex flex-col gap-5">
       <SectionTitle icon={Book02Icon}>Sumber</SectionTitle>
       <FormField id="sourceReference" name="sourceReference" label="Sumber (nama buku)" required autoComplete="off" defaultValue={v("sourceReference")} error={e?.sourceReference} />
       <FormField id="sourcePages" name="sourcePages" label="Halaman sumber (opsional)" autoComplete="off" defaultValue={v("sourcePages")} error={e?.sourcePages} />
-      </CardContent>
-      </Card>
+      </div>
       <Feedback state={state} />
       <Button type="submit" className="h-12 self-start px-6 text-base" disabled={pending} aria-busy={pending}>
         {pending ? "Sedang menyimpan…" : material ? "Simpan materi" : "Buat materi"}
@@ -273,15 +266,19 @@ export function MoveButtons({
   );
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" size="icon" disabled={isFirst || pending}
-          aria-label={`Naikkan materi ${title}`} onClick={() => startTransition(() => dispatch("up"))}>
-          <HugeiconsIcon icon={ArrowUp01Icon} aria-hidden="true" />
-        </Button>
-        <Button type="button" variant="outline" size="icon" disabled={isLast || pending}
-          aria-label={`Turunkan materi ${title}`} onClick={() => startTransition(() => dispatch("down"))}>
-          <HugeiconsIcon icon={ArrowDown01Icon} aria-hidden="true" />
-        </Button>
+      <div className="flex gap-1">
+        {(["up", "down"] as const).map((dir) => (
+          <button
+            key={dir}
+            type="button"
+            disabled={(dir === "up" ? isFirst : isLast) || pending}
+            aria-label={`${dir === "up" ? "Naikkan" : "Turunkan"} materi ${title}`}
+            onClick={() => startTransition(() => dispatch(dir))}
+            className="min-h-12 min-w-12 rounded-xl bg-surface-card text-text-primary hover:bg-canvas-peach flex items-center justify-center shadow-sm active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-[3px] focus-visible:ring-ring"
+          >
+            <HugeiconsIcon icon={dir === "up" ? ArrowUp01Icon : ArrowDown01Icon} className="size-5" aria-hidden="true" />
+          </button>
+        ))}
       </div>
       <Feedback state={state} />
     </div>

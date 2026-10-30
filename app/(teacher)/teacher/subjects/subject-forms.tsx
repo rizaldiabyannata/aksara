@@ -165,27 +165,28 @@ export function MoveButtons({
   );
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          disabled={isFirst || pending}
-          aria-label={`Naikkan ${kind} ${title}`}
-          onClick={() => startTransition(() => dispatch("up"))}
-        >
-          <HugeiconsIcon icon={ArrowUp01Icon} aria-hidden="true" />
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          disabled={isLast || pending}
-          aria-label={`Turunkan ${kind} ${title}`}
-          onClick={() => startTransition(() => dispatch("down"))}
-        >
-          <HugeiconsIcon icon={ArrowDown01Icon} aria-hidden="true" />
-        </Button>
+      <div className={kind === "bab" ? "flex gap-1.5" : "flex gap-1"}>
+        {(["up", "down"] as const).map((dir) => {
+          const disabled = (dir === "up" ? isFirst : isLast) || pending;
+          const size = kind === "bab" ? "min-h-12 w-12 rounded-xl" : "min-h-12 w-10 rounded-lg";
+          const tone = disabled
+            ? "bg-surface-container text-text-muted opacity-50 cursor-not-allowed"
+            : kind === "bab"
+              ? "bg-surface-container-lowest text-primary-strong hover:bg-canvas-peach shadow-sm active:scale-95"
+              : "bg-canvas-peach text-primary-strong hover:bg-canvas-peach-subtle";
+          return (
+            <button
+              key={dir}
+              type="button"
+              disabled={disabled}
+              aria-label={`${dir === "up" ? "Naikkan" : "Turunkan"} ${kind} ${title}`}
+              onClick={() => startTransition(() => dispatch(dir))}
+              className={`${size} ${tone} flex items-center justify-center transition-all focus-visible:ring-[3px] focus-visible:ring-ring`}
+            >
+              <HugeiconsIcon icon={dir === "up" ? ArrowUp01Icon : ArrowDown01Icon} className={kind === "bab" ? "size-6" : "size-5"} aria-hidden="true" />
+            </button>
+          );
+        })}
       </div>
       <Feedback state={state} />
     </div>

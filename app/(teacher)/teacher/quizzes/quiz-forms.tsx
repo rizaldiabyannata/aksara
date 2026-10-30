@@ -1,11 +1,12 @@
 "use client";
 
+import { ArrowDown01Icon, FileAddIcon, FloppyDiskIcon, LockIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { startTransition, useActionState } from "react";
 import { ConfirmAction } from "@/components/confirm-action";
 import { Feedback } from "@/components/form-feedback";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import type { FormState } from "@/lib/form-state";
 import type { QuizDetail } from "@/lib/quizzes";
@@ -22,32 +23,71 @@ const controlClass =
 export function CreateQuizForm({ subjects }: { subjects: { id: string; name: string }[] }) {
   const [state, action, pending] = useActionState(createQuizAction, undefined);
   const e = state?.fieldErrors;
+  const field =
+    "w-full min-h-12 px-space-md rounded-xl border border-border bg-surface-card text-text-primary font-body-md text-body-md shadow-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive";
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-4">
-      <Card>
-        <CardContent className="flex flex-col gap-4">
-          <div>
-            <p className="flex items-center gap-2 text-sm font-bold tracking-wide text-primary-strong uppercase">
-              <span aria-hidden="true" className="size-2 rounded-full bg-accent-decor" />Formulir cepat
-            </p>
-            <h2 className="text-xl font-bold">Parameter ulangan baru</h2>
+    <>
+      <div id="quick-wizard-card" className="flex flex-col gap-space-md rounded-2xl bg-surface-card p-space-lg shadow-md">
+        <div className="flex items-start justify-between">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-primary-container" aria-hidden="true" />
+              <span className="font-label-sm text-label-sm font-bold uppercase tracking-wider text-primary-strong">Formulir Cepat</span>
+            </div>
+            <h2 className="mt-1 font-headline-sm text-headline-sm text-text-primary">Parameter Standar Ulangan Baru</h2>
           </div>
-          <FormField name="title" label="Judul" required maxLength={150} defaultValue={state?.values?.title ?? ""} error={e?.title} />
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="subjectId">Mata pelajaran</Label>
-            <select id="subjectId" name="subjectId" required defaultValue={state?.values?.subjectId ?? ""}
-              className={controlClass} aria-invalid={e?.subjectId ? true : undefined}
-              aria-describedby={e?.subjectId ? "subjectId-error" : undefined}>
-              <option value="" disabled>Pilih mata pelajaran</option>
-              {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-canvas-peach text-primary-strong">
+            <HugeiconsIcon icon={FileAddIcon} className="size-[22px]" aria-hidden="true" />
+          </div>
+        </div>
+        <p className="font-body-md text-body-md text-text-muted">
+          Isi judul dan mata pelajaran. Soal, kelas, dan setelan lain diatur setelah ulangan dibuat.
+        </p>
+        <form action={action} className="mt-2 flex flex-col gap-space-md">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-label-sm text-label-sm text-text-primary" htmlFor="title">
+              Judul Ulangan <span className="text-tone-danger">*</span>
+            </label>
+            <input id="title" name="title" required maxLength={150} defaultValue={state?.values?.title ?? ""}
+              placeholder="Contoh: Ulangan Harian Bab 1: Pecahan..." className={`${field} placeholder:text-text-muted`}
+              aria-invalid={e?.title ? true : undefined} aria-describedby={e?.title ? "title-error" : undefined} />
+            {e?.title && <p id="title-error" className="text-base text-destructive">{e.title}</p>}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="font-label-sm text-label-sm text-text-primary" htmlFor="subjectId">
+              Mata Pelajaran <span className="text-tone-danger">*</span>
+            </label>
+            <div className="relative">
+              <select id="subjectId" name="subjectId" required defaultValue={state?.values?.subjectId ?? ""}
+                className={`${field} cursor-pointer appearance-none pr-10`} aria-invalid={e?.subjectId ? true : undefined}
+                aria-describedby={e?.subjectId ? "subjectId-error" : undefined}>
+                <option value="" disabled>Pilih mata pelajaran</option>
+                {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+              <HugeiconsIcon icon={ArrowDown01Icon} className="pointer-events-none absolute top-3.5 right-3 size-[22px] text-text-muted" aria-hidden="true" />
+            </div>
             {e?.subjectId && <p id="subjectId-error" className="text-base text-destructive">{e.subjectId}</p>}
           </div>
           <Feedback state={state} />
-          <Button type="submit" className="h-12 self-start text-base" disabled={pending}>Buat ulangan</Button>
-        </CardContent>
-      </Card>
-    </form>
+          <div className="flex flex-col gap-2 pt-2">
+            <button type="submit" disabled={pending}
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary-container px-space-lg font-label-lg text-label-lg text-on-primary shadow-md transition-all hover:opacity-95 focus-visible:ring-[3px] focus-visible:ring-ring disabled:opacity-50">
+              <HugeiconsIcon icon={FloppyDiskIcon} className="size-[22px]" aria-hidden="true" />
+              <span>Buat ulangan</span>
+            </button>
+          </div>
+        </form>
+        <div className="mt-1 flex items-start gap-3 rounded-xl bg-tone-info-bg/70 p-space-md">
+          <HugeiconsIcon icon={LockIcon} className="mt-0.5 size-[22px] shrink-0 text-tone-info" aria-hidden="true" />
+          <div className="flex flex-col gap-0.5">
+            <span className="font-label-sm text-label-sm font-bold text-tone-info">Aturan Snapshot Terbit:</span>
+            <p className="font-body-md text-[13px] leading-relaxed text-text-primary">
+              Saat ulangan berstatus <strong>Terbit</strong>, soal dan kunci disalin permanen sebagai rekaman penilaian resmi, meskipun bank soal mengalami revisi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

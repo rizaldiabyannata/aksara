@@ -1,48 +1,62 @@
 "use client";
 
-import { useState, type ComponentProps } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import { ViewIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
-/** Like FormField, plus a leading icon and (for type="password") a show/hide button. */
+const LOGIN_INPUT =
+  "w-full min-h-[52px] pl-12 pr-space-md py-3 rounded-xl bg-canvas-peach/40 text-text-primary font-body-lg text-body-lg focus:outline-none focus:bg-surface-card focus:shadow-[0_0_0_3px_rgba(255,112,52,0.2)] focus-visible:ring-[3px] focus-visible:ring-ring transition-all duration-200 aria-invalid:ring-2 aria-invalid:ring-tone-danger";
+const FORM_INPUT =
+  "w-full min-h-[48px] pl-12 pr-12 rounded-xl bg-surface-card text-text-primary font-body-md text-body-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-canvas-peach/30 transition-all placeholder:text-text-muted/60 aria-invalid:ring-2 aria-invalid:ring-tone-danger";
+
+/** Stitch-styled labelled input with a leading icon and (for type="password") a show/hide button. */
 export function IconField({
   name,
   id = name,
   label,
+  labelAside,
   icon,
   type,
   error,
   hint,
+  variant = "login",
+  className,
   ...props
-}: Omit<ComponentProps<typeof Input>, "id"> & {
+}: Omit<ComponentProps<"input">, "id"> & {
   name: string;
   id?: string;
   label: string;
+  labelAside?: ReactNode;
   icon: IconSvgElement;
   error?: string;
   hint?: string;
+  variant?: "login" | "form";
 }) {
   const [shown, setShown] = useState(false);
   const isPassword = type === "password";
   const describedBy = [error && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(" ") || undefined;
+  const form = variant === "form";
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>{label}</Label>
+    <div className="flex flex-col gap-space-xs">
+      <div className="flex items-center justify-between gap-space-sm">
+        <label htmlFor={id} className="font-label-md text-label-md text-text-primary">
+          {label}
+        </label>
+        {labelAside}
+      </div>
       <div className="relative flex items-center">
         <HugeiconsIcon
           icon={icon}
           aria-hidden="true"
-          className="pointer-events-none absolute left-3 text-muted-foreground"
+          className={`pointer-events-none absolute text-text-muted size-[22px] ${form ? "left-4" : "left-space-md"}`}
         />
-        <Input
+        <input
           id={id}
           name={name}
           type={isPassword && shown ? "text" : type}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          className="pl-12"
+          className={`${form ? FORM_INPUT : LOGIN_INPUT} ${isPassword ? "pr-14" : ""} ${className ?? ""}`}
           {...props}
         />
         {isPassword && (
@@ -52,19 +66,19 @@ export function IconField({
             aria-label={shown ? "Sembunyikan sandi" : "Tampilkan sandi"}
             aria-pressed={shown}
             onClick={() => setShown((s) => !s)}
-            className="absolute right-0.5 flex size-11 items-center justify-center rounded-xl text-muted-foreground outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring"
+            className="absolute right-0.5 w-11 h-11 flex items-center justify-center text-text-muted hover:text-text-primary rounded-lg transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
           >
-            <HugeiconsIcon icon={shown ? ViewOffIcon : ViewIcon} aria-hidden="true" />
+            <HugeiconsIcon icon={shown ? ViewOffIcon : ViewIcon} aria-hidden="true" className="size-[22px]" />
           </button>
         )}
       </div>
       {hint && (
-        <p id={`${id}-hint`} className="text-sm text-muted-foreground">
+        <p id={`${id}-hint`} className="font-label-sm text-label-sm text-text-muted">
           {hint}
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} className="text-sm text-destructive">
+        <p id={`${id}-error`} className="font-label-sm text-label-sm text-tone-danger">
           {error}
         </p>
       )}

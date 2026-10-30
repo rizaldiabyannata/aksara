@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 import { startTransition, useActionState, useState } from "react";
 import { Feedback } from "@/components/form-feedback";
 import {
@@ -29,6 +31,8 @@ type ConfirmProps = {
   success?: boolean;
   /** Accessible name for the trigger when `trigger` alone is not unique on the page. */
   triggerLabel?: string;
+  /** Extra trigger classes, e.g. a mockup's exact styling. `cn` does not merge conflicts: use `!` to override. */
+  triggerClassName?: string;
 };
 
 /** Button + AlertDialog confirmation. The action is dispatched before the dialog closes, so closing never cancels it. */
@@ -42,6 +46,7 @@ export function ConfirmAction({
   primary,
   success,
   triggerLabel,
+  triggerClassName,
 }: ConfirmProps) {
   const [state, dispatch, pending] = useActionState(action, undefined);
   const [open, setOpen] = useState(false);
@@ -54,7 +59,7 @@ export function ConfirmAction({
             <Button
               variant={success ? "success" : primary ? "default" : destructive ? "destructive-soft" : "outline"}
               size={primary || success ? "lg" : undefined}
-              className={primary || success ? "aria-disabled:opacity-50" : "h-11 aria-disabled:opacity-50"}
+              className={cn(primary || success ? "aria-disabled:opacity-50" : "h-11 aria-disabled:opacity-50", triggerClassName)}
               aria-disabled={pending || undefined}
               aria-busy={pending || undefined}
               aria-label={triggerLabel}

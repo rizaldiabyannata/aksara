@@ -55,6 +55,6 @@ test("class code dialog", async ({ page }) => {
 test("an existing question opens in the editor", async ({ page }) => {
   await loginTeacher(page);
   await page.goto("/teacher/questions");
-  await page.getByRole("link", { name: /^Ubah soal:/ }).first().click();
+  await page.getByRole("link", { name: /^Ubah soal/ }).first().click();
   await expect(page.getByLabel("Teks soal")).not.toBeEmpty();
 });

@@ -40,13 +40,13 @@ export function NavItems({ pathname = "", bottom = false }: { pathname?: string;
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-12 items-center gap-3 rounded-xl px-4 text-base focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none ${
+            className={`min-h-12 flex items-center px-space-md rounded-xl transition-all focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none ${
               active
-                ? "bg-primary font-bold text-primary-foreground shadow-[0_4px_12px_rgba(234,88,12,0.25)]"
-                : "font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
+                ? "bg-primary-container text-on-primary font-bold shadow-[0_4px_12px_rgba(255,112,52,0.25)]"
+                : "text-on-surface-variant hover:bg-canvas-peach-subtle hover:text-on-surface font-label-md text-label-md"
             }`}
           >
-            <HugeiconsIcon icon={item.icon} aria-hidden="true" className="size-5" />
+            <HugeiconsIcon icon={item.icon} aria-hidden="true" className={`mr-space-md ${bottom ? "size-[22px]" : "size-6"}`} />
             {item.label}
           </Link>
         );
@@ -66,7 +66,7 @@ const isActive = (pathname: string, href: string) =>
 const TABS = [NAV[0], NAV[1], NAV[5], NAV[6]];
 const MORE = [NAV[2], NAV[3], NAV[4], ...BOTTOM];
 
-const tab = "flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-sm focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none";
+const tab = "flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 transition-colors rounded-xl focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none";
 
 export function BottomNav() {
   return <BottomNavItems pathname={usePathname()} />;
@@ -77,9 +77,9 @@ export function BottomNavItems({ pathname = "" }: { pathname?: string }) {
   return (
     <nav
       aria-label="Menu guru"
-      className="fixed inset-x-0 bottom-0 z-40 bg-card/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(230,115,60,0.08)] backdrop-blur-xl lg:hidden"
+      className="fixed bottom-0 inset-x-0 z-50 pb-[env(safe-area-inset-bottom)] bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(230,115,60,0.08)] lg:hidden"
     >
-      <div className="flex h-20 items-center justify-around px-1">
+      <div className="flex items-center justify-around h-20 px-space-xs">
         {TABS.map((item) => {
           const active = isActive(pathname, item.href);
           return (
@@ -87,21 +87,21 @@ export function BottomNavItems({ pathname = "" }: { pathname?: string }) {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={`${tab} ${active ? "font-bold text-primary-strong" : "font-semibold text-muted-foreground"}`}
+              className={`${tab} ${active ? "text-primary-strong font-bold" : "text-text-muted"}`}
             >
               <HugeiconsIcon icon={item.icon} aria-hidden="true" className="size-6" />
-              {item.label}
+              <span className="font-label-sm text-[11px] font-semibold tracking-tight">{item.label}</span>
             </Link>
           );
         })}
         <details className="relative">
           <summary
-            className={`${tab} cursor-pointer list-none [&::-webkit-details-marker]:hidden ${moreActive ? "font-bold text-primary-strong" : "font-semibold text-muted-foreground"}`}
+            className={`${tab} cursor-pointer list-none [&::-webkit-details-marker]:hidden ${moreActive ? "text-primary-strong font-bold" : "text-text-muted"}`}
           >
             <HugeiconsIcon icon={MoreHorizontalCircle01Icon} aria-hidden="true" className="size-6" />
-            Lainnya
+            <span className="font-label-sm text-[11px] font-semibold tracking-tight">Lainnya</span>
           </summary>
-          <div className="absolute right-0 bottom-full mb-3 flex w-60 flex-col gap-1 rounded-2xl bg-card p-2 shadow-raised">
+          <div className="absolute right-0 bottom-full mb-3 flex w-60 flex-col gap-1 rounded-2xl bg-surface-card p-2 shadow-raised">
             {MORE.map((item) => {
               const active = isActive(pathname, item.href);
               return (
@@ -111,7 +111,7 @@ export function BottomNavItems({ pathname = "" }: { pathname?: string }) {
                   aria-current={active ? "page" : undefined}
                   onClick={(e) => e.currentTarget.closest("details")?.removeAttribute("open")}
                   className={`flex min-h-12 items-center gap-3 rounded-xl px-4 text-base focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none ${
-                    active ? "bg-primary font-bold text-primary-foreground" : "font-semibold hover:bg-secondary"
+                    active ? "bg-primary-container font-bold text-on-primary" : "font-semibold text-on-surface-variant hover:bg-canvas-peach-subtle"
                   }`}
                 >
                   <HugeiconsIcon icon={item.icon} aria-hidden="true" className="size-5" />
@@ -122,7 +122,7 @@ export function BottomNavItems({ pathname = "" }: { pathname?: string }) {
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="flex min-h-12 w-full items-center gap-3 rounded-xl px-4 text-base font-semibold text-destructive hover:bg-destructive-soft focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none"
+                className="flex min-h-12 w-full items-center gap-3 rounded-xl px-4 text-base font-semibold text-tone-danger hover:bg-tone-danger-bg focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none"
               >
                 <HugeiconsIcon icon={Logout01Icon} aria-hidden="true" className="size-5" />
                 Keluar
