@@ -10,7 +10,7 @@ colors:
   primary-soft: "#ffdbcf"
   border: "#f2e2d8"
   input: "#8d7167"
-  primary: "#c2410c"
+  primary: "#ea580c"
   primary-foreground: "#ffffff"
   primary-strong: "#a83900"
   accent-decor: "#ff7034"
@@ -148,7 +148,7 @@ Sumber visualnya adalah mockup Stitch di `docs/stitch/`. Perbedaan dengan mockup
 Palet ini hangat: satu oranye bata sebagai suara tindakan, di atas netral peach dan cokelat-keabuan.
 
 ### Primary
-- **Oranye Bata** (`primary`): isi tombol utama, item navigasi aktif, dan focus ring. Warna ini cukup gelap untuk membawa teks putih.
+- **Oranye Bata** (`primary`, `#ea580c`): isi tombol utama, item navigasi aktif, dan focus ring. Dipilih sedekat mungkin dengan oranye Stitch: teks putih di atasnya 3.56:1 (mendekati AA), jadi labelnya selalu tebal. Teks berwarna tetap memakai `primary-strong`.
 - **Oranye Bata Tua** (`primary-strong`): teks berwarna aksen, link, label tombol sekunder, dan angka sorotan.
 - **Oranye Senja** (`accent-decor`): khusus dekorasi. Dipakai untuk isi bar progres, garis aksen di samping judul seksi, latar ikon besar, dan tanda nomor soal aktif. Teks tidak pernah diletakkan di atas warna ini.
 - **Peach Pilihan** (`primary-soft`): latar keadaan terpilih, misalnya opsi jawaban siswa.

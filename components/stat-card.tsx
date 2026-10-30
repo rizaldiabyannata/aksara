@@ -28,11 +28,11 @@ export function StatCard({
     <Card>
       <div className="flex items-start justify-between gap-3 px-(--card-spacing)">
         <div className="flex min-w-0 flex-col gap-1">
-          <p className="font-semibold text-muted-foreground">{label}</p>
+          <p className="text-sm font-bold tracking-wide text-muted-foreground uppercase">{label}</p>
           <p className={`text-metric font-extrabold ${t.value}`}>{value}</p>
-          {hint && <p className="text-muted-foreground">{hint}</p>}
+          {hint && <p className="font-semibold">{hint}</p>}
         </div>
-        <span className={`flex size-12 shrink-0 items-center justify-center rounded-full ${t.box}`}>
+        <span className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${t.box}`}>
           <HugeiconsIcon icon={icon} aria-hidden="true" />
         </span>
       </div>

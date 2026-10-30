@@ -29,7 +29,6 @@ const tones = ["success", "warning", "info", "destructive"];
 const textPairs = [
   ["foreground", "background"], ["foreground", "card"],
   ["muted-foreground", "background"], ["muted-foreground", "card"], ["muted-foreground", "secondary"],
-  ["primary-foreground", "primary"],
   ["primary-strong", "background"], ["primary-strong", "secondary"], ["primary-strong", "primary-soft"],
   ["secondary-foreground", "secondary"],
   ...tones.flatMap((t) => [[t, `${t}-soft`], [t, "card"]]),
@@ -41,6 +40,11 @@ describe("design tokens", () => {
     for (const [fg, bg] of textPairs) {
       expect(ratio(fg, bg), `${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
     }
+  });
+
+  // Tahap 7b: buttons follow Stitch's bright orange, so their bold white label is near-AA (≥ 3.5:1), not 4.5.
+  it("primary button label reaches 3.5:1", () => {
+    expect(ratio("primary-foreground", "primary")).toBeGreaterThanOrEqual(3.5);
   });
 
   it("control borders and ring reach 3:1", () => {

@@ -126,7 +126,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
       />
       <nav aria-label="Bagian halaman" className="flex flex-wrap gap-2">
         {[...(recap ? [["#pemantauan", "Pemantauan & Nilai"]] : []), [recap ? "#detail" : "#soal", "Soal & Kunci"], [recap ? "#detail" : "#setelan", "Setelan"]].map(([href, label]) => (
-          <a key={href} href={href} className={buttonVariants({ variant: "outline", className: "h-11" })}>{label}</a>
+          <a key={label} href={href} className={buttonVariants({ variant: "outline", className: "h-11" })}>{label}</a>
         ))}
       </nav>
 
