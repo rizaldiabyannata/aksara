@@ -1,5 +1,6 @@
 // Teacher-only Excel export (PRD §7.9). Built per request and streamed back: never stored, never public.
 import ExcelJS from "exceljs";
+import { monthRecap, STATUS_LETTER } from "@/lib/attendance";
 import { prisma } from "@/lib/db";
 import { TYPE_LABEL } from "@/app/(teacher)/teacher/questions/labels";
 import { formatWita, toWitaInput } from "@/lib/format";
@@ -119,5 +120,68 @@ export async function buildQuizWorkbook(
     filename: `Nilai_${slug}_${toWitaInput(now).slice(0, 10)}.xlsx`,
     data: Buffer.from(await wb.xlsx.writeBuffer()),
     rowCount: recap.rows.length + details,
+  };
+}
+
+const RED = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFF0000" } } as const;
+const THIN = { style: "thin" } as const;
+
+/**
+ * One class's month in the shape of the school's paper book (sheet "HADIR <BULAN>"):
+ * H is left blank like the book, S/I/A are letters, "-" is an open day not filled in yet.
+ */
+export async function buildAttendanceWorkbook(
+  classId: string,
+  month: string,
+  now: Date = new Date(),
+): Promise<{ filename: string; data: Buffer; rowCount: number } | null> {
+  const r = await monthRecap(classId, month, now);
+  if (!r) return null;
+  const label = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" })
+    .format(new Date(`${month}-01T00:00:00Z`))
+    .toUpperCase();
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Daftar Hadir");
+  ws.addRow(["DAFTAR HADIR SISWA"]).font = { bold: true, size: 14 };
+  ws.addRow([`KELAS : ${safeText(r.className)}`, "", "", `BULAN : ${label}`, ...r.days.map(() => ""), `HS : ${r.hs}`]);
+  ws.addRow([]);
+  const head = ws.addRow(["NO", "NO INDUK", "NISN", "NAMA SISWA", ...r.days.map((d) => d.day), "S", "I", "A", "JML"]);
+  head.font = { bold: true };
+  r.students.forEach((s, i) => {
+    const cells = r.days.map((d, k) => {
+      if (d.state !== "OPEN") return "";
+      const m = s.marks[k];
+      return m === "HADIR" ? "" : m ? STATUS_LETTER[m] : "-";
+    });
+    ws.addRow([
+      i + 1, safeText(s.studentNo ?? ""), safeText(s.nis ?? ""), safeText(s.displayName),
+      ...cells, s.sakit, s.izin, s.alpa, s.sakit + s.izin + s.alpa,
+    ]);
+  });
+  const last = head.number + r.students.length;
+  for (let row = head.number; row <= last; row++) {
+    ws.getRow(row).eachCell({ includeEmpty: true }, (c) => {
+      c.border = { top: THIN, left: THIN, bottom: THIN, right: THIN };
+      c.alignment = { horizontal: Number(c.col) === 4 ? "left" : "center" };
+    });
+  }
+  r.days.forEach((d, k) => {
+    const col = ws.getColumn(5 + k);
+    col.width = 3.5;
+    if (d.state === "SUNDAY" || d.state === "HOLIDAY") {
+      for (let row = head.number; row <= last; row++) ws.getCell(row, 5 + k).fill = RED;
+    }
+  });
+  ws.getColumn(3).numFmt = "@";
+  ws.getColumn(4).width = 32;
+  ws.addRow([]);
+  ws.addRow(["Keterangan: kosong = Hadir, S = Sakit, I = Izin, A = Alpa, - = belum diisi, merah = Minggu/libur"]);
+  for (const d of r.days.filter((x) => x.note)) ws.addRow([`${d.day}: ${safeText(d.note!)}`]);
+
+  const slug = r.className.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "kelas";
+  return {
+    filename: `Absensi_${slug}_${month}.xlsx`,
+    data: Buffer.from(await wb.xlsx.writeBuffer()),
+    rowCount: r.students.length,
   };
 }

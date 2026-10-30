@@ -35,7 +35,7 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
     : q.type === "SHORT_ANSWER" ? q.answerKey.accepted.join(" / ")
     : null;
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 p-space-lg">
       <PageHeader
         title="Pratinjau soal"
         actions={

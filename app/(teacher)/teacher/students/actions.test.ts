@@ -87,7 +87,7 @@ describe("student actions", () => {
     await signIn(user);
     const cls = await makeClass({ name: "VI-A" });
     await makeStudent(cls.id, { displayName: "Ahmad", loginName: "ahmad" });
-    const values = { displayName: "Ahmad", nis: "123456", classId: cls.id };
+    const values = { displayName: "Ahmad", nis: "123456", studentNo: "", classId: cls.id };
     expect(await createStudentAction(undefined, form(values))).toEqual({
       message:
         "Nama ini sudah dipakai siswa lain di kelas VI-A. Tambahkan inisial, misalnya 'Ahmad R'.",
@@ -107,7 +107,7 @@ describe("student actions", () => {
       ),
     ).toEqual({
       message: "NIS ini sudah dipakai siswa lain.",
-      values: { displayName: "Lain", nis: "5555", classId: cls.id },
+      values: { displayName: "Lain", nis: "5555", studentNo: "", classId: cls.id },
     });
   });
 

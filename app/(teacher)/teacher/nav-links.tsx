@@ -2,6 +2,7 @@
 
 import {
   BookOpen01Icon,
+  CalendarCheckIn01Icon,
   Logout01Icon,
   MoreHorizontalCircle01Icon,
   File01Icon,
@@ -21,6 +22,7 @@ const NAV: { href: string; label: string; icon: IconSvgElement }[] = [
   { href: "/teacher", label: "Dasbor", icon: Home01Icon },
   { href: "/teacher/classes", label: "Kelas", icon: UserGroupIcon },
   { href: "/teacher/students", label: "Siswa", icon: StudentIcon },
+  { href: "/teacher/attendance", label: "Absensi", icon: CalendarCheckIn01Icon },
   { href: "/teacher/subjects", label: "Mapel & Bab", icon: BookOpen01Icon },
   { href: "/teacher/materials", label: "Materi", icon: File01Icon },
   { href: "/teacher/questions", label: "Bank Soal", icon: NoteEditIcon },
@@ -63,8 +65,8 @@ const isActive = (pathname: string, href: string) =>
   pathname === href || (href !== "/teacher" && pathname.startsWith(href + "/"));
 
 // Phones: the four daily destinations, the rest behind "Lainnya".
-const TABS = [NAV[0], NAV[1], NAV[5], NAV[6]];
-const MORE = [NAV[2], NAV[3], NAV[4], ...BOTTOM];
+const TABS = [NAV[0], NAV[1], NAV[6], NAV[7]];
+const MORE = [NAV[2], NAV[3], NAV[4], NAV[5], ...BOTTOM];
 
 const tab = "flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 transition-colors rounded-xl focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none";
 

@@ -11,6 +11,8 @@ export function taskLine(task: TeacherTask): { text: string; href: string } {
       return { text: `${task.title}: ${task.essays} jawaban uraian belum dinilai`, href: `/teacher/quizzes/${task.quizId}#pemantauan` };
     case "RELEASE":
       return { text: `${task.title}: semua sudah dinilai, siap dibagikan ke ${task.students} siswa`, href: `/teacher/quizzes/${task.quizId}#hasil` };
+    case "ATTENDANCE":
+      return { text: `Absensi ${task.className} hari ini belum diisi (${task.missing} siswa)`, href: `/teacher/attendance?class=${task.classId}` };
     case "OTHER_DEVICE":
       return { text: `${task.students} siswa masuk dari perangkat lain 7 hari terakhir`, href: "/teacher/students" };
     case "REVIEWED_MATERIALS":

@@ -92,7 +92,7 @@ export function CreateStudentForm({
   const classId = state?.values?.classId ?? defaultClassId;
   return (
     <form action={formAction} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-      <div className="md:col-span-5 flex flex-col gap-1.5">
+      <div className="md:col-span-4 flex flex-col gap-1.5">
         <label className={LABEL} htmlFor="displayName">
           Nama siswa <span className="text-tone-danger">*</span>
         </label>
@@ -110,7 +110,7 @@ export function CreateStudentForm({
         />
         {err("displayName", state?.fieldErrors?.displayName)}
       </div>
-      <div className="md:col-span-3 flex flex-col gap-1.5">
+      <div className="md:col-span-2 flex flex-col gap-1.5">
         <label className={LABEL} htmlFor="nis">
           NIS (boleh dikosongkan)
         </label>
@@ -127,6 +127,24 @@ export function CreateStudentForm({
           className={INPUT}
         />
         {err("nis", state?.fieldErrors?.nis)}
+      </div>
+      <div className="md:col-span-2 flex flex-col gap-1.5">
+        <label className={LABEL} htmlFor="studentNo">
+          No. Induk (boleh kosong)
+        </label>
+        <input
+          id="studentNo"
+          name="studentNo"
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="Contoh: 976"
+          defaultValue={state?.values?.studentNo}
+          aria-invalid={state?.fieldErrors?.studentNo ? true : undefined}
+          aria-describedby={state?.fieldErrors?.studentNo ? "studentNo-error" : undefined}
+          className={INPUT}
+        />
+        {err("studentNo", state?.fieldErrors?.studentNo)}
       </div>
       <div className="md:col-span-2 flex flex-col gap-1.5">
         <label className={LABEL} htmlFor="classId">
@@ -177,7 +195,7 @@ export function EditStudentDialog({
   student,
   classes,
 }: {
-  student: { id: string; displayName: string; nis: string | null; classId: string | null };
+  student: { id: string; displayName: string; nis: string | null; studentNo: string | null; classId: string | null };
   classes: ClassOption[];
 }) {
   const [state, formAction, pending] = useActionState(
@@ -222,6 +240,15 @@ export function EditStudentDialog({
             inputMode="numeric"
             autoComplete="off"
             error={state?.fieldErrors?.nis}
+          />
+          <FormField
+            name="studentNo"
+            id={`studentNo-${sid}`}
+            label="No. Induk (boleh kosong)"
+            defaultValue={state?.values?.studentNo ?? student.studentNo ?? ""}
+            inputMode="numeric"
+            autoComplete="off"
+            error={state?.fieldErrors?.studentNo}
           />
           <ClassSelect
             id={`class-${sid}`}

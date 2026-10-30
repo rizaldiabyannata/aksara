@@ -3,6 +3,7 @@ import type { Page } from "@playwright/test";
 
 type Seed = {
   teacher: { username: string; password: string };
+  newTeacher: { username: string; password: string };
   classCode: string;
   studentQuiz: { id: string; title: string };
   tokenQuiz: { id: string; title: string };

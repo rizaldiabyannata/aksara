@@ -73,6 +73,13 @@ enum ImageVisibility {
   EXPLANATION
 }
 
+enum AttendanceStatus {
+  HADIR
+  SAKIT
+  IZIN
+  ALPA
+}
+
 model User {
   id                  String          @id @default(cuid())
   role                Role
@@ -82,6 +89,7 @@ model User {
   displayName         String
   loginName           String?
   nis                 String?         @unique
+  studentNo           String?         @unique
   classId             String?
   class               Class?          @relation(fields: [classId], references: [id])
   isActive            Boolean         @default(true)
@@ -101,6 +109,9 @@ model User {
   resultsReleased     Quiz[]          @relation("QuizResultsReleasedBy")
   avatarImageId       String?
   avatarImage         Image?          @relation("UserAvatar", fields: [avatarImageId], references: [id], onDelete: SetNull)
+  attendances         Attendance[]    @relation("AttendanceStudent")
+  attendancesRecorded Attendance[]    @relation("AttendanceRecordedBy")
+  holidaysCreated     Holiday[]
 
   @@unique([classId, loginName])
   @@index([classId])
@@ -405,4 +416,29 @@ model AttemptAnswer {
 
   @@unique([attemptId, quizQuestionId])
   @@index([gradedById])
+}
+
+model Attendance {
+  id           String           @id @default(cuid())
+  studentId    String
+  student      User             @relation("AttendanceStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  date         DateTime         @db.Date
+  status       AttendanceStatus
+  recordedById String
+  recordedBy   User             @relation("AttendanceRecordedBy", fields: [recordedById], references: [id], onDelete: Restrict)
+  updatedAt    DateTime         @updatedAt @db.Timestamptz(3)
+
+  @@unique([studentId, date])
+  @@index([date])
+  @@index([recordedById])
+}
+
+model Holiday {
+  date        DateTime @id @db.Date
+  note        String
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([createdById])
 }

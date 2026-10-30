@@ -30,7 +30,7 @@ export const metadata: Metadata = { title: "Kelola Kelas" };
 
 export default function ClassesPage() {
   return (
-    <div className="max-w-[1360px] mx-auto flex flex-col gap-6">
+    <div className="p-space-lg max-w-[1360px] mx-auto w-full flex flex-col gap-6">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-canvas-peach-subtle via-[#ffe6d6] to-canvas-peach p-6 md:p-8 border border-amber-200/60 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex flex-col gap-3 z-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 w-fit px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm text-primary-strong shadow-xs">

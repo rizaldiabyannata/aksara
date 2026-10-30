@@ -106,6 +106,7 @@ for (const width of [360, 1280]) {
         "/teacher/questions",
         "/teacher/questions/new",
         "/teacher/quizzes",
+        "/teacher/attendance",
         "/teacher/password",
       ]) {
         await check(page, path, "main");

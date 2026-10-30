@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Materi baru" };
 
 export default function NewMaterialPage() {
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-6 p-space-lg">
       <PageHeader title="Materi baru" />
       <Suspense fallback={<p>Memuat…</p>}>
         <NewForm />

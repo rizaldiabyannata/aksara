@@ -3,8 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { requireTeacher } from "@/lib/auth/guard";
 import { field, type FormState } from "@/lib/form-state";
+import type { RosterRow } from "@/lib/student-import";
 import {
   createStudent,
+  importStudents,
+  type ImportRowResult,
   revokeStudentSessions,
   setStudentActive,
   updateStudent,
@@ -13,6 +16,7 @@ import {
 const UNEXPECTED = "Ada masalah. Coba lagi sebentar lagi.";
 const ERRORS = {
   NIS_TAKEN: "NIS ini sudah dipakai siswa lain.",
+  STUDENT_NO_TAKEN: "No. induk ini sudah dipakai siswa lain.",
   CLASS_NOT_FOUND: "Kelas tidak ditemukan.",
   NOT_FOUND: "Siswa tidak ditemukan.",
 };
@@ -52,6 +56,7 @@ async function run(
 const input = (fd: FormData) => ({
   displayName: field(fd, "displayName"),
   nis: field(fd, "nis"),
+  studentNo: field(fd, "studentNo"),
   classId: field(fd, "classId"),
 });
 
@@ -91,4 +96,32 @@ export async function setStudentActiveAction(
     () => setStudentActive(user.id, studentId, active),
     active ? "Siswa diaktifkan." : "Siswa dinonaktifkan.",
   );
+}
+
+const IMPORT_ERRORS = {
+  INVALID_ROWS: "Isi file tidak bisa dibaca. Pastikan ada 1–200 siswa.",
+  CHANGED: "Data siswa baru saja berubah. Periksa file sekali lagi.",
+  CLASS_NOT_FOUND: "Kelas tidak ditemukan.",
+};
+
+export type ImportState =
+  | { ok: true; rows: ImportRowResult[]; created: number }
+  | { ok: false; message: string };
+
+/** Preview (`commit` false) or add the NEW rows of a roster read in the browser. */
+export async function importStudentsAction(
+  classId: string,
+  rows: RosterRow[],
+  commit: boolean,
+): Promise<ImportState> {
+  const user = await requireTeacher();
+  let result: Awaited<ReturnType<typeof importStudents>>;
+  try {
+    result = await importStudents(user.id, classId, rows, commit);
+  } catch {
+    return { ok: false, message: UNEXPECTED };
+  }
+  if (!result.ok) return { ok: false, message: IMPORT_ERRORS[result.error] };
+  if (result.created) revalidatePath("/teacher/students");
+  return result;
 }

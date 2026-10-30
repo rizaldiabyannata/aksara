@@ -38,8 +38,10 @@ function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
+// The layout also wraps /teacher/password, so its guards must allow a pending password change
+// (a plain requireTeacher() here redirects /teacher/password to itself forever).
 async function Profile({ compact }: { compact?: boolean }) {
-  const user = await requireTeacher();
+  const user = await requireTeacher({ allowPasswordChange: true });
   const size = compact ? "size-8" : "size-11";
   const avatar = user.avatarImageId ? (
     // eslint-disable-next-line @next/next/no-img-element -- presigned redirect; alt is the profile label
@@ -103,7 +105,8 @@ function Today() {
 
 // Notifications are the dashboard's "Perlu tindakan" tasks; nothing is stored, so no read state.
 async function Bell({ compact }: { compact?: boolean }) {
-  await requireTeacher();
+  const user = await requireTeacher({ allowPasswordChange: true });
+  if (user.mustChangePassword) return null;
   const { tasks } = await getTeacherDashboard();
   return (
     <details className="relative">
@@ -191,7 +194,7 @@ export default function TeacherLayout({ children }: LayoutProps<"/teacher">) {
         </div>
       </header>
 
-      <main className="flex w-full min-w-0 flex-1 flex-col pt-16 pb-28 lg:pt-20 lg:pr-6 lg:pb-space-2xl lg:pl-80">
+      <main className="flex w-full min-w-0 flex-1 flex-col pt-16 pb-28 lg:pt-24 lg:pr-6 lg:pb-space-2xl lg:pl-80">
         {children}
       </main>
 

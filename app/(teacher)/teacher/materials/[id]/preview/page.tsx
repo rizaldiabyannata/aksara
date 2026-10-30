@@ -25,7 +25,7 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
   const material = await getMaterialForTeacher(id);
   if (!material) notFound();
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 p-space-lg">
       <div role="note" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-secondary p-4 shadow-card">
         <p className="font-semibold text-primary-strong">Pratinjau. Status: {STATUS_LABEL[material.status]}</p>
         <Link href={`/teacher/materials/${id}`} className={buttonVariants({ variant: "outline", className: "h-11" })}>

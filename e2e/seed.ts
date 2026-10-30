@@ -19,6 +19,11 @@ const password = randomBytes(12).toString("base64url");
 const { user: teacher } = await makeTeacher({
   username: "e2eguru", displayName: "Bu Guru", mustChangePassword: false, passwordHash: await hashPassword(password),
 });
+// A fresh seeded teacher who must change the initial password first (e2e/login.spec.ts).
+const newPassword = randomBytes(12).toString("base64url");
+await makeTeacher({
+  username: "e2egurubaru", displayName: "Guru Baru", mustChangePassword: true, passwordHash: await hashPassword(newPassword),
+});
 const cls = await makeClass({ name: "VI-E2E" });
 const students: Record<string, string> = {};
 for (const [displayName, nis] of [
@@ -70,6 +75,7 @@ writeFileSync(
   "e2e/.auth.json",
   JSON.stringify({
     teacher: { username: "e2eguru", password },
+    newTeacher: { username: "e2egurubaru", password: newPassword },
     classCode: cls.code,
     studentQuiz: { id: forStudent.quiz.id, title: forStudent.quiz.title },
     tokenQuiz: { id: forToken.quiz.id, title: forToken.quiz.title },

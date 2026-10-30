@@ -63,8 +63,8 @@ export function RenameClassForm({ classId, name }: { classId: string; name: stri
   const id = `name-${classId}`;
   return (
     <form action={formAction} className="flex flex-col gap-2 flex-1">
-      <div className="flex items-center gap-2.5 flex-1">
-        <label className="font-label-md text-xs font-bold text-text-primary shrink-0" htmlFor={id}>
+      <div className="flex flex-wrap items-center gap-2.5 flex-1">
+        <label className="font-label-md text-xs font-bold text-text-primary w-full sm:w-auto shrink-0" htmlFor={id}>
           Nama Kelas:
         </label>
         <input

@@ -4,6 +4,7 @@ import { findSession } from "@/lib/auth/session";
 import { loginStudent } from "@/lib/auth/login";
 import {
   createStudent,
+  importStudents,
   listStudents,
   revokeStudentSessions,
   setStudentActive,
@@ -288,7 +289,7 @@ describe("listStudents", () => {
     });
     for (const r of rows) {
       expect(Object.keys(r).sort()).toEqual(
-        ["classId", "className", "displayName", "id", "isActive", "lastReplacedAt", "nis", "replacedCount7d"],
+        ["classId", "className", "displayName", "id", "isActive", "lastReplacedAt", "nis", "replacedCount7d", "studentNo"],
       );
     }
     expect(rows.some((r) => r.id === t)).toBe(false);
@@ -322,5 +323,55 @@ describe("listStudents", () => {
     expect((await listStudents({ q: "SANTO" })).map((r) => r.id)).toEqual([y.id]);
     expect((await listStudents({ q: "123" })).map((r) => r.id)).toEqual([y.id]); // prefix, not contains
     expect((await listStudents({ q: "  " })).length).toBe(3);
+  });
+});
+
+describe("studentNo (No. Induk)", () => {
+  it("is optional, digits only, unique; saved on create and update", async () => {
+    const { c, t } = await setup();
+    const r = await createStudent(t, { displayName: "Ani", nis: "", studentNo: " 976 ", classId: c.id });
+    if (!r.ok) throw new Error(r.error);
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: r.id } })).studentNo).toBe("976");
+    expect(await createStudent(t, { displayName: "Budi", studentNo: "976", classId: c.id })).toEqual({ ok: false, error: "STUDENT_NO_TAKEN" });
+    expect(await createStudent(t, { displayName: "Budi", studentNo: "97a", classId: c.id })).toMatchObject({ error: "INVALID", fieldErrors: { studentNo: expect.any(String) } });
+    expect(await updateStudent(t, r.id, { displayName: "Ani", studentNo: "", classId: c.id })).toEqual({ ok: true });
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: r.id } })).studentNo).toBeNull();
+  });
+});
+
+describe("importStudents", () => {
+  it("previews NEW / EXISTS / INVALID without writing, then commits only NEW rows with one audit", async () => {
+    const { c, t } = await setup();
+    await makeStudent(c.id, { displayName: "Lama", loginName: "lama", nis: "1111111111", studentNo: "900" });
+    const rows = [
+      { displayName: "SITI CONTOH", nis: "0123456789", studentNo: "901" },
+      { displayName: "Lama", nis: "", studentNo: "" }, // same name in the class
+      { displayName: "Andi", nis: "1111111111", studentNo: "" }, // NISN taken
+      { displayName: "Bayu", nis: "", studentNo: "900" }, // No. induk taken
+      { displayName: "Siti  Contoh", nis: "", studentNo: "" }, // same as row 1 after normalizing
+      { displayName: "Cici", nis: "12", studentNo: "" }, // NIS too short
+    ];
+    const preview = await importStudents(t, c.id, rows, false);
+    if (!preview.ok) throw new Error(preview.error);
+    expect(preview.rows.map((r) => r.status)).toEqual(["NEW", "EXISTS", "EXISTS", "EXISTS", "EXISTS", "INVALID"]);
+    expect(preview.created).toBe(0);
+    expect(await prisma.user.count({ where: { role: "STUDENT" } })).toBe(1);
+
+    const done = await importStudents(t, c.id, rows, true);
+    expect(done).toMatchObject({ ok: true, created: 1 });
+    const siti = await prisma.user.findFirstOrThrow({ where: { nis: "0123456789" } });
+    expect(siti).toMatchObject({ displayName: "SITI CONTOH", loginName: "siti contoh", studentNo: "901", classId: c.id, role: "STUDENT" });
+    expect((await audits(c.id, "STUDENTS_IMPORTED")).map((a) => a.metadata)).toEqual([{ created: 1 }]);
+
+    // Re-import: everything already exists.
+    const again = await importStudents(t, c.id, rows.slice(0, 1), true);
+    expect(again).toMatchObject({ ok: true, created: 0, rows: [{ status: "EXISTS" }] });
+  });
+
+  it("rejects malformed payloads and unknown classes", async () => {
+    const { c, t } = await setup();
+    expect(await importStudents(t, c.id, [], false)).toEqual({ ok: false, error: "INVALID_ROWS" });
+    expect(await importStudents(t, c.id, "x", false)).toEqual({ ok: false, error: "INVALID_ROWS" });
+    expect(await importStudents(t, "nope", [{ displayName: "A", nis: "", studentNo: "" }], false)).toEqual({ ok: false, error: "CLASS_NOT_FOUND" });
   });
 });

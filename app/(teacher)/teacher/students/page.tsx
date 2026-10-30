@@ -19,6 +19,7 @@ import {
   RevokeStudentButton,
   ToggleStudentActiveButton,
 } from "./student-forms";
+import { ImportStudentsDialog } from "./import-dialog";
 
 export const metadata: Metadata = { title: "Kelola Siswa" };
 
@@ -26,7 +27,7 @@ type Params = Promise<Record<string, string | string[] | undefined>>;
 
 export default function StudentsPage({ searchParams }: { searchParams: Params }) {
   return (
-    <div className="max-w-[1360px] mx-auto flex flex-col gap-6">
+    <div className="p-space-lg max-w-[1360px] mx-auto w-full flex flex-col gap-6">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-canvas-peach-subtle via-[#ffe6d6] to-canvas-peach p-6 md:p-8 border border-amber-200/60 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex flex-col gap-3 z-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 w-fit px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm text-primary-strong shadow-xs">
@@ -143,7 +144,7 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
               type="text"
               defaultValue={q}
               autoComplete="off"
-              placeholder="Cari nama atau NIS siswa..."
+              placeholder="Cari nama, NIS, atau no. induk..."
               className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#f7f3f1] border border-stone-200/60 text-text-primary font-body-md text-xs placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-white transition-all"
             />
           </div>
@@ -170,6 +171,15 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
           classes={classes}
           defaultClassId={classes.some((c) => c.id === kelas) ? kelas : undefined}
         />
+        <div className="mt-4 pt-4 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="font-body-md text-xs text-text-muted">
+            Punya daftar siswa di Excel? Kolom NAMA, NISN, dan NO INDUK dibaca otomatis.
+          </p>
+          <ImportStudentsDialog
+            classes={classes}
+            defaultClassId={classes.some((c) => c.id === kelas) ? kelas : undefined}
+          />
+        </div>
       </div>
 
       {students.length === 0 && (
@@ -197,6 +207,9 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-headline-sm text-base font-bold text-text-primary break-words">{s.displayName}</h2>
                       <span className="px-2 py-0.5 rounded-md bg-stone-100 text-text-muted font-label-sm text-[11px] font-semibold">NIS: {s.nis ?? "-"}</span>
+                      {s.studentNo && (
+                        <span className="px-2 py-0.5 rounded-md bg-stone-100 text-text-muted font-label-sm text-[11px] font-semibold">No. Induk: {s.studentNo}</span>
+                      )}
                       <span className="px-2.5 py-0.5 rounded-full bg-canvas-peach-subtle text-primary-strong font-label-sm text-xs font-bold">Kelas {s.className}</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-text-muted font-body-md text-xs">
@@ -214,7 +227,7 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 shrink-0 sm:self-center">
                   <EditStudentDialog
-                    student={{ id: s.id, displayName: s.displayName, nis: s.nis, classId: s.classId }}
+                    student={{ id: s.id, displayName: s.displayName, nis: s.nis, studentNo: s.studentNo, classId: s.classId }}
                     classes={classes}
                   />
                   <RevokeStudentButton studentId={s.id} />

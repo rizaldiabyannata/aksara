@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { attendanceToday, dayState, witaToday } from "@/lib/attendance";
 import { finalizeExpiredAttempts, UNGRADED } from "@/lib/attempts";
 import { countMaterialsByStatus } from "@/lib/materials";
 import { countQuestionsByStatus } from "@/lib/questions";
@@ -8,6 +9,7 @@ export type TeacherTask =
   | { kind: "RUNNING"; quizId: string; title: string; inProgress: number; started: number; assigned: number }
   | { kind: "GRADE"; quizId: string; title: string; essays: number }
   | { kind: "RELEASE"; quizId: string; title: string; students: number }
+  | { kind: "ATTENDANCE"; classId: string; className: string; missing: number }
   | { kind: "OTHER_DEVICE"; students: number }
   | { kind: "REVIEWED_MATERIALS"; count: number };
 
@@ -67,12 +69,21 @@ export async function getTeacherDashboard(now: Date = new Date()) {
     where: { role: "STUDENT", isActive: true, id: { in: replaced.map((r) => r.entityId).filter((id): id is string => !!id) } },
   });
 
-  const [materials, questions, activeStudents] = await Promise.all([
+  const [materials, questions, activeStudents, today, attendance, classes] = await Promise.all([
     countMaterialsByStatus(), countQuestionsByStatus(),
     prisma.user.count({ where: { role: "STUDENT", isActive: true } }),
+    dayState(witaToday(now), now), attendanceToday(now),
+    prisma.class.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
   ]);
 
   const tasks: TeacherTask[] = [...help, ...running, ...grade, ...release];
+  if (today.state === "OPEN") {
+    const byClass = new Map(attendance.map((a) => [a.classId, a]));
+    for (const c of classes) {
+      const a = byClass.get(c.id);
+      if (a && a.recorded < a.total) tasks.push({ kind: "ATTENDANCE", classId: c.id, className: c.name, missing: a.total - a.recorded });
+    }
+  }
   if (otherDevice) tasks.push({ kind: "OTHER_DEVICE", students: otherDevice });
   if (materials.REVIEWED) tasks.push({ kind: "REVIEWED_MATERIALS", count: materials.REVIEWED });
   return {

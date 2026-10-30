@@ -2,24 +2,32 @@ import { describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import { GRACE_MS, gradeEssay, grantReplacement, submitAttempt } from "@/lib/attempts";
 import { releaseResults } from "@/lib/results";
+import { saveAttendance, setHoliday } from "@/lib/attendance";
 import { getTeacherDashboard } from "@/lib/dashboard";
-import { makeMaterial, makeQuestion, makeStudent } from "../tests/factories";
+import { taskLine } from "@/lib/task-text";
+import { makeClass, makeMaterial, makeQuestion, makeStudent, makeTeacher } from "../tests/factories";
 import { at, DUR, min, setup, started } from "../tests/quiz-setup";
 
 vi.mock("@/lib/storage", () => import("../tests/storage-fake").then((m) => m.storageMock()));
 
+// Quiz fixtures run on a school day; the ATTENDANCE task has its own tests below.
+const dash = async (now: Date) => {
+  const d = await getTeacherDashboard(now);
+  return { ...d, tasks: d.tasks.filter((t) => t.kind !== "ATTENDANCE") };
+};
+
 describe("getTeacherDashboard", () => {
   it("empty database → no tasks", async () => {
-    expect((await getTeacherDashboard(at(0))).tasks).toEqual([]);
+    expect((await dash(at(0))).tasks).toEqual([]);
   });
 
   it("running attempt → RUNNING; past deadline + grace → not running but GRADE", async () => {
     const s = await setup({}, [{ type: "ESSAY" }]);
     await started(s);
-    expect((await getTeacherDashboard(at(min(5)))).tasks).toEqual([
+    expect((await dash(at(min(5)))).tasks).toEqual([
       { kind: "RUNNING", quizId: s.quiz.id, title: s.quiz.title, inProgress: 1, started: 1, assigned: 1 },
     ]);
-    expect((await getTeacherDashboard(at(min(DUR) + GRACE_MS + 1))).tasks).toEqual([
+    expect((await dash(at(min(DUR) + GRACE_MS + 1))).tasks).toEqual([
       { kind: "GRADE", quizId: s.quiz.id, title: s.quiz.title, essays: 1 },
     ]);
   });
@@ -27,19 +35,19 @@ describe("getTeacherDashboard", () => {
   it("RELEASE appears exactly when releaseResults would succeed", async () => {
     const s = await setup({}, [{}]);
     await submitAttempt(s.student.id, s.quiz.id, await started(s), at(10));
-    const d = await getTeacherDashboard(at(20));
+    const d = await dash(at(20));
     expect(d.tasks).toEqual([{ kind: "RELEASE", quizId: s.quiz.id, title: s.quiz.title, students: 1 }]);
     expect(await releaseResults(s.teacher.id, s.quiz.id, at(30))).toEqual({ ok: true });
-    expect((await getTeacherDashboard(at(40))).tasks).toEqual([]);
+    expect((await dash(at(40))).tasks).toEqual([]);
   });
 
   it("no RELEASE while another active student has not started; RELEASE once the window ended", async () => {
     const s = await setup({}, [{}]);
     await makeStudent(s.cls.id);
     await submitAttempt(s.student.id, s.quiz.id, await started(s), at(10));
-    expect((await getTeacherDashboard(at(20))).tasks).toEqual([]);
+    expect((await dash(at(20))).tasks).toEqual([]);
     await prisma.quiz.update({ where: { id: s.quiz.id }, data: { endsAt: at(15) } });
-    expect((await getTeacherDashboard(at(20))).tasks).toEqual([
+    expect((await dash(at(20))).tasks).toEqual([
       { kind: "RELEASE", quizId: s.quiz.id, title: s.quiz.title, students: 1 },
     ]);
   });
@@ -47,7 +55,7 @@ describe("getTeacherDashboard", () => {
   it("no RELEASE while an essay is ungraded or a replacement is unstarted", async () => {
     const e = await setup({}, [{ type: "ESSAY" }]);
     await submitAttempt(e.student.id, e.quiz.id, await started(e), at(10));
-    expect((await getTeacherDashboard(at(20))).tasks).toEqual([
+    expect((await dash(at(20))).tasks).toEqual([
       { kind: "GRADE", quizId: e.quiz.id, title: e.quiz.title, essays: 1 },
     ]);
 
@@ -55,7 +63,7 @@ describe("getTeacherDashboard", () => {
     const a = await started(r);
     await submitAttempt(r.student.id, r.quiz.id, a, at(10));
     expect(await grantReplacement(r.teacher.id, a, "Gangguan jaringan", at(15))).toEqual({ ok: true });
-    const tasks = (await getTeacherDashboard(at(20))).tasks.filter((t) => "quizId" in t && t.quizId === r.quiz.id);
+    const tasks = (await dash(at(20))).tasks.filter((t) => "quizId" in t && t.quizId === r.quiz.id);
     expect(tasks).toEqual([]);
     expect((await releaseResults(r.teacher.id, r.quiz.id, at(30))).ok).toBe(false);
   });
@@ -65,13 +73,13 @@ describe("getTeacherDashboard", () => {
     const a = await started(s);
     await submitAttempt(s.student.id, s.quiz.id, a, at(10));
     expect(await grantReplacement(s.teacher.id, a, "Gangguan jaringan", at(15))).toEqual({ ok: true });
-    expect((await getTeacherDashboard(at(20))).tasks.some((t) => t.kind === "GRADE")).toBe(false);
+    expect((await dash(at(20))).tasks.some((t) => t.kind === "GRADE")).toBe(false);
   });
 
   it("draft quiz and quiz without attempts produce nothing", async () => {
     await setup({}, [{}], false);
     await setup({}, [{}]);
-    expect((await getTeacherDashboard(at(20))).tasks).toEqual([]);
+    expect((await dash(at(20))).tasks).toEqual([]);
   });
 
   it("OTHER_DEVICE: distinct active students with STUDENT_SESSION_REPLACED in 7 days", async () => {
@@ -87,7 +95,7 @@ describe("getTeacherDashboard", () => {
     await row(s.student.id, 2);
     await row(b.id, 8);
     await row(c.id, 1);
-    expect((await getTeacherDashboard(now)).tasks).toEqual([{ kind: "OTHER_DEVICE", students: 1 }]);
+    expect((await dash(now)).tasks).toEqual([{ kind: "OTHER_DEVICE", students: 1 }]);
   });
 
   it("REVIEWED_MATERIALS counts REVIEWED only; counts block", async () => {
@@ -97,7 +105,7 @@ describe("getTeacherDashboard", () => {
       await makeMaterial(s.chapter.id, s.teacher.id, { status });
     }
     await makeQuestion(s.chapter.id, s.teacher.id, { status: "DRAFT" });
-    const d = await getTeacherDashboard(at(0));
+    const d = await dash(at(0));
     expect(d.tasks).toEqual([{ kind: "REVIEWED_MATERIALS", count: 1 }]);
     // setup's own question is ACTIVE; the extra DRAFT one is not counted
     expect(d.counts).toEqual({ materialsPublished: 1, questionsActive: 1, activeStudents: 1 });
@@ -111,7 +119,7 @@ describe("getTeacherDashboard", () => {
     expect(await releaseResults(s.teacher.id, s.quiz.id, at(20))).toEqual({ ok: true });
     const a2 = await started(s, at(30));
     await submitAttempt(s.student.id, s.quiz.id, a2, at(40));
-    expect((await getTeacherDashboard(at(50))).tasks).toEqual([
+    expect((await dash(at(50))).tasks).toEqual([
       { kind: "GRADE", quizId: s.quiz.id, title: s.quiz.title, essays: 1 },
     ]);
   });
@@ -127,11 +135,34 @@ describe("getTeacherDashboard", () => {
     await prisma.auditLog.create({
       data: { actorUserId: r.student.id, action: "STUDENT_SESSION_REPLACED", entityType: "User", entityId: r.student.id, createdAt: at(16) },
     });
-    expect((await getTeacherDashboard(at(20))).tasks).toEqual([
+    expect((await dash(at(20))).tasks).toEqual([
       { kind: "RUNNING", quizId: r.quiz.id, title: "R-berjalan", inProgress: 1, started: 1, assigned: 1 },
       { kind: "GRADE", quizId: y.quiz.id, title: "B-pertama", essays: 1 },
       { kind: "GRADE", quizId: z.quiz.id, title: "Z-akhir", essays: 1 },
       { kind: "OTHER_DEVICE", students: 1 },
     ]);
+  });
+});
+
+describe("getTeacherDashboard ATTENDANCE", () => {
+  const tuesday = new Date("2030-01-01T02:00:00Z"); // 10:00 WITA
+  const sunday = new Date("2030-01-06T02:00:00Z");
+  const attendanceTasks = async (now: Date) =>
+    (await getTeacherDashboard(now)).tasks.filter((t) => t.kind === "ATTENDANCE");
+
+  it("lists active classes not fully marked today; gone once filled; never on Sundays or holidays", async () => {
+    const t = (await makeTeacher()).user.id;
+    const c = await makeClass({ name: "6A" });
+    const off = await makeClass({ name: "6B", isActive: false });
+    const [a, b] = await Promise.all([makeStudent(c.id), makeStudent(c.id), makeStudent(off.id)]);
+    expect(await attendanceTasks(tuesday)).toEqual([{ kind: "ATTENDANCE", classId: c.id, className: "6A", missing: 2 }]);
+    expect(taskLine((await attendanceTasks(tuesday))[0]!)).toEqual({
+      text: "Absensi 6A hari ini belum diisi (2 siswa)", href: `/teacher/attendance?class=${c.id}`,
+    });
+    await saveAttendance(t, { classId: c.id, date: "2030-01-01", marks: [{ studentId: a.id, status: "HADIR" }, { studentId: b.id, status: "SAKIT" }] }, tuesday);
+    expect(await attendanceTasks(tuesday)).toEqual([]);
+    expect(await attendanceTasks(sunday)).toEqual([]);
+    await setHoliday(t, { date: "2030-01-02", note: "Libur" });
+    expect(await attendanceTasks(new Date("2030-01-02T02:00:00Z"))).toEqual([]);
   });
 });

@@ -8,6 +8,10 @@ export type AuditAction =
   | "STUDENT_SESSION_REPLACED"
   | "STUDENT_DEACTIVATED"
   | "STUDENT_ACTIVATED"
+  | "STUDENTS_IMPORTED"
+  | "HOLIDAY_SET"
+  | "HOLIDAY_REMOVED"
+  | "ATTENDANCE_EXPORTED"
   | "CLASS_CREATED"
   | "CLASS_UPDATED"
   | "CLASS_CODE_ROTATED"
@@ -41,7 +45,7 @@ export async function writeAudit(
   e: {
     actorUserId: string;
     action: AuditAction;
-    entityType: "User" | "Class" | "Material" | "Image" | "Question" | "Quiz" | "QuizAttempt";
+    entityType: "User" | "Class" | "Material" | "Image" | "Question" | "Quiz" | "QuizAttempt" | "Holiday";
     entityId: string;
     metadata?: Record<string, string | number | boolean | string[] | null>;
   },

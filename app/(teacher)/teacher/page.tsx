@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import {
+  CalendarCheckIn01Icon,
+  FileEditIcon,
+  School01Icon,
+  Tick02Icon,
+  UserAdd01Icon,
   ArrowRight01Icon,
   Book02Icon,
   CheckmarkCircle02Icon,
@@ -89,18 +94,29 @@ async function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
         <Metric label="Koleksi Pembelajaran" value={counts.materialsPublished} valueClass="text-tone-info" title="Materi Terbit Aktif" sub="Materi untuk siswa" icon={Book02Icon} boxClass="bg-tone-info-bg text-tone-info" />
         <Metric label="Perbendaharaan Soal" value={counts.questionsActive} valueClass="text-primary-container" title="Soal Siap Pakai" sub="Pilihan ganda & uraian" icon={Edit02Icon} boxClass="bg-canvas-peach-subtle text-primary-strong" />
-        <Metric label="Daftar Kehadiran Siswa" value={present} suffix={`/${total}`} valueClass="text-tone-success" title="Hadir hari ini" sub="Siswa yang sudah masuk hari ini" icon={UserGroupIcon} boxClass="bg-tone-success-bg text-tone-success" />
+        <Metric label="Daftar Kehadiran Siswa" value={present} suffix={`/${total}`} valueClass="text-tone-success" title="Hadir hari ini" sub="Siswa yang dicatat hadir di Absensi hari ini" icon={UserGroupIcon} boxClass="bg-tone-success-bg text-tone-success" />
       </div>
 
       {counts.activeStudents === 0 && (
-        <div className="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-space-sm">
-          <h2 className="font-headline-sm text-headline-sm text-text-primary">Mulai dari sini</h2>
-          <ol className="flex list-decimal flex-col gap-space-sm pl-6 font-body-md text-body-md">
-            <li><Link href="/teacher/classes" className="inline-flex min-h-11 items-center underline underline-offset-4">Buat kelas</Link></li>
-            <li><Link href="/teacher/students" className="inline-flex min-h-11 items-center underline underline-offset-4">Tambah siswa</Link></li>
-            <li><Link href="/teacher/materials" className="inline-flex min-h-11 items-center underline underline-offset-4">Tulis materi</Link></li>
-          </ol>
-        </div>
+        <GettingStarted
+          steps={[
+            {
+              href: "/teacher/classes", icon: School01Icon, title: "Buat kelas", action: "Buat kelas",
+              text: "Setiap kelas punya kode untuk siswa masuk.",
+              done: classes.length > 0 && `Sudah ada ${classes.length} kelas`,
+            },
+            {
+              href: "/teacher/students", icon: UserAdd01Icon, title: "Tambah siswa", action: "Tambah siswa",
+              text: "Satu per satu, atau impor dari file Excel.",
+              done: false,
+            },
+            {
+              href: "/teacher/materials", icon: FileEditIcon, title: "Tulis materi", action: "Tulis materi",
+              text: "Materi yang terbit bisa dibaca siswa.",
+              done: counts.materialsPublished > 0 && `${counts.materialsPublished} materi sudah terbit`,
+            },
+          ]}
+        />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
@@ -185,6 +201,61 @@ async function Dashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+type Step = { href: string; icon: IconSvgElement; title: string; text: string; action: string; done: string | false };
+
+// First-run checklist. The first unfinished step is the one action in orange; done steps say so in words.
+function GettingStarted({ steps }: { steps: Step[] }) {
+  const next = steps.findIndex((s) => !s.done);
+  return (
+    <section aria-labelledby="mulai-title" className="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-space-md">
+      <div className="flex flex-col gap-space-xs">
+        <h2 id="mulai-title" className="font-headline-sm text-headline-sm text-text-primary">Mulai dari sini</h2>
+        <p className="font-body-md text-body-md text-on-surface-variant">Tiga langkah supaya siswa bisa mulai belajar di Aksara.</p>
+      </div>
+      <ol className="grid grid-cols-1 md:grid-cols-3 gap-space-sm">
+        {steps.map((s, i) => {
+          const current = i === next;
+          return (
+            <li key={s.href}>
+              <Link
+                href={s.href}
+                aria-current={current ? "step" : undefined}
+                className={`group h-full min-h-12 flex items-start gap-space-md rounded-xl p-space-md transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring ${current ? "bg-canvas-peach-subtle" : "hover:bg-canvas-peach-subtle"}`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`size-11 shrink-0 rounded-full flex items-center justify-center font-label-lg text-label-lg font-bold ${s.done ? "bg-tone-success-bg text-tone-success" : current ? "bg-primary-container text-on-primary" : "bg-canvas-peach-subtle text-primary-strong"}`}
+                >
+                  {s.done ? <Icon icon={Tick02Icon} className="size-6" /> : i + 1}
+                </span>
+                <span className="flex min-w-0 flex-col gap-space-xs">
+                  <span className="flex items-center gap-space-sm font-label-lg text-label-lg font-bold text-text-primary">
+                    <Icon icon={s.icon} className="size-5 shrink-0 text-on-surface-variant" />
+                    <span className="sr-only">Langkah {i + 1}: </span>
+                    {s.title}
+                  </span>
+                  <span className="font-body-md text-body-md text-on-surface-variant">{s.text}</span>
+                  {s.done ? (
+                    <span className="inline-flex items-center gap-space-xs font-label-md text-label-md text-tone-success">
+                      <Icon icon={CheckmarkCircle02Icon} className="size-[18px]" />
+                      {s.done}
+                    </span>
+                  ) : (
+                    <span className={`inline-flex items-center gap-space-xs font-label-md text-label-md ${current ? "text-primary-strong" : "text-on-surface-variant"} group-hover:text-primary-strong`}>
+                      {s.action}
+                      <Icon icon={ArrowRight01Icon} className="size-[18px] transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  )}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
   );
 }
 
@@ -305,6 +376,12 @@ function describe(task: TeacherTask) {
         icon: CheckmarkCircle02Icon, chip: CHIPS.success, label: "Lengkap & siap dibagikan",
         action: "Rilis hasil",
         actionClass: SUCCESS_BTN, ActionIcon: Megaphone01Icon, actionIcon: SentIcon,
+      };
+    case "ATTENDANCE":
+      return {
+        icon: CalendarCheckIn01Icon, chip: CHIPS.peach, label: "Absensi",
+        action: "Isi absensi",
+        actionClass: SOFT_BTN, ActionIcon: CalendarCheckIn01Icon, actionIcon: ArrowRight01Icon,
       };
     case "OTHER_DEVICE":
       return {
