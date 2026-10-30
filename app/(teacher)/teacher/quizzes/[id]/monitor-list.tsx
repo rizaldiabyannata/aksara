@@ -115,15 +115,31 @@ export function MonitorList({ recap, quizId, classFilter }: { recap: QuizRecap; 
       {rows.length === 0 ? (
         <p className="text-muted-foreground">Belum ada siswa di kelas ini. Tambahkan siswa di halaman Siswa.</p>
       ) : (
+        <>
+        <div aria-hidden="true" className="hidden grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_repeat(3,minmax(0,0.8fr))] gap-3 rounded-xl bg-secondary px-4 py-3 text-sm font-bold tracking-wide text-muted-foreground uppercase lg:grid">
+          <span>Siswa</span><span>Status</span><span>Percobaan</span><span>Nilai</span><span>Ketuntasan</span>
+        </div>
         <ul className="flex flex-col gap-3">
           {rows.map((r) => (
-            <li key={r.studentId} className="rounded-2xl border bg-card p-4 shadow-card">
-              <div className="grid gap-3 md:grid-cols-5 md:items-center">
-                <div>
-                  <p className="text-lg font-bold">{r.name}</p>
-                  <p className="text-muted-foreground">{r.className}{r.nis && ` · NIS ${r.nis}`}</p>
+            <li key={r.studentId} className={`rounded-2xl border bg-card p-4 shadow-card ${r.state === "NEEDS_GRADING" ? "border-l-4 border-l-accent-decor" : ""}`}>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_repeat(3,minmax(0,0.8fr))] lg:items-center lg:gap-3">
+                <div className="col-span-2 flex items-center gap-3 lg:col-span-1">
+                  <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-soft font-bold text-primary-strong">
+                    {r.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-lg font-bold break-words">{r.name}</p>
+                    <p className="text-muted-foreground">{r.className}{r.nis && ` · NIS ${r.nis}`}</p>
+                  </div>
                 </div>
-                <div><StateStatus row={r} now={now} /></div>
+                <div className="col-span-2 flex flex-col gap-2 lg:col-span-1">
+                  <StateStatus row={r} now={now} />
+                  {r.running && (
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-secondary" aria-hidden="true">
+                      <div className="h-full rounded-full bg-accent-decor" style={{ width: `${Math.round((r.running.answered / Math.max(1, r.running.total)) * 100)}%` }} />
+                    </div>
+                  )}
+                </div>
                 <p>Percobaan {r.attemptsUsed}/{quiz.maxAttempts}</p>
                 <Scores row={r} quiz={quiz} />
                 <div><Tuntas row={r} kkm={quiz.kkm} /></div>
@@ -132,6 +148,7 @@ export function MonitorList({ recap, quizId, classFilter }: { recap: QuizRecap; 
             </li>
           ))}
         </ul>
+        </>
       )}
     </div>
   );

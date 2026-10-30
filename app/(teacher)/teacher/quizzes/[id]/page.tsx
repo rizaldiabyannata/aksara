@@ -21,7 +21,7 @@ import { listChapterOptions } from "@/lib/subjects";
 import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
 import { AutoRefresh } from "./auto-refresh";
 import { MonitorList } from "./monitor-list";
-import { STATUS_LABEL, STATUS_TONE } from "../labels";
+import { POLICY_LABEL, STATUS_LABEL, STATUS_TONE } from "../labels";
 import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, ResultsControls, SettingsForm } from "../quiz-forms";
 
 export const metadata: Metadata = { title: "Ulangan" };
@@ -119,12 +119,15 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
         title={quiz.title}
         description={
           <span className="flex flex-wrap items-center gap-2">
-            {quiz.subjectName}
+            <Badge variant="outline">{quiz.subjectName}</Badge>
             <Status tone={STATUS_TONE[quiz.status]}>{STATUS_LABEL[quiz.status]}</Status>
+            <span className="font-semibold">
+              {quiz.durationMinutes} menit · {quiz.kkm !== null ? `KKM ${quiz.kkm} · ` : ""}{POLICY_LABEL[quiz.scoringPolicy]} · {quiz.questions.length} soal
+            </span>
           </span>
         }
       />
-      <nav aria-label="Bagian halaman" className="flex flex-wrap gap-2">
+      <nav aria-label="Bagian halaman" className="flex flex-wrap gap-2 rounded-2xl bg-secondary p-2 self-start">
         {[...(recap ? [["#pemantauan", "Pemantauan & Nilai"]] : []), [recap ? "#detail" : "#soal", "Soal & Kunci"], [recap ? "#detail" : "#setelan", "Setelan"]].map(([href, label]) => (
           <a key={label} href={href} className={buttonVariants({ variant: "outline", className: "h-11" })}>{label}</a>
         ))}
@@ -209,7 +212,7 @@ function Summary({ recap }: { recap: QuizRecap }) {
   const n = (st: RecapState) => recap.rows.filter((r) => r.state === st).length;
   const notStarted = n("NOT_STARTED") + n("WAITING_REPLACEMENT");
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <StatCard label="Belum mulai" value={notStarted} hint="siswa" icon={HourglassIcon} tone="info" />
       <StatCard label="Sedang mengerjakan" value={n("IN_PROGRESS")} hint="siswa" icon={PlayCircleIcon} tone="primary" />
       <StatCard label="Perlu dinilai" value={n("NEEDS_GRADING")} hint="siswa" icon={Edit02Icon} tone="warning" />

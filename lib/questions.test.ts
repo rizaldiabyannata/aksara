@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import {
   countQuestionsByStatus,
+  countQuestionsByType,
   createQuestion,
   deleteQuestion,
   duplicateQuestion,
@@ -195,6 +196,7 @@ describe("status and delete", () => {
     expect(a[0].metadata).toEqual({ from: "DRAFT", to: "ACTIVE" });
     expect(await setQuestionStatus(actor, "nope", "ACTIVE")).toEqual({ ok: false, error: "NOT_FOUND" });
     expect(await countQuestionsByStatus()).toEqual({ DRAFT: 0, ACTIVE: 1 });
+    expect(await countQuestionsByType()).toEqual({ SINGLE_CHOICE: 1, TRUE_FALSE: 0, MULTIPLE_SELECT: 0, SHORT_ANSWER: 0, ESSAY: 0 });
   });
 
   it("rejects an unknown status without writing", async () => {

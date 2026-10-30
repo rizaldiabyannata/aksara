@@ -26,6 +26,12 @@ export function CreateQuizForm({ subjects }: { subjects: { id: string; name: str
     <form action={action} className="flex max-w-xl flex-col gap-4">
       <Card>
         <CardContent className="flex flex-col gap-4">
+          <div>
+            <p className="flex items-center gap-2 text-sm font-bold tracking-wide text-primary-strong uppercase">
+              <span aria-hidden="true" className="size-2 rounded-full bg-accent-decor" />Formulir cepat
+            </p>
+            <h2 className="text-xl font-bold">Parameter ulangan baru</h2>
+          </div>
           <FormField name="title" label="Judul" required maxLength={150} defaultValue={state?.values?.title ?? ""} error={e?.title} />
           <div className="flex flex-col gap-2">
             <Label htmlFor="subjectId">Mata pelajaran</Label>

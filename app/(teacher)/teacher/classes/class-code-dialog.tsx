@@ -18,7 +18,7 @@ const groupCode = (code: string) => `${code.slice(0, 3)} ${code.slice(3)}`;
 export function ClassCodeDialog({ name, code }: { name: string; code: string }) {
   return (
     <Dialog>
-      <DialogTrigger render={<Button variant="outline" className="h-11" />}>Tampilkan kode</DialogTrigger>
+      <DialogTrigger render={<Button className="h-11 bg-info! font-bold text-primary-foreground hover:bg-info/90!" />}>Tampilkan kode</DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Kode kelas {name}</DialogTitle>

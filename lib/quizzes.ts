@@ -19,6 +19,11 @@ export type QuizRow = {
   questionCount: number;
   classNames: string[];
   updatedAt: Date;
+  instructions: string | null;
+  durationMinutes: number;
+  maxAttempts: number;
+  kkm: number | null;
+  resultsReleasedAt: Date | null;
 };
 export type QuizDetail = {
   id: string;
@@ -492,6 +497,7 @@ export async function listQuizzes(): Promise<QuizRow[]> {
       title: true,
       status: true,
       updatedAt: true,
+      instructions: true, durationMinutes: true, maxAttempts: true, kkm: true, resultsReleasedAt: true,
       subject: { select: { name: true } },
       _count: { select: { questions: true } },
       classes: { orderBy: { class: { name: "asc" } }, select: { class: { select: { name: true } } } },
@@ -505,6 +511,11 @@ export async function listQuizzes(): Promise<QuizRow[]> {
     questionCount: r._count.questions,
     classNames: r.classes.map((c) => c.class.name),
     updatedAt: r.updatedAt,
+    instructions: r.instructions,
+    durationMinutes: r.durationMinutes,
+    maxAttempts: r.maxAttempts,
+    kkm: r.kkm,
+    resultsReleasedAt: r.resultsReleasedAt,
   }));
 }
 

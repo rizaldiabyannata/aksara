@@ -7,7 +7,7 @@ import { FormField, FormMessage } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import type { Difficulty, QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
+import type { QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
 import {
   createQuestionAction,
   deleteQuestionAction,
@@ -16,14 +16,13 @@ import {
   updateQuestionAction,
 } from "./actions";
 import { DIFFICULTY_LABEL } from "./labels";
+import type { Defaults } from "./question-defaults";
 
 export type ChapterOption = {
   id: string;
   label: string;
   subchapters: { id: string; label: string }[];
 };
-// Flat string defaults, same shape as the `values` echo, so one reader serves both.
-export type Defaults = Record<string, string>;
 
 const controlClass =
   "w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive";
@@ -39,41 +38,25 @@ function Err({ id, text }: { id: string; text?: string }) {
   ) : null;
 }
 
-/** Defaults for the edit form, derived from a QuestionDetail-like object. */
-export function toDefaults(q: {
-  type: QuestionType;
-  chapterId: string;
-  subchapterId: string | null;
-  prompt: string;
-  explanation: string | null;
-  defaultPoints: number;
-  difficulty: Difficulty;
-  sourceReference: string | null;
-  verificationNote: string | null;
-  options: { id: string; text: string }[] | null;
-  answerKey: Record<string, unknown>;
-}): Defaults {
-  const d: Defaults = {
-    chapterId: q.chapterId,
-    subchapterId: q.subchapterId ?? "",
-    prompt: q.prompt,
-    explanation: q.explanation ?? "",
-    defaultPoints: String(q.defaultPoints),
-    difficulty: q.difficulty,
-    sourceReference: q.sourceReference ?? "",
-    verificationNote: q.verificationNote ?? "",
-  };
-  for (const o of q.options ?? []) d[`option_${o.id}`] = o.text;
-  const k = q.answerKey;
-  if (q.type === "SINGLE_CHOICE") d.correct = String(k.optionId);
-  if (q.type === "TRUE_FALSE") d.correct = String(k.value);
-  if (q.type === "MULTIPLE_SELECT") d.correct = (k.optionIds as string[]).join(",");
-  if (q.type === "SHORT_ANSWER") {
-    d.accepted = (k.accepted as string[]).join("\n");
-    if (k.caseSensitive) d.caseSensitive = "on";
-  }
-  if (q.type === "ESSAY") d.rubric = String(k.rubric ?? "");
-  return d;
+function Sec({ n, title, hint, children }: { n?: string; title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <Card className="rounded-2xl shadow-card">
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex items-start gap-3 border-b border-border pb-3">
+          {n && (
+            <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft font-mono font-bold text-primary-strong">
+              {n}
+            </span>
+          )}
+          <div>
+            <h2 className="text-lg font-semibold">{title}</h2>
+            {hint && <p className="text-sm text-muted-foreground">{hint}</p>}
+          </div>
+        </div>
+        {children}
+      </CardContent>
+    </Card>
+  );
 }
 
 function Area({
@@ -113,7 +96,7 @@ function KeyFields({
     const slots = [...SLOTS].slice(0, type === "SINGLE_CHOICE" ? 6 : 8);
     const multi = type === "MULTIPLE_SELECT";
     return (
-      <fieldset className="flex flex-col gap-3 rounded-lg border p-3" aria-describedby={describedBy}>
+      <fieldset className="flex flex-col gap-3 rounded-xl border-2 border-border p-3" aria-describedby={describedBy}>
         <legend className="px-1 font-medium">
           {multi ? "Opsi (isi 3 sampai 8, centang yang benar)" : "Opsi (isi 2 sampai 6, pilih yang benar)"}
         </legend>
@@ -148,7 +131,7 @@ function KeyFields({
   }
   if (type === "TRUE_FALSE") {
     return (
-      <fieldset className="flex flex-col gap-2 rounded-lg border p-3" aria-describedby={describedBy}>
+      <fieldset className="flex flex-col gap-2 rounded-xl border-2 border-border p-3" aria-describedby={describedBy}>
         <legend className="px-1 font-medium">Jawaban yang benar</legend>
         {[["true", "Benar"], ["false", "Salah"]].map(([val, label]) => (
           <label key={val} className="flex min-h-11 items-center gap-2">
@@ -162,7 +145,7 @@ function KeyFields({
   }
   if (type === "SHORT_ANSWER") {
     return (
-      <fieldset className="flex flex-col gap-3 rounded-lg border p-3" aria-describedby={describedBy}>
+      <fieldset className="flex flex-col gap-3 rounded-xl border-2 border-border p-3" aria-describedby={describedBy}>
         <legend className="px-1 font-medium">Jawaban yang diterima</legend>
         <Area name="accepted" label="Jawaban diterima (satu per baris)" rows={4} v={v("accepted")} />
         <label className="flex min-h-11 items-center gap-3">
@@ -174,7 +157,7 @@ function KeyFields({
     );
   }
   return (
-    <fieldset className="flex flex-col gap-3 rounded-lg border p-3" aria-describedby={describedBy}>
+    <fieldset className="flex flex-col gap-3 rounded-xl border-2 border-border p-3" aria-describedby={describedBy}>
       <legend className="px-1 font-medium">Rubrik penilaian</legend>
       <Area name="rubric" label="Rubrik (opsional)" rows={4} v={v("rubric")} />
       {errors}
@@ -215,42 +198,46 @@ export function QuestionForm({
     </div>
   );
   return (
-    <form action={formAction} className="flex max-w-3xl flex-col gap-4">
+    <form action={formAction} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <input type="hidden" name="type" value={type} />
-      <Card>
-        <CardContent className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Soal</h2>
-          {sel("chapterId", "Bab", (
-            <>
-              <option value="">Pilih bab</option>
-              {chapters.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-            </>
-          ))}
-          {sel("subchapterId", "Subbab (opsional)", (
-            <>
-              <option value="">Tanpa subbab</option>
-              {chapters.map((c) => (
-                <optgroup key={c.id} label={c.label}>
-                  {c.subchapters.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-                </optgroup>
-              ))}
-            </>
-          ), false)}
+      <div className="flex min-w-0 flex-col gap-6">
+        <Sec n="01" title="Struktur kurikulum" hint="Bab dan subbab tempat soal ini dipakai.">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {sel("chapterId", "Bab", (
+              <>
+                <option value="">Pilih bab</option>
+                {chapters.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </>
+            ))}
+            {sel("subchapterId", "Subbab (opsional)", (
+              <>
+                <option value="">Tanpa subbab</option>
+                {chapters.map((c) => (
+                  <optgroup key={c.id} label={c.label}>
+                    {c.subchapters.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                  </optgroup>
+                ))}
+              </>
+            ), false)}
+          </div>
+        </Sec>
+        <Sec n="02" title="Teks soal" hint="Bisa pakai Markdown.">
           <div className="flex flex-col gap-2">
             <Area name="prompt" label="Teks soal" rows={5} v={v("prompt")} error={e?.prompt} mono required />
-            <p className="text-base text-muted-foreground">Bisa pakai Markdown. {IMG_HINT}</p>
+            <p className="text-base text-muted-foreground">{IMG_HINT}</p>
           </div>
           <FormField id="sourceReference" name="sourceReference" label="Sumber (opsional)" autoComplete="off" defaultValue={v("sourceReference")} error={e?.sourceReference} />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent>
+        </Sec>
+        <Sec n="03" title="Opsi dan kunci jawaban" hint="Kunci hanya terlihat oleh guru.">
           <KeyFields type={type} v={v} e={e} />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Parameter soal</h2>
+        </Sec>
+        <Sec n="04" title="Pembahasan dan verifikasi" hint="Catatan verifikasi bersifat rahasia guru.">
+          <Area name="explanation" label="Pembahasan (opsional)" rows={4} v={v("explanation")} error={e?.explanation} mono />
+          <Area name="verificationNote" label="Catatan verifikasi (opsional)" rows={3} v={v("verificationNote")} error={e?.verificationNote} />
+        </Sec>
+      </div>
+      <div className="flex flex-col gap-6 lg:sticky lg:top-4">
+        <Sec title="Parameter soal" hint="Bobot dan tingkat kesulitan.">
           <FormField id="defaultPoints" name="defaultPoints" label="Poin (1 sampai 100)" required inputMode="numeric" autoComplete="off" defaultValue={v("defaultPoints") || "1"} error={e?.defaultPoints} />
           {sel("difficulty", "Kesulitan", (
             <>
@@ -258,20 +245,13 @@ export function QuestionForm({
               {Object.entries(DIFFICULTY_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </>
           ))}
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Pembahasan dan verifikasi</h2>
-          <Area name="explanation" label="Pembahasan (opsional)" rows={4} v={v("explanation")} error={e?.explanation} mono />
-          <Area name="verificationNote" label="Catatan verifikasi (opsional)" rows={3} v={v("verificationNote")} error={e?.verificationNote} />
-        </CardContent>
-      </Card>
-      <Feedback state={state} />
-      <FormMessage message={e?.type} />
-      <Button type="submit" className="h-12 self-start" disabled={pending} aria-busy={pending}>
-        {pending ? "Sedang menyimpan…" : question ? "Simpan soal" : "Buat soal"}
-      </Button>
+        </Sec>
+        <Feedback state={state} />
+        <FormMessage message={e?.type} />
+        <Button type="submit" className="h-12" disabled={pending} aria-busy={pending}>
+          {pending ? "Sedang menyimpan…" : question ? "Simpan soal" : "Buat soal"}
+        </Button>
+      </div>
     </form>
   );
 }

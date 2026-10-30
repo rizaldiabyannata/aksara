@@ -16,7 +16,8 @@ import {
 export function CreateClassForm() {
   const [state, formAction, pending] = useActionState(createClassAction, undefined);
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+      <div className="min-w-0 flex-1">
       <FormField
         name="name"
         label="Nama kelas baru"
@@ -27,6 +28,7 @@ export function CreateClassForm() {
         error={state?.fieldErrors?.name}
       />
       <Feedback state={state} />
+      </div>
       <Button type="submit" disabled={pending} aria-busy={pending}>
         {pending ? "Sedang menyimpan…" : "Buat kelas"}
       </Button>
@@ -40,7 +42,8 @@ export function RenameClassForm({ classId, name }: { classId: string; name: stri
     undefined,
   );
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+      <div className="min-w-0 flex-1">
       <FormField
         name="name"
         id={`name-${classId}`}
@@ -51,6 +54,7 @@ export function RenameClassForm({ classId, name }: { classId: string; name: stri
         error={state?.fieldErrors?.name}
       />
       <Feedback state={state} />
+      </div>
       <Button type="submit" variant="outline" className="h-11" disabled={pending}>
         Simpan nama
       </Button>

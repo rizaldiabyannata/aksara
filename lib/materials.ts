@@ -42,6 +42,7 @@ export type MaterialRow = {
   chapterId: string;
   chapterTitle: string;
   subjectName: string;
+  summary: string;
   updatedAt: Date;
 };
 
@@ -278,6 +279,7 @@ export async function listMaterials(f: {
       status: true,
       order: true,
       chapterId: true,
+      summary: true,
       updatedAt: true,
       chapter: { select: { title: true, subject: { select: { name: true } } } },
     },

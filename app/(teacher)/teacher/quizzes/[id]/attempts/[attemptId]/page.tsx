@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Status } from "@/components/status";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Markdown } from "@/components/material-view";
 import { QuestionView } from "@/components/question-view";
@@ -36,35 +37,54 @@ async function Detail({ params }: { params: Promise<{ id: string; attemptId: str
       <Link href={`/teacher/quizzes/${id}`} className="inline-flex min-h-11 items-center self-start underline">
         Kembali ke ulangan
       </Link>
-      <PageHeader
-        title={a.studentName}
-        description={`${a.quizTitle} · ${a.className} · percobaan ${a.attemptNumber}`}
-      />
-      <div className="flex flex-col gap-1">
+      <Card className="gap-4! px-(--card-spacing)">
+        <div className="flex flex-wrap items-center gap-4">
+          <span aria-hidden="true" className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-lg font-bold text-primary-strong">
+            {a.studentName.split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
+          </span>
+          <div className="min-w-0 flex-1">
+            <PageHeader title={a.studentName} description={a.quizTitle} />
+          </div>
+          {a.score !== null && !a.replaced && (
+            <div className="text-right">
+              <p className="text-metric font-extrabold text-primary-strong">{formatScore(a.score)}</p>
+              <p className="text-sm font-semibold text-muted-foreground">{pending > 0 ? "Nilai sementara" : "Nilai akhir"}</p>
+            </div>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">{a.className}</Badge>
+          <Badge variant="outline">Percobaan {a.attemptNumber}</Badge>
+          {pending > 0 && <Status tone="warning">{pending} uraian belum dinilai</Status>}
+        </div>
         <p>{a.submittedAt ? `Dikumpulkan ${formatWita(a.submittedAt)}` : "Masih dikerjakan."}</p>
         {a.replaced && <p>Percobaan ini diganti ({a.replacementReason}), jadi tidak dihitung.</p>}
         {a.score !== null && !a.replaced && (
-          <p className="text-lg font-bold">
+          <p className="sr-only">
             {pending > 0
               ? `Nilai sementara ${formatScore(a.score)}: ${pending} uraian belum dinilai`
               : `Nilai ${formatScore(a.score)}`}
           </p>
         )}
-      </div>
+      </Card>
       <ol className="flex flex-col gap-4">
         {a.questions.map((q) => {
           const essay = q.question.type === "ESSAY";
           return (
             <li key={q.quizQuestionId}>
-             <Card className="gap-3! px-(--card-spacing)">
+             <Card className="gap-4! px-(--card-spacing)">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-bold">Soal {q.number} · {TYPE_LABEL[q.question.type]} · {q.points} poin</h2>
+                <h2 className="flex flex-wrap items-center gap-2 text-lg font-bold">
+                  Soal {q.number}<span className="sr-only"> · {TYPE_LABEL[q.question.type]} · {q.points} poin</span>
+                  <Badge variant="outline" aria-hidden="true">{TYPE_LABEL[q.question.type]}</Badge>
+                  <Badge variant="secondary" aria-hidden="true">{q.points} poin</Badge>
+                </h2>
                 {essay ? (
                   q.manualPoints === null ? <Status tone="warning">Belum dinilai</Status> : <Status tone="success">Sudah dinilai</Status>
                 ) : null}
               </div>
               <QuestionView question={q.question} />
-              <dl className="grid gap-1 sm:grid-cols-[10rem_1fr]">
+              <dl className="grid gap-1 rounded-xl bg-secondary p-4 sm:grid-cols-[10rem_1fr]">
                 <dt className="font-medium">Jawaban siswa</dt>
                 <dd className="whitespace-pre-wrap">{readable(q.question, q.answer)}</dd>
                 <dt className="font-medium">{essay ? "Rubrik" : "Kunci"}</dt>

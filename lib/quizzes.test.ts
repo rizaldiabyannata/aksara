@@ -450,6 +450,17 @@ describe("countQuizzesByStatus", () => {
   });
 });
 
+describe("listQuizzes row settings", () => {
+  it("exposes duration, attempts, kkm and release state for the list page", async () => {
+    const { actor, subjectId } = await setup();
+    await makeQuiz(subjectId, actor);
+    const [row] = await listQuizzes();
+    expect(row).toMatchObject({ resultsReleasedAt: null });
+    expect(typeof row.durationMinutes).toBe("number");
+    expect(typeof row.maxAttempts).toBe("number");
+  });
+});
+
 describe("listQuizzes and getQuizForTeacher", () => {
   it("lists quizzes with subject, count and sorted class names", async () => {
     const { actor, chapter, subjectId } = await setup();

@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FormField, FormMessage } from "@/components/form-field";
+import { FormMessage } from "@/components/form-field";
+import { School01Icon, UserIcon } from "@hugeicons/core-free-icons";
+import { IconField } from "../icon-field";
 import { Button } from "@/components/ui/button";
 import { loginStudentAction } from "../actions";
 
@@ -13,7 +15,8 @@ export function StudentLoginForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
-      <FormField
+      <IconField
+        icon={School01Icon}
         name="classCode"
         label="Kode kelas"
         autoComplete="off"
@@ -23,7 +26,8 @@ export function StudentLoginForm() {
         value={classCode}
         onChange={(e) => setClassCode(e.target.value)}
       />
-      <FormField
+      <IconField
+        icon={UserIcon}
         name="identity"
         label="NIS atau nama"
         autoComplete="off"

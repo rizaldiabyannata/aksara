@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert02Icon, CheckmarkCircle02Icon, Clock01Icon, Flag02Icon } from "@hugeicons/core-free-icons";
+import { Alert02Icon, ArrowLeft01Icon, ArrowRight01Icon, CheckmarkCircle02Icon, Clock01Icon, Flag02Icon, GridViewIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -32,7 +32,7 @@ type Phase = "running" | "done" | "closed";
 
 const LINK = "inline-flex min-h-11 items-center underline underline-offset-4";
 const CHOICE =
-  "flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border-2 bg-card p-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:checked]:font-medium has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring";
+  "flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border-2 border-border bg-card p-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:checked]:font-medium has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring";
 const SESSION_ENDED_MSG = "Sesimu berakhir. Masuk lagi untuk melanjutkan.";
 const TEXT_DEBOUNCE_MS = 800;
 const FLUSH_TIMEOUT_MS = 5000;
@@ -54,9 +54,9 @@ const safeLocalStorage = () => {
 // Radio/checkbox stay real inputs (same name/value); only the wrapping label is styled.
 function Choice({ letter, checked, input, children }: { letter: string; checked: boolean; input: ReactNode; children: ReactNode }) {
   return (
-    <label className={CHOICE}>
+    <label className={`group ${CHOICE}`}>
       {input}
-      <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted text-base font-semibold">
+      <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-base font-semibold group-has-[:checked]:bg-primary group-has-[:checked]:text-primary-foreground">
         {letter}
       </span>
       <span className="min-w-0 flex-1">{children}</span>
@@ -328,25 +328,36 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
   const selected = a && "optionIds" in a ? a.optionIds : [];
   const letter = (i: number) => String.fromCharCode(65 + i);
 
+  const answeredCount = questions.length - unanswered;
+  const openConfirm = () => {
+    commitPending();
+    setConfirmOpen(true);
+  };
+
   return (
-    <section className="flex flex-col gap-4 pb-40 md:pb-0">
-      <header className="flex flex-col gap-3 rounded-2xl bg-card p-4 md:flex-row md:items-center md:justify-between">
+    <section className="flex flex-col gap-4 pb-40 lg:relative lg:left-1/2 lg:w-[min(72rem,calc(100vw-2rem))] lg:-translate-x-1/2 lg:pb-0">
+      <header className="sticky top-0 z-20 -mx-4 -mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 bg-card/95 px-4 py-3 shadow-[0_1px_8px_rgba(230,115,60,0.08)] backdrop-blur-xl md:static md:mx-0 md:mt-0 md:gap-3 md:rounded-2xl md:border md:border-border md:p-4 md:shadow-card">
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-xl font-semibold">{quizTitle}</h1>
-          <p aria-live="polite" className="min-h-6 text-sm text-muted-foreground">
+          <h1 className="text-lg font-bold md:text-xl">{quizTitle}</h1>
+          <p aria-live="polite" className="min-h-6 text-sm font-medium text-success">
             {status.kind === "saving" && "Menyimpan…"}
             {status.kind === "saved" && `Tersimpan ${hhmm(status.at)}`}
-            {status.kind === "error" && "Jawabanmu belum tersimpan. Coba lagi, ya."}
+            {status.kind === "error" && <span className="text-destructive">Jawabanmu belum tersimpan. Coba lagi, ya.</span>}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <p className={`flex items-center gap-2 rounded-xl border px-3 py-2 font-mono font-semibold ${warning ? "bg-warning-soft text-warning" : ""}`}>
+          <p className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 md:gap-3 md:px-4 md:py-2 ${warning ? "border-warning bg-warning-soft text-warning" : "border-border bg-secondary"}`}>
             <HugeiconsIcon icon={Clock01Icon} aria-hidden />
-            <span>Sisa waktu {clock(left)}</span>
+            <span className="flex flex-col leading-tight">
+              <span className="sr-only text-sm font-medium tracking-wide whitespace-nowrap uppercase md:not-sr-only">Sisa waktu</span>
+              <span className="font-mono text-lg font-bold">{clock(left)}</span>
+            </span>
           </p>
-          <p className="font-medium">Terjawab {questions.length - unanswered}/{questions.length}</p>
+          <Button className="hidden h-12 lg:inline-flex" disabled={submitting} onClick={openConfirm}>
+            Kumpulkan jawaban
+          </Button>
         </div>
-        <div aria-live="polite" className="min-h-6 text-sm md:basis-full">
+        <div aria-live="polite" className="empty:hidden md:basis-full">
           {warning ? (
             <p className="flex items-center gap-2 font-semibold">
               <HugeiconsIcon icon={Alert02Icon} aria-hidden />
@@ -356,133 +367,155 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
         </div>
       </header>
 
-      <nav aria-label="Daftar soal" className="rounded-2xl bg-card p-4">
-        <ul className="flex flex-wrap gap-2">
-          {questions.map((x, i) => {
-            const done = isAnswered(answers[x.id]);
-            const flagged = flags.has(x.id);
-            return (
-              <li key={x.id}>
-                <button
-                  type="button"
-                  className={`relative flex size-12 items-center justify-center gap-0.5 rounded-full border-2 font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                    done ? "border-success bg-success text-primary-foreground" : "bg-card"
-                  } ${i === index ? "ring-[3px] ring-primary-strong" : ""}`}
-                  aria-current={i === index ? "step" : undefined}
-                  aria-label={`Soal ${x.number}, ${done ? "sudah" : "belum"} dijawab${flagged ? ", ditandai ragu" : ""}`}
-                  onClick={() => go(i)}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+        <nav aria-label="Daftar soal" className="min-w-0 lg:order-last lg:rounded-2xl lg:border lg:border-border lg:bg-card lg:p-4 lg:shadow-card">
+          <div className="mb-2 flex items-center justify-between gap-2 lg:mb-3">
+            <h2 className="flex items-center gap-2 text-lg font-bold max-lg:sr-only">
+              <HugeiconsIcon icon={GridViewIcon} aria-hidden />
+              Navigasi soal
+            </h2>
+            <p className="font-medium text-muted-foreground">Terjawab {answeredCount}/{questions.length}</p>
+          </div>
+          <ul className="-mx-1 flex gap-2 overflow-x-auto px-1 py-1 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0">
+            {questions.map((x, i) => {
+              const done = isAnswered(answers[x.id]);
+              const flagged = flags.has(x.id);
+              const current = i === index;
+              return (
+                <li key={x.id} className="shrink-0 lg:shrink">
+                  <button
+                    type="button"
+                    className={`relative flex size-12 items-center justify-center gap-0.5 rounded-full border-2 lg:rounded-xl font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 lg:w-full ${
+                      done ? "border-success bg-success text-primary-foreground" : "border-border bg-card"
+                    } ${current ? "border-primary-strong ring-[3px] ring-primary-strong/40" : ""}`}
+                    aria-current={current ? "step" : undefined}
+                    aria-label={`Soal ${x.number}, ${done ? "sudah" : "belum"} dijawab${flagged ? ", ditandai ragu" : ""}`}
+                    onClick={() => go(i)}
+                  >
+                    {x.number}
+                    {done ? <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-4" aria-hidden /> : null}
+                    {current && !done ? <span aria-hidden className="absolute bottom-1 size-1.5 rounded-full bg-primary-strong" /> : null}
+                    {flagged ? (
+                      <HugeiconsIcon icon={Flag02Icon} className="absolute -top-1 -right-1 size-5 rounded-full bg-card text-warning" aria-hidden />
+                    ) : null}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-3 hidden rounded-xl bg-secondary p-3 text-muted-foreground lg:block">
+            Kamu bisa menekan nomor di atas kapan saja untuk pindah ke soal lain.
+          </p>
+        </nav>
+
+        <fieldset key={q.id} className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-card md:p-6">
+          <legend className="sr-only">Soal {q.number}</legend>
+          <div className="flex flex-wrap items-center gap-2 border-b border-border pb-4">
+            <span className={`${CHIP} bg-primary text-primary-foreground`}>
+              Nomor {q.number} dari {questions.length}
+            </span>
+            <span className={`${CHIP} ml-auto bg-primary-soft text-primary-strong`}>{TYPE_LABEL[q.type]}</span>
+          </div>
+          <div className="text-lg leading-relaxed">{q.prompt}</div>
+          {q.type === "SINGLE_CHOICE" &&
+            q.options?.map((o, i) => {
+              const checked = !!a && "optionId" in a && a.optionId === o.id;
+              return (
+                <Choice
+                  key={o.id}
+                  letter={letter(i)}
+                  checked={checked}
+                  input={<input type="radio" name={`q-${q.id}`} className="size-6 shrink-0" checked={checked} onChange={() => choose(q.id, { optionId: o.id })} />}
                 >
-                  {x.number}
-                  {done ? <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-4" aria-hidden /> : null}
-                  {flagged ? (
-                    <HugeiconsIcon icon={Flag02Icon} className="absolute -top-1 -right-1 size-5 rounded-full bg-card text-warning" aria-hidden />
-                  ) : null}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                  {o.node}
+                </Choice>
+              );
+            })}
+          {q.type === "MULTIPLE_SELECT" &&
+            q.options?.map((o, i) => {
+              const checked = selected.includes(o.id);
+              return (
+                <Choice
+                  key={o.id}
+                  letter={letter(i)}
+                  checked={checked}
+                  input={
+                    <input
+                      type="checkbox"
+                      className="size-6 shrink-0"
+                      checked={checked}
+                      onChange={(e) => {
+                        const ids = e.target.checked ? [...selected, o.id] : selected.filter((id) => id !== o.id);
+                        choose(q.id, ids.length ? { optionIds: ids } : null);
+                      }}
+                    />
+                  }
+                >
+                  {o.node}
+                </Choice>
+              );
+            })}
+          {q.type === "TRUE_FALSE" &&
+            [true, false].map((v, i) => {
+              const checked = !!a && "value" in a && a.value === v;
+              return (
+                <Choice
+                  key={String(v)}
+                  letter={letter(i)}
+                  checked={checked}
+                  input={<input type="radio" name={`q-${q.id}`} className="size-6 shrink-0" checked={checked} onChange={() => choose(q.id, { value: v })} />}
+                >
+                  {v ? "Benar" : "Salah"}
+                </Choice>
+              );
+            })}
+          {q.type === "SHORT_ANSWER" && (
+            <input
+              type="text"
+              aria-label={`Jawaban soal ${q.number}`}
+              className="h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring"
+              maxLength={200}
+              autoComplete="off"
+              value={a && "text" in a ? a.text : ""}
+              onChange={(e) => typeText(q.id, e.target.value)}
+              onBlur={() => commitPending()}
+            />
+          )}
+          {q.type === "ESSAY" && (
+            <textarea
+              aria-label={`Jawaban soal ${q.number}`}
+              className="min-h-40 w-full py-2 rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring"
+              maxLength={5000}
+              value={a && "text" in a ? a.text : ""}
+              onChange={(e) => typeText(q.id, e.target.value)}
+              onBlur={() => commitPending()}
+            />
+          )}
+          <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl bg-warning-soft p-3 font-medium">
+            <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-card text-warning">
+              <HugeiconsIcon icon={Flag02Icon} />
+            </span>
+            <span className="min-w-0 flex-1">
+              Ragu-ragu dengan nomor ini?
+              <span className="block text-sm font-normal text-muted-foreground">Tandai untuk diperiksa lagi nanti</span>
+            </span>
+            <input type="checkbox" className="size-6 shrink-0" checked={flags.has(q.id)} onChange={() => flip(q.id)} />
+          </label>
 
-      <fieldset key={q.id} className="flex min-w-0 flex-col gap-3 rounded-2xl bg-card p-4">
-        <legend className="sr-only">Soal {q.number}</legend>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className={`${CHIP} bg-primary text-primary-foreground`}>
-            Nomor {q.number} dari {questions.length}
-          </span>
-          <span className={`${CHIP} bg-primary-soft text-primary-strong`}>{TYPE_LABEL[q.type]}</span>
-        </div>
-        <div className="text-base leading-relaxed">{q.prompt}</div>
-        {q.type === "SINGLE_CHOICE" &&
-          q.options?.map((o, i) => {
-            const checked = !!a && "optionId" in a && a.optionId === o.id;
-            return (
-              <Choice
-                key={o.id}
-                letter={letter(i)}
-                checked={checked}
-                input={<input type="radio" name={`q-${q.id}`} className="size-6 shrink-0" checked={checked} onChange={() => choose(q.id, { optionId: o.id })} />}
-              >
-                {o.node}
-              </Choice>
-            );
-          })}
-        {q.type === "MULTIPLE_SELECT" &&
-          q.options?.map((o, i) => {
-            const checked = selected.includes(o.id);
-            return (
-              <Choice
-                key={o.id}
-                letter={letter(i)}
-                checked={checked}
-                input={
-                  <input
-                    type="checkbox"
-                    className="size-6 shrink-0"
-                    checked={checked}
-                    onChange={(e) => {
-                      const ids = e.target.checked ? [...selected, o.id] : selected.filter((id) => id !== o.id);
-                      choose(q.id, ids.length ? { optionIds: ids } : null);
-                    }}
-                  />
-                }
-              >
-                {o.node}
-              </Choice>
-            );
-          })}
-        {q.type === "TRUE_FALSE" &&
-          [true, false].map((v, i) => {
-            const checked = !!a && "value" in a && a.value === v;
-            return (
-              <Choice
-                key={String(v)}
-                letter={letter(i)}
-                checked={checked}
-                input={<input type="radio" name={`q-${q.id}`} className="size-6 shrink-0" checked={checked} onChange={() => choose(q.id, { value: v })} />}
-              >
-                {v ? "Benar" : "Salah"}
-              </Choice>
-            );
-          })}
-        {q.type === "SHORT_ANSWER" && (
-          <input
-            type="text"
-            aria-label={`Jawaban soal ${q.number}`}
-            className="h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring"
-            maxLength={200}
-            autoComplete="off"
-            value={a && "text" in a ? a.text : ""}
-            onChange={(e) => typeText(q.id, e.target.value)}
-            onBlur={() => commitPending()}
-          />
-        )}
-        {q.type === "ESSAY" && (
-          <textarea
-            aria-label={`Jawaban soal ${q.number}`}
-            className="min-h-40 w-full py-2 rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring"
-            maxLength={5000}
-            value={a && "text" in a ? a.text : ""}
-            onChange={(e) => typeText(q.id, e.target.value)}
-            onBlur={() => commitPending()}
-          />
-        )}
-        <label className="flex min-h-11 cursor-pointer items-center gap-3 font-medium">
-          <input type="checkbox" className="size-6" checked={flags.has(q.id)} onChange={() => flip(q.id)} />
-          Ragu-ragu dengan nomor ini?
-        </label>
-      </fieldset>
-
-      <div className="fixed inset-x-0 bottom-0 z-10 flex flex-wrap gap-2 border-t bg-card p-3 md:static md:border-0 md:bg-transparent md:p-0">
-        <Button variant="outline" className="h-12 flex-1 md:flex-none" disabled={index === 0} onClick={() => go(index - 1)}>
-          Sebelumnya
-        </Button>
-        <Button variant="outline" className="h-12 flex-1 md:flex-none" disabled={index === questions.length - 1} onClick={() => go(index + 1)}>
-          Berikutnya
-        </Button>
-        <Button className="h-12 flex-1 md:flex-none" disabled={submitting} onClick={() => { commitPending(); setConfirmOpen(true); }}>
-          Kumpulkan jawaban
-        </Button>
+          <div className="fixed inset-x-0 bottom-0 z-10 flex flex-wrap gap-2 border-t border-border bg-card p-3 lg:static lg:border-t lg:p-0 lg:pt-4">
+            <Button variant="outline" className="h-12 flex-1 lg:flex-none" disabled={index === 0} onClick={() => go(index - 1)}>
+              <HugeiconsIcon icon={ArrowLeft01Icon} aria-hidden />
+              Sebelumnya
+            </Button>
+            <Button variant="outline" className="h-12 flex-1 lg:ml-auto lg:flex-none" disabled={index === questions.length - 1} onClick={() => go(index + 1)}>
+              Berikutnya
+              <HugeiconsIcon icon={ArrowRight01Icon} aria-hidden />
+            </Button>
+            <Button className="order-first h-12 basis-full lg:hidden" disabled={submitting} onClick={openConfirm}>
+              Kumpulkan jawaban
+            </Button>
+          </div>
+        </fieldset>
       </div>
       <p role="alert" className="text-sm">
         {submitError}

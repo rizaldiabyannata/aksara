@@ -4,7 +4,7 @@ import { countMaterialsByStatus } from "@/lib/materials";
 import { countQuestionsByStatus } from "@/lib/questions";
 
 export type TeacherTask =
-  | { kind: "RUNNING"; quizId: string; title: string; inProgress: number }
+  | { kind: "RUNNING"; quizId: string; title: string; inProgress: number; started: number; assigned: number }
   | { kind: "GRADE"; quizId: string; title: string; essays: number }
   | { kind: "RELEASE"; quizId: string; title: string; students: number }
   | { kind: "OTHER_DEVICE"; students: number }
@@ -34,7 +34,13 @@ export async function getTeacherDashboard(now: Date = new Date()) {
     const counted = q.attempts.filter((a) => a.status === "SUBMITTED" && !a.replacementGrantedAt);
     const essays = counted.reduce((n, a) => n + a._count.answers, 0);
     const pendingReplacement = q.attempts.some((a) => a.replacementGrantedAt && !a.replacedBy);
-    if (inProgress) running.push({ kind: "RUNNING", quizId: q.id, title: q.title, inProgress });
+    if (inProgress) {
+      const assigned = await prisma.user.count({
+        where: { role: "STUDENT", isActive: true, classId: { in: q.classes.map((c) => c.classId) } },
+      });
+      const started = new Set(q.attempts.map((a) => a.studentId)).size;
+      running.push({ kind: "RUNNING", quizId: q.id, title: q.title, inProgress, started, assigned });
+    }
     if (essays) grade.push({ kind: "GRADE", quizId: q.id, title: q.title, essays });
     if (!q.resultsReleasedAt && !inProgress && !essays && !pendingReplacement && counted.length) {
       const done = new Set(counted.map((a) => a.studentId));

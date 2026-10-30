@@ -4,7 +4,8 @@ import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
 import { Status } from "@/components/status";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserGroupIcon } from "@hugeicons/core-free-icons";
@@ -37,6 +38,9 @@ export default function StudentsPage({ searchParams }: { searchParams: Params })
   );
 }
 
+const initials = (n: string) =>
+  n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("");
+
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
 // searchParams is request data, so it is read here inside Suspense.
@@ -61,19 +65,15 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
         tone="primary"
       />
       <Card>
-        <CardHeader>
-          <CardTitle>
-            <h2 className="text-xl font-semibold">Tambah siswa</h2>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Tambah siswa</h2>
           <CreateStudentForm
             classes={classes}
             defaultClassId={classes.some((c) => c.id === kelas) ? kelas : undefined}
           />
         </CardContent>
       </Card>
-      <form method="get" className="flex rounded-2xl border bg-card p-4 flex-col gap-3 sm:flex-row sm:items-end">
+      <form method="get" className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-card sm:flex-row sm:items-end">
         <div className="flex flex-col gap-2">
           <Label htmlFor="filter-kelas">Kelas</Label>
           <select
@@ -104,42 +104,64 @@ async function StudentList({ searchParams }: { searchParams: Params }) {
           {kelas || q ? "Tidak ada siswa yang cocok." : "Belum ada siswa. Tambah siswa di atas."}
         </p>
       )}
-      <ul className="grid gap-4 md:grid-cols-2">
-        {students.map((s) => (
-          <li key={s.id} className="min-w-0">
-            <Card className={s.replacedCount7d > 0 ? "ring-2 ring-warning" : undefined}>
-              <CardContent className="flex flex-col gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-semibold">{s.displayName}</h2>
-                  <Status tone={s.isActive ? "success" : "neutral"}>{s.isActive ? "Aktif" : "Nonaktif"}</Status>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Kelas {s.className} · NIS {s.nis ?? "-"}
-                </p>
-                {s.replacedCount7d > 0 && s.lastReplacedAt && (
-                  <Status tone="warning">
-                    Masuk dari perangkat lain {s.replacedCount7d}× dalam 7 hari terakhir, terakhir{" "}
-                    {formatWita(s.lastReplacedAt)}
-                  </Status>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  <EditStudentDialog
-                    student={{
-                      id: s.id,
-                      displayName: s.displayName,
-                      nis: s.nis,
-                      classId: s.classId,
-                    }}
-                    classes={classes}
-                  />
-                  <RevokeStudentButton studentId={s.id} />
-                  <ToggleStudentActiveButton studentId={s.id} isActive={s.isActive} />
-                </div>
-              </CardContent>
-            </Card>
-          </li>
-        ))}
-      </ul>
+      {students.length > 0 && (
+        <Card>
+          <CardContent className="p-0">
+            <div className="hidden grid-cols-[minmax(12rem,1.5fr)_minmax(6rem,0.6fr)_minmax(6rem,0.6fr)_minmax(0,2fr)] gap-4 border-b bg-secondary px-6 py-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground xl:grid">
+              <span>Siswa</span>
+              <span>Kelas</span>
+              <span>Status</span>
+              <span>Aksi</span>
+            </div>
+            <ul className="divide-y">
+              {students.map((s) => (
+                <li
+                  key={s.id}
+                  className={cn(
+                    "grid min-w-0 gap-3 p-4 xl:grid-cols-[minmax(12rem,1.5fr)_minmax(6rem,0.6fr)_minmax(6rem,0.6fr)_minmax(0,2fr)] xl:items-center xl:gap-4 xl:px-6",
+                    s.replacedCount7d > 0 && "bg-warning-soft",
+                  )}
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full bg-info-soft text-sm font-bold text-info">
+                      {initials(s.displayName)}
+                    </span>
+                    <div className="min-w-0">
+                      <h2 className="text-lg font-semibold break-words">{s.displayName}</h2>
+                      <p className="text-sm text-muted-foreground">NIS {s.nis ?? "-"}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm font-semibold">Kelas {s.className}</p>
+                  <div>
+                    <Status tone={s.isActive ? "success" : "neutral"}>{s.isActive ? "Aktif" : "Nonaktif"}</Status>
+                  </div>
+                  <div className="flex flex-wrap gap-2 xl:justify-end">
+                    <EditStudentDialog
+                      student={{
+                        id: s.id,
+                        displayName: s.displayName,
+                        nis: s.nis,
+                        classId: s.classId,
+                      }}
+                      classes={classes}
+                    />
+                    <RevokeStudentButton studentId={s.id} />
+                    <ToggleStudentActiveButton studentId={s.id} isActive={s.isActive} />
+                  </div>
+                  {s.replacedCount7d > 0 && s.lastReplacedAt && (
+                    <div className="xl:col-span-4">
+                      <Status tone="warning">
+                        Masuk dari perangkat lain {s.replacedCount7d}× dalam 7 hari terakhir, terakhir{" "}
+                        {formatWita(s.lastReplacedAt)}
+                      </Status>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 }

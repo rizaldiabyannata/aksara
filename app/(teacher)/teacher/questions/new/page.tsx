@@ -30,7 +30,7 @@ async function NewForm({ searchParams }: { searchParams: Promise<Record<string, 
   if (typeof type !== "string" || !Object.hasOwn(TYPE_LABEL, type)) {
     // GET form: choosing a type reloads /teacher/questions/new?type=…, which renders the form.
     return (
-      <Card>
+      <Card className="rounded-2xl shadow-card">
         <CardContent>
           <form method="get" action="/teacher/questions/new" className="flex flex-col gap-5">
             <fieldset className="flex flex-col gap-3">
@@ -39,7 +39,7 @@ async function NewForm({ searchParams }: { searchParams: Promise<Record<string, 
                 {Object.entries(TYPE_LABEL).map(([k, label]) => (
                   <label
                     key={k}
-                    className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border-2 border-input bg-card p-3 font-semibold has-[:checked]:border-primary has-[:checked]:bg-primary-soft"
+                    className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border-2 border-input bg-card p-3 font-semibold has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring"
                   >
                     <input type="radio" name="type" value={k} required className="size-5 accent-primary" />
                     {label}

@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FormField, FormMessage } from "@/components/form-field";
+import { FormMessage } from "@/components/form-field";
+import { LockPasswordIcon, UserIcon } from "@hugeicons/core-free-icons";
+import { IconField } from "../../icon-field";
 import { Button } from "@/components/ui/button";
 import { loginTeacherAction } from "../../actions";
 
@@ -12,7 +14,8 @@ export function TeacherLoginForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
-      <FormField
+      <IconField
+        icon={UserIcon}
         name="username"
         label="Username"
         autoComplete="username"
@@ -22,7 +25,8 @@ export function TeacherLoginForm() {
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
-      <FormField
+      <IconField
+        icon={LockPasswordIcon}
         name="password"
         label="Kata sandi"
         type="password"

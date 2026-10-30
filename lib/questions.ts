@@ -49,6 +49,8 @@ export type QuestionRow = {
   status: QuestionStatus;
   prompt: string;
   defaultPoints: number;
+  options: Option[] | null;
+  answerKey: Record<string, unknown>; // teacher-only list: never pass a row to a student
   chapterTitle: string;
   subjectName: string;
   updatedAt: Date;
@@ -434,14 +436,16 @@ export async function listQuestions(
     skip: (page - 1) * PAGE_SIZE,
     take: PAGE_SIZE + 1,
     select: {
-      id: true, type: true, difficulty: true, status: true, prompt: true, defaultPoints: true, updatedAt: true,
+      id: true, type: true, difficulty: true, status: true, prompt: true, defaultPoints: true, updatedAt: true, options: true, answerKey: true,
       chapter: { select: { title: true, subject: { select: { name: true } } } },
     },
   });
   return {
     hasNext: rows.length > PAGE_SIZE,
-    rows: rows.slice(0, PAGE_SIZE).map(({ chapter, ...r }) => ({
+    rows: rows.slice(0, PAGE_SIZE).map(({ chapter, options, answerKey, ...r }) => ({
       ...r,
+      options: options as Option[] | null,
+      answerKey: answerKey as Record<string, unknown>,
       chapterTitle: chapter.title,
       subjectName: chapter.subject.name,
     })),
@@ -479,6 +483,13 @@ export async function countQuestionsByStatus(): Promise<Record<QuestionStatus, n
   const out: Record<QuestionStatus, number> = { DRAFT: 0, ACTIVE: 0 };
   const g = await prisma.question.groupBy({ by: ["status"], _count: { _all: true } });
   for (const r of g) out[r.status] = r._count._all;
+  return out;
+}
+
+export async function countQuestionsByType(): Promise<Record<QuestionType, number>> {
+  const out: Record<QuestionType, number> = { SINGLE_CHOICE: 0, TRUE_FALSE: 0, MULTIPLE_SELECT: 0, SHORT_ANSWER: 0, ESSAY: 0 };
+  const g = await prisma.question.groupBy({ by: ["type"], _count: { _all: true } });
+  for (const r of g) out[r.type] = r._count._all;
   return out;
 }
 

@@ -13,7 +13,8 @@ import { getQuestionForTeacher } from "@/lib/questions";
 import { listChapterOptions } from "@/lib/subjects";
 import { ImagePanel } from "../../image-panel";
 import { STATUS_LABEL, STATUS_TONE, TYPE_LABEL } from "../labels";
-import { QuestionActions, QuestionForm, toDefaults } from "../question-form";
+import { toDefaults } from "../question-defaults";
+import { QuestionActions, QuestionForm } from "../question-form";
 
 export const metadata: Metadata = { title: "Ubah soal" };
 

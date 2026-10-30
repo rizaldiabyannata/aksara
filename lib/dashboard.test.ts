@@ -17,7 +17,7 @@ describe("getTeacherDashboard", () => {
     const s = await setup({}, [{ type: "ESSAY" }]);
     await started(s);
     expect((await getTeacherDashboard(at(min(5)))).tasks).toEqual([
-      { kind: "RUNNING", quizId: s.quiz.id, title: s.quiz.title, inProgress: 1 },
+      { kind: "RUNNING", quizId: s.quiz.id, title: s.quiz.title, inProgress: 1, started: 1, assigned: 1 },
     ]);
     expect((await getTeacherDashboard(at(min(DUR) + GRACE_MS + 1))).tasks).toEqual([
       { kind: "GRADE", quizId: s.quiz.id, title: s.quiz.title, essays: 1 },
@@ -128,7 +128,7 @@ describe("getTeacherDashboard", () => {
       data: { actorUserId: r.student.id, action: "STUDENT_SESSION_REPLACED", entityType: "User", entityId: r.student.id, createdAt: at(16) },
     });
     expect((await getTeacherDashboard(at(20))).tasks).toEqual([
-      { kind: "RUNNING", quizId: r.quiz.id, title: "R-berjalan", inProgress: 1 },
+      { kind: "RUNNING", quizId: r.quiz.id, title: "R-berjalan", inProgress: 1, started: 1, assigned: 1 },
       { kind: "GRADE", quizId: y.quiz.id, title: "B-pertama", essays: 1 },
       { kind: "GRADE", quizId: z.quiz.id, title: "Z-akhir", essays: 1 },
       { kind: "OTHER_DEVICE", students: 1 },

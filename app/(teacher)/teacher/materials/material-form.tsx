@@ -4,6 +4,8 @@ import { startTransition, useActionState } from "react";
 import { ConfirmAction } from "@/components/confirm-action";
 import { Feedback } from "@/components/form-feedback";
 import { FormField } from "@/components/form-field";
+import { ArrowDown01Icon, ArrowUp01Icon, Book02Icon, File01Icon, Note01Icon, TaskEdit01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -40,6 +42,23 @@ const controlClass =
 const HELP =
   "Bisa pakai Markdown: **tebal**, *miring*, daftar dengan -, tabel. Sisipkan gambar dengan kode dari panel Gambar.";
 
+const ICON: Record<"content" | "examples" | "exercises", IconSvgElement> = {
+  content: Note01Icon,
+  examples: TaskEdit01Icon,
+  exercises: File01Icon,
+};
+
+function SectionTitle({ icon, children }: { icon: IconSvgElement; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 border-b border-border pb-3">
+      <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary-strong">
+        <HugeiconsIcon icon={icon} />
+      </span>
+      <p className="text-lg font-bold">{children}</p>
+    </div>
+  );
+}
+
 function Err({ id, text }: { id: string; text?: string }) {
   return text ? (
     <p id={id} className="text-sm text-destructive">
@@ -70,6 +89,7 @@ export function MaterialForm({
     <form action={formAction} className="flex w-full max-w-3xl flex-col gap-4">
       <Card>
       <CardContent className="flex flex-col gap-4">
+      <SectionTitle icon={File01Icon}>Informasi dasar</SectionTitle>
       <FormField id="title" name="title" label="Judul" required autoComplete="off" defaultValue={v("title")} error={e?.title} />
       <div className="flex flex-col gap-2">
         <Label htmlFor="summary">Ringkasan</Label>
@@ -128,9 +148,13 @@ export function MaterialForm({
         </select>
         <Err id="subchapterId-error" text={e?.subchapterId} />
       </div>
+      </CardContent>
+      </Card>
       {longText.map(([name, label, required, rows]) => (
-        <div key={name} className="flex flex-col gap-2">
-          <Label htmlFor={name}>{label}</Label>
+        <Card key={name}>
+        <CardContent className="flex flex-col gap-2">
+          <SectionTitle icon={ICON[name]}>{label}</SectionTitle>
+          <Label htmlFor={name} className="sr-only">{label}</Label>
           <textarea
             id={name}
             name={name}
@@ -145,8 +169,12 @@ export function MaterialForm({
             {HELP}
           </p>
           <Err id={`${name}-error`} text={e?.[name]} />
-        </div>
+        </CardContent>
+        </Card>
       ))}
+      <Card>
+      <CardContent className="flex flex-col gap-4">
+      <SectionTitle icon={Book02Icon}>Sumber</SectionTitle>
       <FormField id="sourceReference" name="sourceReference" label="Sumber (nama buku)" required autoComplete="off" defaultValue={v("sourceReference")} error={e?.sourceReference} />
       <FormField id="sourcePages" name="sourcePages" label="Halaman sumber (opsional)" autoComplete="off" defaultValue={v("sourcePages")} error={e?.sourcePages} />
       </CardContent>
@@ -246,13 +274,13 @@ export function MoveButtons({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
-        <Button type="button" variant="outline" className="h-11" disabled={isFirst || pending}
+        <Button type="button" variant="outline" size="icon" disabled={isFirst || pending}
           aria-label={`Naikkan materi ${title}`} onClick={() => startTransition(() => dispatch("up"))}>
-          Naik
+          <HugeiconsIcon icon={ArrowUp01Icon} aria-hidden="true" />
         </Button>
-        <Button type="button" variant="outline" className="h-11" disabled={isLast || pending}
+        <Button type="button" variant="outline" size="icon" disabled={isLast || pending}
           aria-label={`Turunkan materi ${title}`} onClick={() => startTransition(() => dispatch("down"))}>
-          Turun
+          <HugeiconsIcon icon={ArrowDown01Icon} aria-hidden="true" />
         </Button>
       </div>
       <Feedback state={state} />

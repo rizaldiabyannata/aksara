@@ -44,14 +44,14 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
           </Link>
         }
       />
-      <div role="note" className="rounded-xl bg-secondary p-4 text-base">
+      <div role="note" className="rounded-xl border border-border bg-info-soft p-4 text-base">
         <p className="font-semibold">
           Pratinjau. {TYPE_LABEL[q.type]} · {DIFFICULTY_LABEL[q.difficulty]} · Status: {STATUS_LABEL[q.status]}
         </p>
       </div>
       <section aria-labelledby="siswa-heading" className="flex flex-col gap-3">
         <h2 id="siswa-heading" className="text-lg font-semibold">Tampilan siswa</h2>
-        <Card>
+        <Card className="rounded-2xl shadow-card">
           <CardContent>
             <QuestionView question={toPublicQuestion(q)} />
           </CardContent>
@@ -59,7 +59,7 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
       </section>
       <section aria-labelledby="kunci-heading" className="flex flex-col gap-3">
         <h2 id="kunci-heading" className="text-lg font-semibold">Kunci dan pembahasan</h2>
-        <Card>
+        <Card className="rounded-2xl shadow-card">
           <CardContent>
             <dl className="flex flex-col gap-3">
               {key !== null && (
