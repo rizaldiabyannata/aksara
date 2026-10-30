@@ -19,7 +19,7 @@ import {
   setQuestionStatusAction,
   updateQuestionAction,
 } from "./actions";
-import { DIFFICULTY_LABEL } from "./labels";
+import { DIFFICULTY_LABEL, LEVEL_LABEL } from "./labels";
 import type { Defaults } from "./question-defaults";
 
 export type ChapterOption = {
@@ -180,6 +180,46 @@ function KeyFields({
       </fieldset>
     );
   }
+  if (type === "CATEGORY") {
+    const yes = v("labelTrue") || "Benar";
+    const no = v("labelFalse") || "Salah";
+    return (
+      <fieldset className="flex flex-col gap-3" aria-describedby={describedBy}>
+        <legend className="sr-only">Pernyataan (isi 2 sampai 6, pilih jawaban benar untuk masing-masing)</legend>
+        <p className="text-sm text-text-muted">Isi 2 sampai 6 pernyataan. Untuk setiap pernyataan, pilih jawaban yang benar.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <Inp name="labelTrue" label="Nama pilihan pertama" v={yes} error={e?.categoryLabels} />
+          <Inp name="labelFalse" label="Nama pilihan kedua" v={no} />
+        </div>
+        {[...SLOTS].slice(0, 6).map((id, i) => (
+          <div key={id} className="flex flex-col gap-2 p-3 rounded-xl bg-surface-container-low border border-border-subtle sm:flex-row sm:items-center">
+            <div className="w-8 h-8 rounded-lg bg-surface-card text-text-primary font-bold font-code-mono text-sm flex items-center justify-center border border-border-subtle shrink-0">
+              {i + 1}
+            </div>
+            <input
+              id={`option_${id}`}
+              name={`option_${id}`}
+              aria-label={`Pernyataan ${i + 1}`}
+              autoComplete="off"
+              defaultValue={v(`option_${id}`)}
+              aria-invalid={err.length ? true : undefined}
+              className={cn("w-full h-11 px-3.5 rounded-lg bg-surface-card text-text-primary text-sm sm:flex-1", fieldClass)}
+            />
+            <div role="radiogroup" aria-label={`Jawaban benar pernyataan ${i + 1}`} className="grid grid-cols-2 gap-2 shrink-0 sm:w-56">
+              {[["true", yes], ["false", no]].map(([val, label]) => (
+                <label key={val} className={cn(row, "items-center justify-center cursor-pointer min-h-11 p-2 font-semibold text-sm")}>
+                  <input type="radio" name={`key_${id}`} value={val} defaultChecked={v(`key_${id}`) === val} className="w-5 h-5 accent-tone-success" />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+        <p className="text-sm text-text-muted">Siswa harus benar di semua pernyataan untuk mendapat poin. {IMG_HINT}</p>
+        {errors}
+      </fieldset>
+    );
+  }
   if (type === "TRUE_FALSE") {
     return (
       <fieldset className="flex flex-col gap-3" aria-describedby={describedBy}>
@@ -320,6 +360,12 @@ export function QuestionForm({
             </div>
             <Err id="difficulty-error" text={e?.difficulty} />
           </fieldset>
+          {sel("cognitiveLevel", "Level Kognitif TKA (opsional)", (
+            <>
+              <option value="">Tanpa level</option>
+              {Object.entries(LEVEL_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+            </>
+          ), false)}
           <div className="flex flex-col gap-1.5 pt-1">
             <div className="flex items-center justify-between">
               <label htmlFor="defaultPoints" className={labelClass}>Bobot Poin</label>

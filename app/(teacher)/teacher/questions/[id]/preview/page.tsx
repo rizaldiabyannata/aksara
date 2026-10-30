@@ -8,8 +8,9 @@ import { QuestionView } from "@/components/question-view";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireTeacher } from "@/lib/auth/guard";
+import { readable } from "@/lib/export";
 import { getQuestionForTeacher, toPublicQuestion } from "@/lib/questions";
-import { DIFFICULTY_LABEL, STATUS_LABEL, TYPE_LABEL } from "../../labels";
+import { DIFFICULTY_LABEL, LEVEL_LABEL, STATUS_LABEL, TYPE_LABEL } from "../../labels";
 
 export const metadata: Metadata = { title: "Pratinjau soal" };
 
@@ -33,6 +34,7 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
     : q.type === "TRUE_FALSE" ? (q.answerKey.value ? "Benar" : "Salah")
     : q.type === "MULTIPLE_SELECT" ? q.answerKey.optionIds.map(optionText).join("; ")
     : q.type === "SHORT_ANSWER" ? q.answerKey.accepted.join(" / ")
+    : q.type === "CATEGORY" ? readable(toPublicQuestion(q), q.answerKey)
     : null;
   return (
     <div className="flex flex-col gap-6 p-space-lg">
@@ -46,7 +48,7 @@ async function Preview({ params }: { params: Promise<{ id: string }> }) {
       />
       <div role="note" className="rounded-xl border border-border bg-info-soft p-4 text-base">
         <p className="font-semibold">
-          Pratinjau. {TYPE_LABEL[q.type]} · {DIFFICULTY_LABEL[q.difficulty]} · Status: {STATUS_LABEL[q.status]}
+          Pratinjau. {TYPE_LABEL[q.type]} · {DIFFICULTY_LABEL[q.difficulty]}{q.cognitiveLevel && ` · ${LEVEL_LABEL[q.cognitiveLevel]}`} · Status: {STATUS_LABEL[q.status]}
         </p>
       </div>
       <section aria-labelledby="siswa-heading" className="flex flex-col gap-3">

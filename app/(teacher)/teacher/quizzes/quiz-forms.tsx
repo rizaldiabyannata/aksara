@@ -15,7 +15,7 @@ import {
   releaseResultsAction, removeQuizQuestionAction, setQuizClassesAction, setQuizQuestionPointsAction,
   unpublishQuizAction, unreleaseResultsAction, updateQuizAction,
 } from "./actions";
-import { POLICY_LABEL } from "./labels";
+import { KIND_LABEL, POLICY_LABEL } from "./labels";
 
 const controlClass =
   "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive disabled:opacity-50";
@@ -68,6 +68,17 @@ export function CreateQuizForm({ subjects }: { subjects: { id: string; name: str
             </div>
             {e?.subjectId && <p id="subjectId-error" className="text-base text-destructive">{e.subjectId}</p>}
           </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="font-label-sm text-label-sm text-text-primary" htmlFor="kind">Jenis</label>
+            <div className="relative">
+              <select id="kind" name="kind" defaultValue={state?.values?.kind ?? "REGULAR"}
+                className={`${field} cursor-pointer appearance-none pr-10`} aria-describedby="kind-hint">
+                {Object.entries(KIND_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+              </select>
+              <HugeiconsIcon icon={ArrowDown01Icon} className="pointer-events-none absolute top-3.5 right-3 size-[22px] text-text-muted" aria-hidden="true" />
+            </div>
+            <p id="kind-hint" className="font-body-md text-[13px] text-text-muted">Tryout TKA mulai dengan durasi 75 menit dan menampilkan kategori nilai perkiraan.</p>
+          </div>
           <Feedback state={state} />
           <div className="flex flex-col gap-2 pt-2">
             <button type="submit" disabled={pending}
@@ -93,7 +104,7 @@ export function CreateQuizForm({ subjects }: { subjects: { id: string; name: str
 
 type Settings = Pick<
   QuizDetail,
-  "title" | "instructions" | "durationMinutes" | "maxAttempts" | "shuffleQuestions" | "shuffleOptions" |
+  "title" | "kind" | "instructions" | "durationMinutes" | "maxAttempts" | "shuffleQuestions" | "shuffleOptions" |
   "showFeedbackAfterRelease" | "scoringPolicy" | "kkm" | "status"
 > & { startsAt: string; endsAt: string };
 
@@ -128,6 +139,12 @@ export function SettingsForm({ id, q }: { id: string; q: Settings }) {
         </p>
       )}
       <FormField name="title" label="Judul" required maxLength={150} defaultValue={text("title", q.title)} error={e?.title} />
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="kind">Jenis</Label>
+        <select id="kind" name="kind" defaultValue={text("kind", q.kind)} className={controlClass}>
+          {Object.entries(KIND_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+        </select>
+      </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="instructions">Petunjuk</Label>
         <textarea id="instructions" name="instructions" rows={4} maxLength={5000}

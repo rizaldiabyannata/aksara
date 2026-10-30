@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { QuizStatus, ScoringPolicy } from "@/lib/generated/prisma/enums";
-import type { QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
+import type { QuestionStatus, QuestionType, QuizKind } from "@/lib/generated/prisma/enums";
 import { parse, required, optional, type Invalid, type NotFound } from "@/lib/validation";
 import { uniqueViolation } from "@/lib/unique-violation";
 import { writeAudit } from "@/lib/audit";
@@ -32,6 +32,7 @@ export type QuizRow = {
 export type QuizDetail = {
   id: string;
   title: string;
+  kind: QuizKind;
   instructions: string | null;
   subjectId: string;
   subjectName: string;
@@ -111,6 +112,11 @@ const schedule = (msg: string) =>
 
 const settingsShape = {
   title: required(150, "Judul wajib diisi, paling banyak 150 huruf."),
+  // Omitted = unchanged on update, REGULAR on create.
+  kind: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.enum(["REGULAR", "TRYOUT_TKA"], { error: "Pilih jenis ulangan." }).optional(),
+  ),
   instructions: optional(5000, "Petunjuk paling banyak 5.000 huruf."),
   durationMinutes: intIn(1, 300, "Durasi harus bilangan bulat 1 sampai 300 menit."),
   startsAt: schedule("Tanggal dan jam tidak valid."),
@@ -395,6 +401,7 @@ export async function publishQuiz(
               question: {
                 select: {
                   id: true, type: true, prompt: true, options: true, answerKey: true, explanation: true, status: true,
+                  categoryLabels: true, cognitiveLevel: true, chapter: { select: { title: true } },
                   images: {
                     orderBy: { createdAt: "asc" },
                     select: { id: true, altText: true, caption: true, sourceReference: true, width: true, height: true, deletedAt: true },
@@ -433,12 +440,12 @@ export async function publishQuiz(
       for (const { qq, q, options, live, inBody, inExplanation } of items) {
         maxPoints += qq.points;
         const pub = toPublicQuestion({
-          id: q.id, type: q.type, prompt: q.prompt, options,
+          id: q.id, type: q.type, prompt: q.prompt, options, categoryLabels: q.categoryLabels,
           images: live.map((m) => ({
             id: m.id, altText: m.altText, caption: m.caption, sourceReference: m.sourceReference, width: m.width, height: m.height,
           })),
         });
-        const questionSnapshot: QuestionSnapshot = { type: pub.type, prompt: pub.prompt, options: pub.options, images: pub.images };
+        const questionSnapshot: QuestionSnapshot = { type: pub.type, prompt: pub.prompt, options: pub.options, labels: pub.labels, images: pub.images };
         const answerKeySnapshot: AnswerKeySnapshot = {
           answerKey: q.answerKey as QuestionContent["answerKey"],
           explanation: q.explanation,
@@ -448,6 +455,9 @@ export async function publishQuiz(
           data: {
             questionSnapshot: questionSnapshot as Prisma.InputJsonValue,
             answerKeySnapshot: answerKeySnapshot as Prisma.InputJsonValue,
+            // Frozen like the question itself, so later bank edits never move a published evaluation.
+            chapterSnapshot: q.chapter.title,
+            levelSnapshot: q.cognitiveLevel,
           },
         });
         const imgs = live
@@ -485,7 +495,7 @@ export async function unpublishQuiz(
     if (quiz._count.attempts > 0) return { ok: false, error: "HAS_ATTEMPTS" } as const;
     await tx.quizQuestion.updateMany({
       where: { quizId: id },
-      data: { questionSnapshot: Prisma.DbNull, answerKeySnapshot: Prisma.DbNull },
+      data: { questionSnapshot: Prisma.DbNull, answerKeySnapshot: Prisma.DbNull, chapterSnapshot: null, levelSnapshot: null },
     });
     await tx.quizQuestionImage.deleteMany({ where: { quizQuestion: { quizId: id } } });
     await tx.quiz.update({ where: { id }, data: { status: "DRAFT", publishedAt: null } });
@@ -559,6 +569,7 @@ export async function getQuizForTeacher(id: string): Promise<QuizDetail | null> 
     select: {
       id: true,
       title: true,
+      kind: true,
       instructions: true,
       subjectId: true,
       subject: { select: { name: true } },
@@ -592,6 +603,7 @@ export async function getQuizForTeacher(id: string): Promise<QuizDetail | null> 
   return {
     id: r.id,
     title: r.title,
+    kind: r.kind,
     instructions: r.instructions,
     subjectId: r.subjectId,
     subjectName: r.subject.name,

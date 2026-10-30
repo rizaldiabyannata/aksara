@@ -57,7 +57,7 @@ async function run(
 // Defaults only for fields the form did not send at all (the /new form sends title + subject).
 const DEFAULTS: Record<string, string> = { durationMinutes: "30", maxAttempts: "1", scoringPolicy: "HIGHEST" };
 const TEXT = [
-  "title", "instructions", "durationMinutes", "startsAt", "endsAt", "maxAttempts", "scoringPolicy", "kkm",
+  "title", "kind", "instructions", "durationMinutes", "startsAt", "endsAt", "maxAttempts", "scoringPolicy", "kkm",
 ] as const;
 const CHECKS = ["shuffleQuestions", "shuffleOptions", "showFeedbackAfterRelease"] as const;
 
@@ -67,6 +67,8 @@ function fromForm(fd: FormData, withSubject: boolean) {
   const values: Record<string, string> = {};
   if (withSubject) values.subjectId = field(fd, "subjectId");
   for (const n of TEXT) values[n] = fd.has(n) ? field(fd, n) : (Object.hasOwn(defaults, n) ? defaults[n] : "");
+  // TKA SD: 75 menit per mapel (docs/tka-sd-kisi-kisi.md); shuffle already defaults to off.
+  if (withSubject && !fd.has("durationMinutes") && values.kind === "TRYOUT_TKA") values.durationMinutes = "75";
   for (const n of CHECKS) values[n] = fd.get(n) === "on" ? "on" : "";
   return values;
 }

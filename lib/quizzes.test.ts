@@ -540,6 +540,18 @@ describe("publishQuiz / unpublishQuiz", () => {
     expect(await audits("QUIZ_PUBLISHED")).toBe(0);
   });
 
+  it("publish freezes chapter title and level; unpublish clears them", async () => {
+    const { actor, chapter, quiz, q, qq } = await ready();
+    await prisma.question.update({ where: { id: q.id }, data: { cognitiveLevel: "APLIKASI" } });
+    expect(await publishQuiz(actor, quiz.id)).toEqual({ ok: true });
+    await prisma.chapter.update({ where: { id: chapter.id }, data: { title: "Judul baru" } });
+    expect(await prisma.quizQuestion.findUniqueOrThrow({ where: { id: qq.id } })).toMatchObject({
+      chapterSnapshot: chapter.title, levelSnapshot: "APLIKASI",
+    });
+    expect(await unpublishQuiz(actor, quiz.id)).toEqual({ ok: true });
+    expect(await prisma.quizQuestion.findUniqueOrThrow({ where: { id: qq.id } })).toMatchObject({ chapterSnapshot: null, levelSnapshot: null });
+  });
+
   it("unknown quiz is NOT_FOUND", async () => {
     const { actor } = await setup();
     expect(await publishQuiz(actor, "nope")).toEqual({ ok: false, error: "NOT_FOUND" });

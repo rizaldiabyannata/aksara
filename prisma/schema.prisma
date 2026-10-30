@@ -29,6 +29,18 @@ enum QuestionType {
   MULTIPLE_SELECT
   SHORT_ANSWER
   ESSAY
+  CATEGORY
+}
+
+enum CognitiveLevel {
+  PEMAHAMAN
+  APLIKASI
+  PENALARAN
+}
+
+enum QuizKind {
+  REGULAR
+  TRYOUT_TKA
 }
 
 enum QuestionStatus {
@@ -248,6 +260,8 @@ model Question {
   explanation      String?
   defaultPoints    Int
   difficulty       Difficulty
+  cognitiveLevel   CognitiveLevel?
+  categoryLabels   String[]       @default([])
   status           QuestionStatus @default(DRAFT)
   sourceReference  String?
   verificationNote String?
@@ -299,6 +313,7 @@ model Quiz {
   subjectId                String
   subject                  Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
   title                    String
+  kind                     QuizKind       @default(REGULAR)
   instructions             String?
   durationMinutes          Int
   startsAt                 DateTime?      @db.Timestamptz(3)
@@ -343,6 +358,8 @@ model QuizQuestion {
   position          Int
   points            Int
   questionSnapshot  Json?
+  chapterSnapshot   String?
+  levelSnapshot     CognitiveLevel?
   answerKeySnapshot Json?
   images            QuizQuestionImage[]
   answers           AttemptAnswer[]

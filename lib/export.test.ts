@@ -20,6 +20,13 @@ describe("export text", () => {
     expect(readable(snap, null)).toBe("(kosong)");
   });
 
+  it("CATEGORY answers list each statement with its label, open ones as (kosong)", () => {
+    const cat = { ...snap, type: "CATEGORY", labels: ["Fakta", "Opini"] } as QuestionSnapshot;
+    expect(readable(cat, { values: { a: true, b: false } })).toBe("Lihat [gambar: segitiga siku-siku]: Fakta; Dua: Opini");
+    expect(readable(cat, { values: { b: true } })).toBe("Lihat [gambar: segitiga siku-siku]: (kosong); Dua: Fakta");
+    expect(readable({ ...cat, labels: undefined }, { values: { a: false, b: true } })).toContain(": Salah; Dua: Benar");
+  });
+
   it("safeText prefixes formula starters only", () => {
     for (const s of ["=1+1", "+62", "-5", "@x", "\tA", "\rA"]) expect(safeText(s)).toBe(`'${s}`);
     expect(safeText("Budi = pintar")).toBe("Budi = pintar");

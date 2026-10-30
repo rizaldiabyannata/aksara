@@ -196,7 +196,7 @@ describe("status and delete", () => {
     expect(a[0].metadata).toEqual({ from: "DRAFT", to: "ACTIVE" });
     expect(await setQuestionStatus(actor, "nope", "ACTIVE")).toEqual({ ok: false, error: "NOT_FOUND" });
     expect(await countQuestionsByStatus()).toEqual({ DRAFT: 0, ACTIVE: 1 });
-    expect(await countQuestionsByType()).toEqual({ SINGLE_CHOICE: 1, TRUE_FALSE: 0, MULTIPLE_SELECT: 0, SHORT_ANSWER: 0, ESSAY: 0 });
+    expect(await countQuestionsByType()).toEqual({ SINGLE_CHOICE: 1, TRUE_FALSE: 0, MULTIPLE_SELECT: 0, SHORT_ANSWER: 0, ESSAY: 0, CATEGORY: 0 });
   });
 
   it("rejects an unknown status without writing", async () => {
@@ -229,6 +229,50 @@ describe("status and delete", () => {
     expect(a).toHaveLength(1);
     expect(a[0].metadata).toEqual({ type: "SINGLE_CHOICE", chapterId: chapter.id });
     expect(await deleteQuestion(actor, q.id)).toEqual({ ok: false, error: "NOT_FOUND" });
+  });
+});
+
+describe("CATEGORY questions", () => {
+  const cat = (chapterId: string, over: object = {}) => ({
+    ...base(chapterId), type: "CATEGORY", options: O("a", "b", "c"), answerKey: { values: { a: true, b: false, c: true } },
+    categoryLabels: ["Fakta", "Opini"], cognitiveLevel: "PENALARAN", ...over,
+  });
+
+  it("stores statements, key, labels and level; defaults labels to Benar/Salah", async () => {
+    const { actor, chapter } = await setup();
+    const r = await createQuestion(actor, cat(chapter.id));
+    expect(r.ok).toBe(true);
+    const q = await getQuestionForTeacher((r as { id: string }).id);
+    expect(q).toMatchObject({ categoryLabels: ["Fakta", "Opini"], cognitiveLevel: "PENALARAN", answerKey: { values: { a: true, b: false, c: true } } });
+    const r2 = await createQuestion(actor, cat(chapter.id, { categoryLabels: undefined, cognitiveLevel: "" }));
+    expect(await getQuestionForTeacher((r2 as { id: string }).id)).toMatchObject({ categoryLabels: ["Benar", "Salah"], cognitiveLevel: null });
+  });
+
+  it("every statement needs a key, and the two labels must differ", async () => {
+    const { actor, chapter } = await setup();
+    expect(fe(await createQuestion(actor, cat(chapter.id, { answerKey: { values: { a: true, b: false } } }))).answerKey).toBe(
+      "Pilih jawaban benar untuk setiap pernyataan.",
+    );
+    expect(fe(await createQuestion(actor, cat(chapter.id, { answerKey: { values: { a: true, b: false, c: true, z: true } } }))).answerKey).toBeDefined();
+    expect(fe(await createQuestion(actor, cat(chapter.id, { categoryLabels: ["Ya", "Ya"] }))).categoryLabels).toBe("Dua pilihan jawaban tidak boleh sama.");
+    expect(fe(await createQuestion(actor, cat(chapter.id, { options: O("a"), answerKey: { values: { a: true } } }))).options).toBe("Isi 2 sampai 6 opsi.");
+  });
+
+  it("toPublicQuestion carries the labels but never the key", async () => {
+    const { actor, chapter } = await setup();
+    const r = await createQuestion(actor, cat(chapter.id));
+    const q = (await getQuestionForTeacher((r as { id: string }).id))!;
+    const p = toPublicQuestion(q);
+    expect(p.labels).toEqual(["Fakta", "Opini"]);
+    expect(JSON.stringify(p)).not.toContain("values");
+    expect(toPublicQuestion({ ...q, type: "SINGLE_CHOICE" }).labels).toBeNull();
+  });
+
+  it("duplicate keeps labels and level", async () => {
+    const { actor, chapter } = await setup();
+    const r = await createQuestion(actor, cat(chapter.id));
+    const d = await duplicateQuestion(actor, (r as { id: string }).id);
+    expect(await getQuestionForTeacher((d as { id: string }).id)).toMatchObject({ categoryLabels: ["Fakta", "Opini"], cognitiveLevel: "PENALARAN" });
   });
 });
 

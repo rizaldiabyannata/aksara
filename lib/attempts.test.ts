@@ -259,6 +259,21 @@ describe("submitAttempt / finalize", () => {
     expect(await attemptRow(id)).toMatchObject({ objectiveScore: 6, maxPoints: 14, gradingStatus: "FINAL" });
   });
 
+  it("CATEGORY: partial autosave kept; graded all-or-nothing on submit; view carries labels", async () => {
+    const s = await setup({}, [{ type: "CATEGORY", points: 2 }, { type: "CATEGORY", points: 3 }]);
+    const id = await started(s);
+    const [q1, q2] = s.qqs;
+    expect(await saveAnswer(s.student.id, id, { quizQuestionId: q1.id, answer: { values: { a: true } } }, at(1))).toMatchObject({ ok: true });
+    expect(await saveAnswer(s.student.id, id, { quizQuestionId: q1.id, answer: { values: { a: true, b: false } } }, at(2))).toMatchObject({ ok: true });
+    expect(await saveAnswer(s.student.id, id, { quizQuestionId: q2.id, answer: { values: { a: true, b: true } } }, at(3))).toMatchObject({ ok: true });
+    expect(await saveAnswer(s.student.id, id, { quizQuestionId: q2.id, answer: { values: { x: true } } }, at(4))).toMatchObject({ ok: false });
+    const v = await getAttemptView(s.student.id, { attemptId: id }, at(5));
+    expect(v?.status === "IN_PROGRESS" && v.questions.map((q) => q.labels)).toEqual([["Fakta", "Opini"], ["Fakta", "Opini"]]);
+    expect(JSON.stringify(v)).not.toContain("PEMBAHASAN-RAHASIA");
+    await submitAttempt(s.student.id, s.quiz.id, id, at(6));
+    expect(await attemptRow(id)).toMatchObject({ objectiveScore: 2, maxPoints: 5, gradingStatus: "FINAL" });
+  });
+
   it("quiz with an essay: PENDING_MANUAL_GRADING, essay points null", async () => {
     const s = await setup({}, [{}, { type: "ESSAY", points: 5 }]);
     const id = await started(s);

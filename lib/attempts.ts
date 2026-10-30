@@ -24,6 +24,7 @@ export type AttemptQuestion = {
   type: QuestionType;
   prompt: string;
   options: Option[] | null;
+  labels: [string, string] | null;
   images: ImageView[];
   answer: StoredAnswer | null;
 };
@@ -61,7 +62,7 @@ function shuffled<T>(items: T[]): T[] {
   return a;
 }
 
-const isChoice = (t: QuestionType) => t === "SINGLE_CHOICE" || t === "MULTIPLE_SELECT";
+const isChoice = (t: QuestionType) => t === "SINGLE_CHOICE" || t === "MULTIPLE_SELECT" || t === "CATEGORY";
 
 export async function startAttempt(
   student: { id: string; classId: string | null },
@@ -220,6 +221,7 @@ export async function getAttemptView(
       type: snap.type,
       prompt: snap.prompt,
       options,
+      labels: snap.labels ?? null,
       images: snap.images.map((i) => ({
         id: i.id, altText: i.altText, caption: i.caption, sourceReference: i.sourceReference, width: i.width, height: i.height,
       })),

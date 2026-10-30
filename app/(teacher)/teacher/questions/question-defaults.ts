@@ -1,4 +1,4 @@
-import type { Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
+import type { CognitiveLevel, Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
 
 // Flat string defaults, same shape as the `values` echo, so one reader serves both.
 export type Defaults = Record<string, string>;
@@ -12,6 +12,8 @@ export function toDefaults(q: {
   explanation: string | null;
   defaultPoints: number;
   difficulty: Difficulty;
+  cognitiveLevel: CognitiveLevel | null;
+  categoryLabels: string[];
   sourceReference: string | null;
   verificationNote: string | null;
   options: { id: string; text: string }[] | null;
@@ -24,6 +26,7 @@ export function toDefaults(q: {
     explanation: q.explanation ?? "",
     defaultPoints: String(q.defaultPoints),
     difficulty: q.difficulty,
+    cognitiveLevel: q.cognitiveLevel ?? "",
     sourceReference: q.sourceReference ?? "",
     verificationNote: q.verificationNote ?? "",
   };
@@ -35,6 +38,10 @@ export function toDefaults(q: {
   if (q.type === "SHORT_ANSWER") {
     d.accepted = (k.accepted as string[]).join("\n");
     if (k.caseSensitive) d.caseSensitive = "on";
+  }
+  if (q.type === "CATEGORY") {
+    for (const [id, val] of Object.entries(k.values as Record<string, boolean>)) d[`key_${id}`] = String(val);
+    [d.labelTrue, d.labelFalse] = q.categoryLabels.length === 2 ? q.categoryLabels : ["Benar", "Salah"];
   }
   if (q.type === "ESSAY") d.rubric = String(k.rubric ?? "");
   return d;

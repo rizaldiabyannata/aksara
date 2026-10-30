@@ -10,7 +10,7 @@ export const min = (m: number) => m * 60_000;
 export const at = (ms: number) => new Date(t0.getTime() + ms);
 export const DUR = 30;
 
-type QOpts = { type?: "SINGLE_CHOICE" | "ESSAY" | "MULTIPLE_SELECT"; points?: number };
+type QOpts = { type?: "SINGLE_CHOICE" | "ESSAY" | "MULTIPLE_SELECT" | "CATEGORY"; points?: number; cognitiveLevel?: "PEMAHAMAN" | "APLIKASI" | "PENALARAN" };
 
 export async function setup(
   quizOver: Record<string, unknown> = {},
@@ -33,9 +33,16 @@ export async function setup(
               options: [{ id: "a", text: "A" }, { id: "b", text: "B" }, { id: "c", text: "C" }],
               answerKey: { optionIds: ["a", "b"] },
             }
-          : { answerKey: { optionId: "a" } };
+          : o.type === "CATEGORY"
+            ? {
+                type: "CATEGORY" as const,
+                options: [{ id: "a", text: "P1" }, { id: "b", text: "P2" }],
+                answerKey: { values: { a: true, b: false } },
+                categoryLabels: ["Fakta", "Opini"],
+              }
+            : { answerKey: { optionId: "a" } };
     const q = await makeQuestion(chapter.id, user.id, {
-      status: "ACTIVE", prompt: `Soal ${i + 1}`, explanation: "PEMBAHASAN-RAHASIA", ...(base as object),
+      status: "ACTIVE", prompt: `Soal ${i + 1}`, explanation: "PEMBAHASAN-RAHASIA", cognitiveLevel: o.cognitiveLevel ?? null, ...(base as object),
     } as never);
     qqs.push(await makeQuizQuestion(quiz.id, q.id, { position: i + 1, points: o.points ?? 1 }));
   }

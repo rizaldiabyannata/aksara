@@ -53,6 +53,7 @@ async function Attempt({ params }: { params: PageProps<"/student/quizzes/[quizId
     answer: q.answer,
     prompt: <Markdown source={q.prompt} images={q.images} />,
     options: q.options?.map((o) => ({ id: o.id, node: <Markdown source={o.text} images={q.images} /> })) ?? null,
+    labels: q.labels,
   }));
   return (
     <AttemptClient

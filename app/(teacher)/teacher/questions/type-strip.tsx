@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { CheckListIcon, Menu01Icon, Note01Icon, RadioButtonIcon, TaskDone01Icon } from "@hugeicons/core-free-icons";
+import { CheckListIcon, GridTableIcon, Menu01Icon, Note01Icon, RadioButtonIcon, TaskDone01Icon } from "@hugeicons/core-free-icons";
 import type { QuestionType } from "@/lib/generated/prisma/enums";
 import { cn } from "@/lib/utils";
 import { TYPE_LABEL } from "./labels";
@@ -8,6 +8,7 @@ import { TYPE_LABEL } from "./labels";
 const ITEMS: { type: QuestionType; icon: typeof RadioButtonIcon; sub: string }[] = [
   { type: "SINGLE_CHOICE", icon: RadioButtonIcon, sub: "1 Kunci Pasti" },
   { type: "MULTIPLE_SELECT", icon: CheckListIcon, sub: "> 1 Jawaban" },
+  { type: "CATEGORY", icon: GridTableIcon, sub: "B/S per Pernyataan" },
   { type: "TRUE_FALSE", icon: TaskDone01Icon, sub: "Benar atau Salah" },
   { type: "SHORT_ANSWER", icon: Menu01Icon, sub: "Kata/Angka Eksak" },
   { type: "ESSAY", icon: Note01Icon, sub: "Rubrik Guru" },
@@ -17,7 +18,7 @@ const ITEMS: { type: QuestionType; icon: typeof RadioButtonIcon; sub: string }[]
 export function TypeStrip({ current, links }: { current?: QuestionType; links: boolean }) {
   return (
     <div className="bg-surface-card border border-border-subtle rounded-2xl p-2.5 shadow-sm mb-space-lg">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
         {ITEMS.map(({ type, icon, sub }) => {
           const on = type === current;
           const cls = cn(

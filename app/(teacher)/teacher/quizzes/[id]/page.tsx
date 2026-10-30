@@ -66,6 +66,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
           id={id}
           q={{
             title: quiz.title,
+            kind: quiz.kind,
             instructions: quiz.instructions,
             durationMinutes: quiz.durationMinutes,
             maxAttempts: quiz.maxAttempts,

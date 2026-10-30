@@ -12,7 +12,7 @@ export function safeText(s: string): string {
   return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
 }
 
-// Answers and keys share shapes ({optionId}, {optionIds}, {value}, {text}, {accepted}, {rubric}), so one reader covers both.
+// Answers and keys share shapes ({optionId}, {optionIds}, {values}, {value}, {text}, {accepted}, {rubric}), so one reader covers both.
 export function readable(snap: QuestionSnapshot, v: unknown): string {
   if (v === null || v === undefined) return "(kosong)";
   const alt = new Map(snap.images.map((i) => [i.id, i.altText]));
@@ -22,6 +22,13 @@ export function readable(snap: QuestionSnapshot, v: unknown): string {
   const x = v as Record<string, unknown>;
   if (typeof x.optionId === "string") return opt(x.optionId);
   if (Array.isArray(x.optionIds)) return (x.optionIds as string[]).map(opt).join("; ");
+  if (x.values && typeof x.values === "object") {
+    const values = x.values as Record<string, unknown>;
+    const [yes, no] = snap.labels ?? ["Benar", "Salah"];
+    return (snap.options ?? [])
+      .map((o) => `${opt(o.id)}: ${typeof values[o.id] === "boolean" && Object.hasOwn(values, o.id) ? (values[o.id] ? yes : no) : "(kosong)"}`)
+      .join("; ");
+  }
   if (typeof x.value === "boolean") return x.value ? "Benar" : "Salah";
   if (typeof x.text === "string") return x.text || "(kosong)";
   if (Array.isArray(x.accepted)) return (x.accepted as string[]).join("; ");

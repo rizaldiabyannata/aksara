@@ -254,3 +254,40 @@ describe("parseAnswer", () => {
     expect(parseAnswer(tf, { value: true })).toEqual({ ok: true, answer: { value: true } });
   });
 });
+
+describe("CATEGORY (PGK Kategori)", () => {
+  const q: ObjectiveQuestion = { type: "CATEGORY", answerKey: { values: { a: true, b: false, c: true } } };
+  const cat = { type: "CATEGORY" as const, options: [...opts, { id: "c", text: "C" }] };
+
+  it("gives full points only when every statement matches", () => {
+    expect(gradeObjective(q, { values: { a: true, b: false, c: true } }, 1)).toBe(1);
+  });
+
+  it("gives 0 when one statement is wrong (all-or-nothing)", () => {
+    expect(gradeObjective(q, { values: { a: true, b: true, c: true } }, 1)).toBe(0);
+  });
+
+  it("gives 0 when one statement is unanswered", () => {
+    expect(gradeObjective(q, { values: { a: true, b: false } }, 1)).toBe(0);
+  });
+
+  it("gives 0 for an extra unknown statement or a non-boolean value", () => {
+    expect(gradeObjective(q, { values: { a: true, b: false, c: true, d: false } }, 1)).toBe(0);
+    expect(gradeObjective(q, { values: { a: "true", b: false, c: true } }, 1)).toBe(0);
+    expect(gradeObjective(q, { values: [true, false, true] }, 1)).toBe(0);
+  });
+
+  it("parseAnswer keeps a partial answer and refuses unknown statements", () => {
+    expect(parseAnswer(cat, { values: { a: true } })).toEqual({ ok: true, answer: { values: { a: true } } });
+    expect(parseAnswer(cat, { values: { z: true } })).toEqual(INVALID);
+    expect(parseAnswer(cat, { values: { a: 1 } })).toEqual(INVALID);
+  });
+
+  it("parseAnswer treats no answered statement as unanswered", () => {
+    expect(parseAnswer(cat, { values: {} })).toEqual({ ok: true, answer: null });
+  });
+
+  it("parseAnswer never stores a prototype key", () => {
+    expect(parseAnswer(cat, JSON.parse('{"values":{"__proto__":true}}'))).toEqual({ ok: true, answer: null });
+  });
+});

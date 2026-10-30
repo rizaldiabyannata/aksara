@@ -8,7 +8,7 @@ import { normalizeShortAnswer } from "@/lib/grading";
 import { copyObject, deleteImage } from "@/lib/storage";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { QuestionStatus } from "@/lib/generated/prisma/enums";
-import type { Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
+import type { CognitiveLevel, Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
 import type { ImageView } from "@/lib/materials";
 
 export type Option = { id: string; text: string };
@@ -17,7 +17,8 @@ export type QuestionContent =
   | { type: "TRUE_FALSE"; options: null; answerKey: { value: boolean } }
   | { type: "MULTIPLE_SELECT"; options: Option[]; answerKey: { optionIds: string[] } }
   | { type: "SHORT_ANSWER"; options: null; answerKey: { accepted: string[]; caseSensitive: boolean } }
-  | { type: "ESSAY"; options: null; answerKey: { rubric: string | null } };
+  | { type: "ESSAY"; options: null; answerKey: { rubric: string | null } }
+  | { type: "CATEGORY"; options: Option[]; answerKey: { values: Record<string, boolean> } };
 export type QuestionDetail = QuestionContent & {
   id: string;
   chapterId: string;
@@ -29,6 +30,8 @@ export type QuestionDetail = QuestionContent & {
   explanation: string | null;
   defaultPoints: number;
   difficulty: Difficulty;
+  cognitiveLevel: CognitiveLevel | null;
+  categoryLabels: string[];
   status: QuestionStatus;
   sourceReference: string | null;
   verificationNote: string | null;
@@ -40,6 +43,7 @@ export type PublicQuestion = {
   type: QuestionType;
   prompt: string;
   options: Option[] | null;
+  labels?: [string, string] | null; // CATEGORY only; snapshots published before Tahap 10 lack it
   images: ImageView[];
 };
 export type QuestionRow = {
@@ -51,6 +55,7 @@ export type QuestionRow = {
   defaultPoints: number;
   options: Option[] | null;
   answerKey: Record<string, unknown>; // teacher-only list: never pass a row to a student
+  categoryLabels: string[];
   chapterTitle: string;
   subjectName: string;
   updatedAt: Date;
@@ -80,6 +85,10 @@ const base = {
     .min(1, { error: "Poin harus bilangan bulat 1 sampai 100." })
     .max(100, { error: "Poin harus bilangan bulat 1 sampai 100." }),
   difficulty: z.enum(["EASY", "MEDIUM", "HARD"], { error: "Pilih tingkat kesulitan." }),
+  cognitiveLevel: z.preprocess(
+    (v) => (v === "" || v === undefined ? null : v),
+    z.enum(["PEMAHAMAN", "APLIKASI", "PENALARAN"], { error: "Level kognitif tidak valid." }).nullable(),
+  ),
   sourceReference: optional(200, "Sumber paling banyak 200 huruf."),
   verificationNote: optional(5000, "Paling banyak 5.000 huruf."),
 };
@@ -102,6 +111,8 @@ function checkOptions(o: Option[], min: number, max: number, ctx: Ctx) {
 }
 
 const SHORT_MSG = "Isi 1 sampai 10 jawaban yang diterima, satu per baris.";
+const CATEGORY_MSG = "Pilih jawaban benar untuk setiap pernyataan.";
+const LABEL_MSG = "Isi dua nama pilihan jawaban, paling banyak 30 huruf.";
 const questionSchema = z.discriminatedUnion(
   "type",
   [
@@ -166,6 +177,25 @@ const questionSchema = z.discriminatedUnion(
         if (accepted.length < 1 || accepted.length > 10 || norm.some((n) => !n)) return bad(ctx, "answerKey", SHORT_MSG);
         if (new Set(norm).size !== norm.length) bad(ctx, "answerKey", "Ada jawaban diterima yang sama.");
       }),
+    z
+      .object({
+        ...base,
+        type: z.literal("CATEGORY"),
+        options: optionsOf(2, 6),
+        answerKey: z.object({ values: z.record(z.string(), z.boolean()) }, { error: CATEGORY_MSG }),
+        categoryLabels: z
+          .tuple([required(30, LABEL_MSG), required(30, LABEL_MSG)], { error: LABEL_MSG })
+          .default(["Benar", "Salah"]),
+      })
+      .superRefine((d, ctx) => {
+        checkOptions(d.options, 2, 6, ctx);
+        const ids = d.options.map((o) => o.id);
+        const keys = Object.keys(d.answerKey.values);
+        if (keys.length !== ids.length || !ids.every((id) => Object.hasOwn(d.answerKey.values, id))) {
+          bad(ctx, "answerKey", CATEGORY_MSG);
+        }
+        if (d.categoryLabels[0] === d.categoryLabels[1]) bad(ctx, "categoryLabels", "Dua pilihan jawaban tidak boleh sama.");
+      }),
     z.object({
       ...base,
       type: z.literal("ESSAY"),
@@ -180,6 +210,7 @@ type QuestionInput = z.infer<typeof questionSchema>;
 const FIELDS = [
   "chapterId", "subchapterId", "prompt", "options", "answerKey",
   "explanation", "defaultPoints", "difficulty", "sourceReference", "verificationNote",
+  "cognitiveLevel", "categoryLabels",
 ] as const;
 
 // jsonb does not keep key order, so compare with sorted keys.
@@ -255,7 +286,7 @@ export async function updateQuestion(
       select: {
         type: true, status: true, chapterId: true, subchapterId: true, prompt: true, options: true,
         answerKey: true, explanation: true, defaultPoints: true, difficulty: true,
-        sourceReference: true, verificationNote: true,
+        sourceReference: true, verificationNote: true, cognitiveLevel: true, categoryLabels: true,
       },
     });
     if (!old) return { ok: false, error: "NOT_FOUND" } as const;
@@ -264,7 +295,7 @@ export async function updateQuestion(
     }
     const badRefs = await checkRefs(tx, p.data, id);
     if (badRefs) return badRefs;
-    const next = { ...p.data, options: optionsOfInput(p.data) };
+    const next = { categoryLabels: [], ...p.data, options: optionsOfInput(p.data) };
     const changed = FIELDS.filter(
       (f) => canon(fieldValue(old, f)) !== canon(fieldValue(next, f)),
     );
@@ -345,6 +376,7 @@ export async function duplicateQuestion(actorId: string, id: string): Promise<{ 
     select: {
       type: true, prompt: true, options: true, answerKey: true, explanation: true, defaultPoints: true,
       difficulty: true, sourceReference: true, verificationNote: true, chapterId: true, subchapterId: true,
+      cognitiveLevel: true, categoryLabels: true,
       images: {
         where: { deletedAt: null },
         orderBy: { createdAt: "asc" },
@@ -372,6 +404,7 @@ export async function duplicateQuestion(actorId: string, id: string): Promise<{ 
           explanation: src.explanation, defaultPoints: src.defaultPoints, difficulty: src.difficulty,
           sourceReference: src.sourceReference, verificationNote: src.verificationNote,
           chapterId: src.chapterId, subchapterId: src.subchapterId,
+          cognitiveLevel: src.cognitiveLevel, categoryLabels: src.categoryLabels,
           options: (options ?? Prisma.DbNull) as Prisma.InputJsonValue,
           status: "DRAFT",
           createdById: actorId,
@@ -437,6 +470,7 @@ export async function listQuestions(
     take: PAGE_SIZE + 1,
     select: {
       id: true, type: true, difficulty: true, status: true, prompt: true, defaultPoints: true, updatedAt: true, options: true, answerKey: true,
+      categoryLabels: true,
       chapter: { select: { title: true, subject: { select: { name: true } } } },
     },
   });
@@ -459,7 +493,7 @@ export async function getQuestionForTeacher(id: string): Promise<QuestionDetail 
     select: {
       id: true, type: true, prompt: true, options: true, answerKey: true, explanation: true,
       defaultPoints: true, difficulty: true, status: true, sourceReference: true, verificationNote: true,
-      chapterId: true, subchapterId: true, updatedAt: true,
+      chapterId: true, subchapterId: true, updatedAt: true, cognitiveLevel: true, categoryLabels: true,
       chapter: { select: { title: true, subject: { select: { name: true } } } },
       subchapter: { select: { title: true } },
       images: {
@@ -487,7 +521,7 @@ export async function countQuestionsByStatus(): Promise<Record<QuestionStatus, n
 }
 
 export async function countQuestionsByType(): Promise<Record<QuestionType, number>> {
-  const out: Record<QuestionType, number> = { SINGLE_CHOICE: 0, TRUE_FALSE: 0, MULTIPLE_SELECT: 0, SHORT_ANSWER: 0, ESSAY: 0 };
+  const out: Record<QuestionType, number> = { SINGLE_CHOICE: 0, TRUE_FALSE: 0, MULTIPLE_SELECT: 0, SHORT_ANSWER: 0, ESSAY: 0, CATEGORY: 0 };
   const g = await prisma.question.groupBy({ by: ["type"], _count: { _all: true } });
   for (const r of g) out[r.type] = r._count._all;
   return out;
@@ -495,7 +529,7 @@ export async function countQuestionsByType(): Promise<Record<QuestionType, numbe
 
 /** The only shape of a question a student may ever receive: a fresh allowlisted object. */
 export function toPublicQuestion(
-  q: Pick<QuestionDetail, "id" | "type" | "prompt" | "options" | "images">,
+  q: Pick<QuestionDetail, "id" | "type" | "prompt" | "options" | "images"> & { categoryLabels?: string[] },
 ): PublicQuestion {
   const options = q.options ? q.options.map((o) => ({ id: o.id, text: o.text })) : null;
   const shown = new Set(extractImageIds([q.prompt, ...(options ?? []).map((o) => o.text)].join("\n")));
@@ -504,6 +538,7 @@ export function toPublicQuestion(
     type: q.type,
     prompt: q.prompt,
     options,
+    labels: q.type === "CATEGORY" ? categoryLabelsOf(q.categoryLabels) : null,
     images: q.images
       .filter((i) => shown.has(i.id))
       .map((i) => ({
@@ -511,4 +546,8 @@ export function toPublicQuestion(
         width: i.width, height: i.height,
       })),
   };
+}
+
+export function categoryLabelsOf(l: string[] | undefined): [string, string] {
+  return l?.length === 2 ? [l[0], l[1]] : ["Benar", "Salah"];
 }

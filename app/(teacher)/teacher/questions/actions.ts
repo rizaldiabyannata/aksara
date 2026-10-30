@@ -49,16 +49,18 @@ async function run(
 const NAMES = [
   "chapterId", "subchapterId", "prompt", "explanation", "defaultPoints",
   "difficulty", "sourceReference", "verificationNote", "accepted", "rubric",
+  "cognitiveLevel", "labelTrue", "labelFalse",
 ] as const;
 const SLOTS = "abcdefgh";
 const slotCount = (type: QuestionType) =>
-  type === "SINGLE_CHOICE" ? 6 : type === "MULTIPLE_SELECT" ? 8 : 0;
+  type === "SINGLE_CHOICE" || type === "CATEGORY" ? 6 : type === "MULTIPLE_SELECT" ? 8 : 0;
 
 // Input for the domain plus the string echo for the form. defaultPoints stays a raw string: the domain coerces and rejects.
 function fromForm(fd: FormData, type: QuestionType) {
   const values: Record<string, string> = Object.fromEntries(NAMES.map((n) => [n, field(fd, n)]));
   const slots = [...SLOTS].slice(0, slotCount(type));
   for (const id of slots) values[`option_${id}`] = field(fd, `option_${id}`);
+  if (type === "CATEGORY") for (const id of slots) values[`key_${id}`] = field(fd, `key_${id}`);
   const correct = fd.getAll("correct").filter((x) => typeof x === "string");
   values.correct = correct.join(",");
   values.caseSensitive = fd.get("caseSensitive") === "on" ? "on" : "";
@@ -70,6 +72,11 @@ function fromForm(fd: FormData, type: QuestionType) {
     type === "SINGLE_CHOICE" ? { optionId: correct[0] ?? "" }
     : type === "TRUE_FALSE" ? { value: correct[0] === "true" ? true : correct[0] === "false" ? false : undefined }
     : type === "MULTIPLE_SELECT" ? { optionIds: correct }
+    : type === "CATEGORY" ? {
+        values: Object.fromEntries(
+          options.flatMap((o) => (values[`key_${o.id}`] === "true" ? [[o.id, true]] : values[`key_${o.id}`] === "false" ? [[o.id, false]] : [])),
+        ),
+      }
     : type === "SHORT_ANSWER" ? {
         accepted: values.accepted.split("\n").map((l) => l.trim()).filter(Boolean),
         caseSensitive: values.caseSensitive === "on",
@@ -86,6 +93,8 @@ function fromForm(fd: FormData, type: QuestionType) {
     explanation: values.explanation || undefined,
     defaultPoints: values.defaultPoints,
     difficulty: values.difficulty,
+    cognitiveLevel: values.cognitiveLevel || null,
+    ...(type === "CATEGORY" && { categoryLabels: [values.labelTrue, values.labelFalse] }),
     sourceReference: values.sourceReference || undefined,
     verificationNote: values.verificationNote || undefined,
   };

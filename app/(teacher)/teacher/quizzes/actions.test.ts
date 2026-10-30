@@ -94,6 +94,19 @@ describe("quiz actions", () => {
     expect(row).toMatchObject({ instructions: null, startsAt: null, endsAt: null, kkm: null });
   });
 
+  it("createQuizAction: Tryout TKA defaults to 75 minutes; regular stays 30; update without kind keeps it", async () => {
+    const { user } = await makeTeacher();
+    await signIn(user);
+    const ch = await makeChapter();
+    await createQuizAction(undefined, form({ title: "TO", subjectId: ch.subjectId, kind: "TRYOUT_TKA" })).catch(() => {});
+    await createQuizAction(undefined, form({ title: "UH", subjectId: ch.subjectId, kind: "REGULAR" })).catch(() => {});
+    const to = await prisma.quiz.findFirstOrThrow({ where: { title: "TO" } });
+    expect(to).toMatchObject({ kind: "TRYOUT_TKA", durationMinutes: 75, shuffleQuestions: false });
+    expect(await prisma.quiz.findFirstOrThrow({ where: { title: "UH" } })).toMatchObject({ kind: "REGULAR", durationMinutes: 30 });
+    await updateQuizAction(to.id, undefined, form({ ...settings, title: "TO 2" }));
+    expect(await prisma.quiz.findUniqueOrThrow({ where: { id: to.id } })).toMatchObject({ title: "TO 2", kind: "TRYOUT_TKA" });
+  });
+
   it("createQuizAction echoes values on error", async () => {
     const { user } = await makeTeacher();
     await signIn(user);

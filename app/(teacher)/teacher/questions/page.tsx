@@ -4,7 +4,7 @@ import { GuidePanel } from "@/components/guide-panel";
 import { Suspense } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
-  Alert02Icon, ArrowDown01Icon, ArrowLeft01Icon, ArrowRight01Icon, BookOpen01Icon, CancelCircleIcon,
+  Alert02Icon, ArrowDown01Icon, ArrowLeft01Icon, ArrowRight01Icon, BookOpen01Icon, CancelCircleIcon, GridTableIcon,
   CheckListIcon, CheckmarkBadge01Icon, CheckmarkCircle02Icon, ChartIncreaseIcon, Clock01Icon, Edit02Icon,
   FileEditIcon, FilterIcon, LibraryIcon, Menu01Icon, Note01Icon, PlusSignCircleIcon, RadioButtonIcon,
   RefreshIcon, Search01Icon, SmileIcon, TaskDone01Icon, UnfoldMoreIcon, ViewIcon,
@@ -12,7 +12,7 @@ import {
 import { requireTeacher } from "@/lib/auth/guard";
 import { formatWita } from "@/lib/format";
 import type { Difficulty, QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
-import { countQuestionsByStatus, countQuestionsByType, listQuestions, type QuestionRow } from "@/lib/questions";
+import { categoryLabelsOf, countQuestionsByStatus, countQuestionsByType, listQuestions, type QuestionRow } from "@/lib/questions";
 import { getSubjectTree, listChapterOptions } from "@/lib/subjects";
 import { cn } from "@/lib/utils";
 import { DIFFICULTY_LABEL, STATUS_LABEL, TYPE_LABEL } from "./labels";
@@ -26,13 +26,14 @@ const TYPE_STYLE: Record<QuestionType, TypeStyle> = {
   MULTIPLE_SELECT: { icon: CheckListIcon, chip: "bg-surface-container-highest text-on-surface-variant", dot: "bg-secondary-container", book: "text-primary-strong", sub: "Lebih dari satu jawaban" },
   TRUE_FALSE: { icon: TaskDone01Icon, chip: "bg-canvas-peach text-tertiary", dot: "bg-tertiary", book: "text-tertiary", sub: "Benar atau salah" },
   SHORT_ANSWER: { icon: Menu01Icon, chip: "bg-tone-success-bg text-tone-success", dot: "bg-tone-success", book: "text-primary-strong", sub: "Kata atau angka" },
+  CATEGORY: { icon: GridTableIcon, chip: "bg-tone-info-bg text-brand-blue", dot: "bg-brand-blue", book: "text-primary-strong", sub: "Benar/salah per pernyataan" },
 };
 const DIFF_STYLE: Record<Difficulty, { icon: IconSvgElement; chip: string }> = {
   EASY: { icon: SmileIcon, chip: "bg-tone-success-bg text-tone-success" },
   MEDIUM: { icon: ChartIncreaseIcon, chip: "bg-tone-warning-bg text-tone-warning" },
   HARD: { icon: Alert02Icon, chip: "bg-tone-danger-bg text-tone-danger" },
 };
-const ORDER: QuestionType[] = ["SINGLE_CHOICE", "ESSAY", "MULTIPLE_SELECT", "TRUE_FALSE", "SHORT_ANSWER"];
+const ORDER: QuestionType[] = ["SINGLE_CHOICE", "ESSAY", "MULTIPLE_SELECT", "CATEGORY", "TRUE_FALSE", "SHORT_ANSWER"];
 
 const selectClass =
   "w-full min-h-12 px-3 py-2 rounded-xl bg-canvas-peach text-on-surface font-label-sm text-label-sm outline-none appearance-none cursor-pointer focus-visible:ring-[3px] focus-visible:ring-ring";
@@ -53,7 +54,7 @@ export default function QuestionsPage({ searchParams }: PageProps<"/teacher/ques
             </div>
             <h1 className="font-headline-xl text-headline-xl text-text-primary tracking-tight">Bank soal</h1>
             <p className="mt-2 font-body-lg text-body-lg text-text-muted leading-relaxed">
-              Kumpulan soal untuk latihan dan ulangan. Tersedia 5 tipe soal dengan kunci jawaban yang hanya terlihat oleh guru.
+              Kumpulan soal untuk latihan dan ulangan. Tersedia 6 tipe soal dengan kunci jawaban yang hanya terlihat oleh guru.
             </p>
           </div>
           <details className="relative shrink-0 group">
@@ -419,6 +420,20 @@ function KeyPreview({ r }: { r: QuestionRow }) {
           ),
         )}
       </div>
+    );
+  }
+  if (r.type === "CATEGORY" && r.options) {
+    const values = k.values as Record<string, boolean>;
+    const [yes, no] = categoryLabelsOf(r.categoryLabels);
+    return (
+      <ol className="flex flex-col gap-space-sm mb-space-md">
+        {r.options.map((o, i) => (
+          <li key={o.id} className="p-3 rounded-xl bg-surface-container flex items-center justify-between gap-3">
+            <span className="font-body-md text-body-md text-on-surface break-words min-w-0">{i + 1}. {snippet(o.text)}</span>
+            <span className="shrink-0 px-2.5 py-1 rounded-lg bg-tone-success-bg font-label-sm text-label-sm font-bold text-tone-success">{values[o.id] ? yes : no}</span>
+          </li>
+        ))}
+      </ol>
     );
   }
   if (r.type === "SHORT_ANSWER") {

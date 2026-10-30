@@ -136,6 +136,32 @@ describe("question actions", () => {
     });
   });
 
+  it("maps CATEGORY statements, per-statement keys, labels and level", async () => {
+    const { user } = await makeTeacher();
+    await signIn(user);
+    const ch = await makeChapter();
+    await createQuestionAction(
+      "CATEGORY",
+      undefined,
+      form({
+        ...valid(ch.id), option_c: "Tiga", key_a: "true", key_b: "false", key_c: "true",
+        labelTrue: "Fakta", labelFalse: "Opini", cognitiveLevel: "APLIKASI",
+      }),
+    ).catch(() => {});
+    const row = await prisma.question.findFirstOrThrow();
+    expect(await getQuestionForTeacher(row.id)).toMatchObject({
+      type: "CATEGORY",
+      answerKey: { values: { a: true, b: false, c: true } },
+      categoryLabels: ["Fakta", "Opini"],
+      cognitiveLevel: "APLIKASI",
+    });
+    const missing = await createQuestionAction(
+      "CATEGORY", undefined, form({ ...valid(ch.id), key_a: "true", labelTrue: "Benar", labelFalse: "Salah" }),
+    );
+    expect(missing?.fieldErrors?.answerKey).toBe("Pilih jawaban benar untuk setiap pernyataan.");
+    expect(missing?.values).toMatchObject({ key_a: "true", labelTrue: "Benar" });
+  });
+
   it("maps SHORT_ANSWER lines and caseSensitive", async () => {
     const { user } = await makeTeacher();
     await signIn(user);

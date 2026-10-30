@@ -10,11 +10,13 @@ export type ObjectiveQuestion =
   | { type: "SINGLE_CHOICE"; answerKey: { optionId: string } }
   | { type: "TRUE_FALSE"; answerKey: { value: boolean } }
   | { type: "MULTIPLE_SELECT"; answerKey: { optionIds: string[] } }
-  | { type: "SHORT_ANSWER"; answerKey: { accepted: string[]; caseSensitive: boolean } };
+  | { type: "SHORT_ANSWER"; answerKey: { accepted: string[]; caseSensitive: boolean } }
+  | { type: "CATEGORY"; answerKey: { values: Record<string, boolean> } };
 
 const singleChoiceAnswer = z.object({ optionId: z.string() });
 const trueFalseAnswer = z.object({ value: z.boolean() });
 const multipleSelectAnswer = z.object({ optionIds: z.array(z.string()) });
+const categoryAnswer = z.object({ values: z.record(z.string(), z.boolean()) });
 const shortAnswer = z.object({
   text: z.string().refine((t) => [...t].length <= 200),
 });
@@ -26,6 +28,7 @@ export type StoredAnswer =
   | { optionId: string }
   | { value: boolean }
   | { optionIds: string[] }
+  | { values: Record<string, boolean> }
   | { text: string };
 
 const INVALID = "Jawaban tidak valid.";
@@ -64,6 +67,15 @@ export function parseAnswer(
       if (ids.length === 0) return { ok: true, answer: null };
       if (new Set(ids).size !== ids.length || !ids.every(hasOption)) return fail(INVALID);
       return { ok: true, answer: { optionIds: ids } };
+    }
+    case "CATEGORY": {
+      const a = categoryAnswer.safeParse(raw);
+      if (!a.success) return fail(INVALID);
+      const ids = Object.keys(a.data.values);
+      if (!ids.every((id) => Object.hasOwn(a.data.values, id) && hasOption(id))) return fail(INVALID);
+      if (ids.length === 0) return { ok: true, answer: null };
+      // Rebuilt from known ids only: a partial answer is kept so autosave can fill it in statement by statement.
+      return { ok: true, answer: { values: Object.fromEntries(ids.map((id) => [id, a.data.values[id]])) } };
     }
     case "SHORT_ANSWER":
       return parseText(raw, shortAnswer, SHORT_TOO_LONG);
@@ -118,6 +130,14 @@ function isCorrect(q: ObjectiveQuestion, answer: unknown): boolean {
       if (new Set(ids).size !== ids.length) return false;
       const key = new Set(q.answerKey.optionIds);
       return key.size === ids.length && ids.every((id) => key.has(id));
+    }
+    case "CATEGORY": {
+      const a = categoryAnswer.safeParse(answer);
+      if (!a.success) return false;
+      // All-or-nothing (D4): every statement answered and matching, nothing extra.
+      const key = Object.entries(q.answerKey.values);
+      const given = a.data.values;
+      return key.length > 0 && Object.keys(given).length === key.length && key.every(([id, v]) => Object.hasOwn(given, id) && given[id] === v);
     }
     case "SHORT_ANSWER": {
       const a = shortAnswer.safeParse(answer);

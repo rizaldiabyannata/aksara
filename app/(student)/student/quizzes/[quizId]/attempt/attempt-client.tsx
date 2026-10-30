@@ -22,10 +22,11 @@ import { createSaveQueue, remainingMs, type SaveStatus } from "./save-queue";
 type Q = {
   id: string; // quizQuestionId
   number: number;
-  type: "SINGLE_CHOICE" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "SHORT_ANSWER" | "ESSAY";
+  type: "SINGLE_CHOICE" | "MULTIPLE_SELECT" | "TRUE_FALSE" | "SHORT_ANSWER" | "ESSAY" | "CATEGORY";
   answer: StoredAnswer | null;
   prompt: ReactNode;
   options: { id: string; node: ReactNode }[] | null;
+  labels: [string, string] | null;
 };
 type Props = { attemptId: string; quizId: string; quizTitle: string; participant: { name: string; nis: string | null }; deadlineAt: string; serverNow: string; questions: Q[] };
 type Phase = "running" | "done" | "closed";
@@ -40,6 +41,7 @@ const TYPE_LABEL = {
   TRUE_FALSE: "Benar atau salah",
   SHORT_ANSWER: "Isian singkat",
   ESSAY: "Uraian",
+  CATEGORY: "Jawab setiap pernyataan",
 } as const;
 const safeLocalStorage = () => {
   try {
@@ -78,9 +80,11 @@ function Choice({ letter, checked, input, children }: { letter: string; checked:
   );
 }
 
-const isAnswered = (a: StoredAnswer | null | undefined) => {
+const isAnswered = (q: Q, a: StoredAnswer | null | undefined) => {
   if (!a) return false;
   if ("optionIds" in a) return a.optionIds.length > 0;
+  // A statement left open scores 0 (all-or-nothing), so it is not "terjawab" yet.
+  if ("values" in a) return (q.options ?? []).every((o) => Object.hasOwn(a.values, o.id));
   if ("text" in a) return a.text.trim() !== "";
   return true;
 };
@@ -344,7 +348,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, participant, deadl
 
   const q = questions[index];
   const a = answers[q.id] ?? null;
-  const unanswered = questions.filter((x) => !isAnswered(answers[x.id])).length;
+  const unanswered = questions.filter((x) => !isAnswered(x, answers[x.id])).length;
   const minutes = left / 60000;
   const warning = left <= 0 ? "" : minutes <= 1 ? "Sisa 1 menit." : minutes <= 5 ? "Sisa 5 menit." : "";
   const selected = a && "optionIds" in a ? a.optionIds : [];
@@ -435,7 +439,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, participant, deadl
       <nav aria-label="Daftar soal" className="no-scrollbar -mx-4 overflow-x-auto bg-surface-container-low px-gutter-mobile py-space-sm shadow-sm lg:hidden">
         <ul className="flex min-w-max items-center gap-2">
           {questions.map((x, i) => {
-            const done = isAnswered(answers[x.id]);
+            const done = isAnswered(x, answers[x.id]);
             const flagged = flags.has(x.id);
             const current = i === index;
             return (
@@ -522,6 +526,47 @@ export function AttemptClient({ attemptId, quizId, quizTitle, participant, deadl
                     >
                       {v ? "Benar" : "Salah"}
                     </Choice>
+                  );
+                })}
+              {q.type === "CATEGORY" &&
+                q.options?.map((o, i) => {
+                  const values = a && "values" in a ? a.values : {};
+                  const labels = q.labels ?? ["Benar", "Salah"];
+                  return (
+                    <div
+                      key={o.id}
+                      role="radiogroup"
+                      aria-labelledby={`st-${q.id}-${o.id}`}
+                      className="flex flex-col gap-space-sm rounded-2xl border border-border-subtle bg-surface-card p-space-md shadow-xs sm:flex-row sm:items-center"
+                    >
+                      <div id={`st-${q.id}-${o.id}`} className="flex min-w-0 flex-1 gap-2 font-headline-sm text-headline-sm text-text-primary">
+                        <span aria-hidden="true" className="shrink-0 font-bold">{i + 1}.</span>
+                        <span className="min-w-0">{o.node}</span>
+                      </div>
+                      <div className="grid shrink-0 grid-cols-2 gap-2 sm:w-64">
+                        {([true, false] as const).map((v, j) => {
+                          const checked = Object.hasOwn(values, o.id) && values[o.id] === v;
+                          return (
+                            <label
+                              key={String(v)}
+                              className={`relative flex min-h-12 cursor-pointer items-center justify-center gap-1 rounded-xl px-3 text-center font-label-md text-label-md has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring ${
+                                checked ? "border-2 border-primary-strong bg-canvas-peach font-bold text-primary-strong" : "border border-border-subtle bg-surface-card text-text-primary hover:bg-canvas-peach"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name={`q-${q.id}-${o.id}`}
+                                className={HIT}
+                                checked={checked}
+                                onChange={() => choose(q.id, { values: { ...values, [o.id]: v } })}
+                              />
+                              {checked ? <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-5 shrink-0" aria-hidden="true" /> : null}
+                              {labels[j]}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
             </div>
@@ -621,7 +666,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, participant, deadl
             </div>
             <ul className="grid grid-cols-5 gap-2.5">
               {questions.map((x, i) => {
-                const done = isAnswered(answers[x.id]);
+                const done = isAnswered(x, answers[x.id]);
                 const flagged = flags.has(x.id);
                 const current = i === index;
                 return (
