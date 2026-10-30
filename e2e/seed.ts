@@ -25,6 +25,7 @@ for (const [displayName, nis] of [
   ["Siswa Satu", "100001"],
   ["Siswa Dua", "100002"],
   ["Siswa Dengan Nama Yang Sangat Panjang Sekali", "100003"],
+  ["Siswa Empat", "100004"],
 ] as const) {
   const r = await createStudent(teacher.id, { displayName, nis, classId: cls.id });
   if (!r.ok) throw new Error(`seed student ${displayName}: ${r.error}`);
@@ -53,6 +54,8 @@ async function publish(title: string, questions: { id: string; points: number }[
 
 // Taken live by e2e/student.spec.ts.
 const forStudent = await publish("Ulangan Siswa", [{ id: choice.id, points: 2 }, { id: essay.id, points: 8 }]);
+// Exam token and help request flows (e2e/tahap8.spec.ts); the spec turns the token on itself.
+const forToken = await publish("Ulangan Token", [{ id: choice.id, points: 2 }]);
 // Already answered by Siswa Dua, waiting for the teacher to grade (e2e/teacher.spec.ts).
 const forTeacher = await publish("Ulangan Guru", [{ id: essay.id, points: 4 }]);
 const dua = { id: students["Siswa Dua"], classId: cls.id };
@@ -69,6 +72,7 @@ writeFileSync(
     teacher: { username: "e2eguru", password },
     classCode: cls.code,
     studentQuiz: { id: forStudent.quiz.id, title: forStudent.quiz.title },
+    tokenQuiz: { id: forToken.quiz.id, title: forToken.quiz.title },
     teacherQuiz: { id: forTeacher.quiz.id, title: forTeacher.quiz.title },
   }),
 );

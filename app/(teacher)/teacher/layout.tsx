@@ -174,7 +174,7 @@ export default function TeacherLayout({ children }: LayoutProps<"/teacher">) {
           <label htmlFor="cari-global" className="sr-only">Cari kelas, siswa, materi, soal, atau ulangan</label>
           <div className="w-full flex items-center bg-canvas-peach rounded-xl px-space-md py-space-sm text-on-surface-variant focus-within:ring-2 focus-within:ring-primary-container">
             <HugeiconsIcon icon={Search01Icon} aria-hidden="true" className="mr-space-sm size-[22px]" />
-            <input id="cari-global" name="q" type="search" placeholder="Cari materi, siswa, atau ulangan..." className="w-full bg-transparent border-0 outline-none text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant" />
+            <input id="cari-global" name="q" type="search" placeholder="Cari materi, siswa, atau ulangan..." className="w-full min-h-11 bg-transparent border-0 outline-none rounded-md focus-visible:ring-[3px] focus-visible:ring-ring text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant" />
           </div>
         </form>
         <Suspense fallback={null}>

@@ -4,7 +4,7 @@ import { loginStudent, loginTeacher, seed } from "./fixtures";
 test("teacher grades the essay from the dashboard, releases, and the student sees the score", async ({ page, browser }) => {
   const { title } = seed().teacherQuiz;
   await loginTeacher(page);
-  await expect(page.getByText(`${title}: 1 jawaban uraian belum dinilai`)).toBeVisible();
+  await expect(page.getByRole("heading", { name: `${title}: 1 jawaban uraian belum dinilai` })).toBeVisible();
 
   const task = (text: string) => page.getByRole("listitem").filter({ hasText: text });
   await task(`${title}: 1 jawaban uraian belum dinilai`).getByRole("link", { name: "Nilai sekarang" }).click();
@@ -15,7 +15,7 @@ test("teacher grades the essay from the dashboard, releases, and the student see
   await expect(page.getByText("3,00 dari 4")).toBeVisible();
 
   await page.goto("/teacher");
-  await expect(page.getByText(`${title}: semua sudah dinilai, siap dibagikan ke 1 siswa`)).toBeVisible();
+  await expect(page.getByRole("heading", { name: `${title}: semua sudah dinilai, siap dibagikan ke 1 siswa` })).toBeVisible();
   await task(`${title}: semua sudah dinilai`).getByRole("link", { name: "Rilis hasil" }).click();
   await page.getByRole("button", { name: "Rilis hasil" }).first().click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Rilis hasil" }).click();

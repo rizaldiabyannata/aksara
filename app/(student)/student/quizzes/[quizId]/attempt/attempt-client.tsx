@@ -366,7 +366,7 @@ export function AttemptClient({ attemptId, quizId, quizTitle, participant, deadl
   const warnTone = warning ? "border-tone-warning bg-tone-warning-bg" : "border-primary-strong/20 bg-canvas-peach";
 
   return (
-    <section className="flex flex-col pb-44 lg:relative lg:left-1/2 lg:w-[min(72rem,calc(100vw-2rem))] lg:-translate-x-1/2 lg:pb-0">
+    <section className="flex flex-col pb-56 lg:relative lg:left-1/2 lg:w-[min(72rem,calc(100vw-2rem))] lg:-translate-x-1/2 lg:pb-0">
       {/* Phone header (Stitch mobile): sticky compact bar */}
       <div className="sticky top-0 z-40 -mx-4 -mt-4 flex flex-col gap-space-xs bg-surface/95 px-gutter-mobile py-space-sm shadow-sm backdrop-blur-md lg:hidden">
         <div className="flex items-center justify-between gap-space-xs">

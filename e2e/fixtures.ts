@@ -5,6 +5,7 @@ type Seed = {
   teacher: { username: string; password: string };
   classCode: string;
   studentQuiz: { id: string; title: string };
+  tokenQuiz: { id: string; title: string };
   teacherQuiz: { id: string; title: string };
 };
 

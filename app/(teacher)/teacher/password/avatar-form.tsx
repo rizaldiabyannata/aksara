@@ -58,7 +58,7 @@ export function AvatarForm({ displayName, imageId }: { displayName: string; imag
         )}
         <div className="flex min-w-0 flex-col gap-space-xs">
           <label htmlFor="photo" className="font-label-md text-label-md text-text-primary">Pilih foto (JPG, PNG, atau WebP, maks. 4 MB)</label>
-          <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => pick(e.target.files?.[0] ?? null)} className="font-body-md text-body-md text-text-muted" />
+          <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => pick(e.target.files?.[0] ?? null)} className="min-h-11 font-body-md text-body-md text-text-muted" />
         </div>
       </div>
       <div className="flex flex-wrap gap-space-sm">
