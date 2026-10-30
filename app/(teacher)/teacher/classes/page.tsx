@@ -15,6 +15,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { requireTeacher } from "@/lib/auth/guard";
+import { attendanceToday } from "@/lib/attendance";
 import { listClasses } from "@/lib/classes";
 import {
   CreateClassForm,
@@ -59,7 +60,8 @@ const STEPS = [
 
 async function ClassList() {
   await requireTeacher();
-  const classes = await listClasses();
+  const [classes, attendance] = await Promise.all([listClasses(), attendanceToday(new Date())]);
+  const hadir = new Map(attendance.map((a) => [a.classId, a]));
   const active = classes.filter((c) => c.isActive).length;
   const total = classes.reduce((n, c) => n + c.studentCount, 0);
   return (
@@ -128,6 +130,7 @@ async function ClassList() {
                         </span>
                       </div>
                       <span className="font-body-md text-xs text-text-muted">{c.studentCount} Siswa terdaftar</span>
+                      <span className="font-body-md text-xs text-tone-success font-semibold">Hadir hari ini {hadir.get(c.id)?.present ?? 0}/{hadir.get(c.id)?.total ?? 0}</span>
                     </div>
                   </div>
                 </div>

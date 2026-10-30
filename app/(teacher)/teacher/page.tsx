@@ -20,7 +20,9 @@ import {
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import { requireTeacher } from "@/lib/auth/guard";
 import { listClasses } from "@/lib/classes";
+import { attendanceToday } from "@/lib/attendance";
 import { getTeacherDashboard, type TeacherTask } from "@/lib/dashboard";
+import { taskLine } from "@/lib/task-text";
 import { ClassCodeDialog } from "./classes/class-code-dialog";
 
 export const metadata: Metadata = { title: "Dasbor Guru" };
@@ -39,8 +41,12 @@ const Icon = ({ icon, className }: { icon: IconSvgElement; className: string }) 
 
 async function Dashboard() {
   const user = await requireTeacher();
-  const [{ tasks, counts }, allClasses] = await Promise.all([getTeacherDashboard(), listClasses()]);
+  const [{ tasks, counts }, allClasses, attendance] = await Promise.all([getTeacherDashboard(), listClasses(), attendanceToday(new Date())]);
   const classes = allClasses.filter((c) => c.isActive);
+  const activeIds = new Set(classes.map((c) => c.id));
+  const hadir = attendance.filter((a) => activeIds.has(a.classId));
+  const present = hadir.reduce((n, a) => n + a.present, 0);
+  const total = hadir.reduce((n, a) => n + a.total, 0);
   return (
     <div className="p-space-lg max-w-[1360px] mx-auto w-full flex flex-col gap-space-lg">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-canvas-peach-subtle via-tertiary-fixed to-canvas-peach p-space-lg shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
@@ -63,7 +69,7 @@ async function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
         <Metric label="Koleksi Pembelajaran" value={counts.materialsPublished} valueClass="text-tone-info" title="Materi Terbit Aktif" sub="Materi untuk siswa" icon={Book02Icon} boxClass="bg-tone-info-bg text-tone-info" />
         <Metric label="Perbendaharaan Soal" value={counts.questionsActive} valueClass="text-primary-container" title="Soal Siap Pakai" sub="Pilihan ganda & uraian" icon={Edit02Icon} boxClass="bg-canvas-peach-subtle text-primary-strong" />
-        <Metric label="Daftar Siswa" value={counts.activeStudents} valueClass="text-tone-success" title="Siswa Aktif" sub="Semua kelas" icon={UserGroupIcon} boxClass="bg-tone-success-bg text-tone-success" />
+        <Metric label="Daftar Kehadiran Siswa" value={present} suffix={`/${total}`} valueClass="text-tone-success" title="Hadir hari ini" sub="Siswa yang sudah masuk hari ini" icon={UserGroupIcon} boxClass="bg-tone-success-bg text-tone-success" />
       </div>
 
       {counts.activeStudents === 0 && (
@@ -160,14 +166,17 @@ async function Dashboard() {
   );
 }
 
-function Metric({ label, value, valueClass, title, sub, icon, boxClass }: {
-  label: string; value: number; valueClass: string; title: string; sub: string; icon: IconSvgElement; boxClass: string;
+function Metric({ label, value, suffix, valueClass, title, sub, icon, boxClass }: {
+  label: string; value: number; suffix?: string; valueClass: string; title: string; sub: string; icon: IconSvgElement; boxClass: string;
 }) {
   return (
     <div className="bg-surface-card rounded-2xl p-space-lg shadow-sm flex items-center justify-between transition-all hover:shadow-md">
       <div className="flex flex-col gap-1">
         <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">{label}</span>
-        <span className={`font-headline-xl text-headline-xl font-bold ${valueClass}`}>{value}</span>
+        <div className="flex items-baseline gap-1">
+          <span className={`font-headline-xl text-headline-xl font-bold ${valueClass}`}>{value}</span>
+          {suffix && <span className="font-headline-md text-headline-md text-text-muted">{suffix}</span>}
+        </div>
         <span className="font-label-md text-label-md text-text-primary font-semibold">{title}</span>
         <span className="font-body-md text-body-md text-text-muted">{sub}</span>
       </div>
@@ -185,7 +194,8 @@ const QUICK = [
 ];
 
 function TaskItem({ task }: { task: TeacherTask }) {
-  const { icon, label, chip, text, action, href, actionClass, ActionIcon, actionIcon } = describe(task);
+  const { icon, label, chip, action, actionClass, ActionIcon, actionIcon } = describe(task);
+  const { text, href } = taskLine(task);
   return (
     <li className="bg-surface-card rounded-2xl p-space-lg shadow-sm flex flex-col gap-space-md transition-all hover:shadow-md">
       <div className="flex items-center gap-space-sm">
@@ -253,36 +263,31 @@ function describe(task: TeacherTask) {
     case "RUNNING":
       return {
         icon: RadioIcon, chip: CHIPS.warning, label: "Sedang berlangsung",
-        text: `${task.title}: ${task.inProgress} siswa sedang mengerjakan`,
-        action: "Pantau", href: `/teacher/quizzes/${task.quizId}#pemantauan`,
+        action: "Pantau",
         actionClass: PRIMARY_BTN, ActionIcon: ViewIcon, actionIcon: ArrowRight01Icon,
       };
     case "GRADE":
       return {
         icon: Edit02Icon, chip: CHIPS.peach, label: "Menunggu penilaian",
-        text: `${task.title}: ${task.essays} jawaban uraian belum dinilai`,
-        action: "Nilai sekarang", href: `/teacher/quizzes/${task.quizId}#pemantauan`,
+        action: "Nilai sekarang",
         actionClass: SOFT_BTN, ActionIcon: Edit02Icon, actionIcon: ArrowRight01Icon,
       };
     case "RELEASE":
       return {
         icon: CheckmarkCircle02Icon, chip: CHIPS.success, label: "Lengkap & siap dibagikan",
-        text: `${task.title}: semua sudah dinilai, siap dibagikan ke ${task.students} siswa`,
-        action: "Rilis hasil", href: `/teacher/quizzes/${task.quizId}#hasil`,
+        action: "Rilis hasil",
         actionClass: SUCCESS_BTN, ActionIcon: Megaphone01Icon, actionIcon: SentIcon,
       };
     case "OTHER_DEVICE":
       return {
         icon: InformationCircleIcon, chip: CHIPS.info, label: "Perangkat lain",
-        text: `${task.students} siswa masuk dari perangkat lain 7 hari terakhir`,
-        action: "Lihat siswa", href: "/teacher/students",
+        action: "Lihat siswa",
         actionClass: SOFT_BTN, ActionIcon: UserGroupIcon, actionIcon: ArrowRight01Icon,
       };
     case "REVIEWED_MATERIALS":
       return {
         icon: Book02Icon, chip: CHIPS.info, label: "Materi",
-        text: `${task.count} materi sudah ditinjau, belum diterbitkan`,
-        action: "Lihat materi", href: "/teacher/materials?status=REVIEWED",
+        action: "Lihat materi",
         actionClass: SOFT_BTN, ActionIcon: Book02Icon, actionIcon: ArrowRight01Icon,
       };
   }

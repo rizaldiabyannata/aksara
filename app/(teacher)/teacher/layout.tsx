@@ -1,8 +1,12 @@
+import Link from "next/link";
 import { Suspense } from "react";
-import { Calendar03Icon, Logout01Icon } from "@hugeicons/core-free-icons";
+import { Calendar03Icon, Logout01Icon, Notification01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { logoutAction } from "@/app/(auth)/actions";
 import { requireTeacher } from "@/lib/auth/guard";
+import { getTeacherDashboard } from "@/lib/dashboard";
+import { schoolTerm } from "@/lib/school-term";
+import { taskLine } from "@/lib/task-text";
 import { BottomNav, BottomNavItems, NavItems, NavLinks } from "./nav-links";
 
 function Logo({ compact }: { compact?: boolean }) {
@@ -46,8 +50,16 @@ async function Profile({ compact }: { compact?: boolean }) {
   );
   if (compact) {
     return (
-      <div className="flex min-h-12 min-w-12 items-center justify-center" aria-label={`Profil: ${user.displayName}`} role="img">
-        {avatar}
+      <div className="flex items-center">
+        <Link href="/teacher/search" aria-label="Cari" className={ICON_BTN}>
+          <HugeiconsIcon icon={Search01Icon} aria-hidden="true" className="size-6" />
+        </Link>
+        <Suspense fallback={null}>
+          <Bell compact />
+        </Suspense>
+        <div className="flex min-h-12 min-w-12 items-center justify-center" aria-label={`Profil: ${user.displayName}`} role="img">
+          {avatar}
+        </div>
       </div>
     );
   }
@@ -55,6 +67,9 @@ async function Profile({ compact }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-space-lg">
       <Today />
+      <Suspense fallback={null}>
+        <Bell />
+      </Suspense>
       <div className="flex items-center gap-space-md pl-space-sm">
         {avatar}
         <div className="flex flex-col text-left">
@@ -66,13 +81,56 @@ async function Profile({ compact }: { compact?: boolean }) {
   );
 }
 
+const ICON_BTN = "relative min-h-12 w-12 flex items-center justify-center rounded-xl text-on-surface-variant hover:bg-canvas-peach-subtle focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none list-none [&::-webkit-details-marker]:hidden cursor-pointer";
+
 function Today() {
-  const today = new Intl.DateTimeFormat("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Makassar" }).format(new Date());
+  const now = new Date();
+  const today = new Intl.DateTimeFormat("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Makassar" }).format(now);
   return (
-    <p className="flex items-center gap-space-xs px-space-md py-space-sm rounded-full bg-canvas-peach-subtle text-on-primary-container font-label-sm text-label-sm">
-      <HugeiconsIcon icon={Calendar03Icon} aria-hidden="true" className="size-[18px] text-primary-strong" />
-      {today}
-    </p>
+    <div className="flex items-center gap-space-sm">
+      <p className="flex items-center gap-space-xs px-space-md py-space-sm rounded-full bg-canvas-peach-subtle text-on-primary-container font-label-sm text-label-sm">
+        <HugeiconsIcon icon={Calendar03Icon} aria-hidden="true" className="size-[18px] text-primary-strong" />
+        {today}
+      </p>
+      <p className="px-space-md py-space-sm rounded-full bg-canvas-peach-subtle text-on-primary-container font-label-sm text-label-sm">{schoolTerm(now).label}</p>
+    </div>
+  );
+}
+
+// Notifications are the dashboard's "Perlu tindakan" tasks; nothing is stored, so no read state.
+async function Bell({ compact }: { compact?: boolean }) {
+  await requireTeacher();
+  const { tasks } = await getTeacherDashboard();
+  return (
+    <details className="relative">
+      <summary aria-label={`Notifikasi, ${tasks.length}`} className={ICON_BTN}>
+        <HugeiconsIcon icon={Notification01Icon} aria-hidden="true" className="size-6" />
+        {tasks.length > 0 && (
+          <span aria-hidden="true" className="absolute top-1.5 right-1 min-w-5 h-5 px-1 rounded-full bg-primary-strong text-on-primary font-label-sm text-[12px] leading-5 text-center ring-2 ring-surface-card">
+            {tasks.length}
+          </span>
+        )}
+      </summary>
+      <div className={`${compact ? "fixed inset-x-4 top-[4.5rem]" : "absolute right-0 top-full mt-space-sm w-96"} z-50 max-h-[70vh] overflow-y-auto rounded-xl bg-surface-card p-space-sm shadow-[0_12px_32px_-4px_rgba(230,115,60,0.18),0_4px_12px_-2px_rgba(0,0,0,0.08)]`}>
+        <p className="px-space-md py-space-sm font-label-md text-label-md text-text-primary">Perlu tindakan</p>
+        {tasks.length === 0 ? (
+          <p className="px-space-md pb-space-md font-body-md text-body-md text-on-surface-variant">Tidak ada yang perlu dikerjakan sekarang.</p>
+        ) : (
+          <ul>
+            {tasks.map((t, i) => {
+              const { text, href } = taskLine(t);
+              return (
+                <li key={i}>
+                  <Link href={href} className="min-h-12 flex items-center px-space-md py-space-sm rounded-lg font-body-md text-body-md text-text-primary hover:bg-canvas-peach focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none">
+                    {text}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </details>
   );
 }
 
@@ -107,7 +165,14 @@ export default function TeacherLayout({ children }: LayoutProps<"/teacher">) {
         </div>
       </aside>
 
-      <header className="fixed top-4 left-80 right-6 h-20 bg-surface-card/95 backdrop-blur-xl rounded-xl shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07),0_2px_6px_-1px_rgba(0,0,0,0.03)] z-40 px-space-lg hidden lg:flex items-center justify-end">
+      <header className="fixed top-4 left-80 right-6 h-20 bg-surface-card/95 backdrop-blur-xl rounded-xl shadow-[0_4px_20px_-2px_rgba(230,115,60,0.07),0_2px_6px_-1px_rgba(0,0,0,0.03)] z-40 px-space-lg hidden lg:flex items-center justify-between gap-space-lg">
+        <form action="/teacher/search" method="get" role="search" className="flex-1 max-w-lg">
+          <label htmlFor="cari-global" className="sr-only">Cari kelas, siswa, materi, soal, atau ulangan</label>
+          <div className="w-full flex items-center bg-canvas-peach rounded-xl px-space-md py-space-sm text-on-surface-variant focus-within:ring-2 focus-within:ring-primary-container">
+            <HugeiconsIcon icon={Search01Icon} aria-hidden="true" className="mr-space-sm size-[22px]" />
+            <input id="cari-global" name="q" type="search" placeholder="Cari materi, siswa, atau ulangan..." className="w-full bg-transparent border-0 outline-none text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant" />
+          </div>
+        </form>
         <Suspense fallback={null}>
           <Profile />
         </Suspense>
