@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { formatScore, formatWitaTime } from "@/lib/format";
 import type { QuizRecap, RecapRow, RecapState } from "@/lib/results";
+import { HelpClearButton } from "./help-clear-button";
 import { ReplaceButton } from "./replace-button";
 
 const STATE: Record<RecapState, { tone: StatusTone; label: string }> = {
@@ -154,6 +155,12 @@ export function MonitorList({ recap, quizId, classFilter }: { recap: QuizRecap; 
                     )}
                   </div>
                 </div>
+                {run?.helpRequestedAt && (
+                  <div className="flex flex-wrap items-center justify-between gap-space-sm rounded-xl bg-tone-warning-bg p-space-sm">
+                    <Status tone="warning">Minta bantuan</Status>
+                    <HelpClearButton attemptId={run.attemptId} student={r.name} />
+                  </div>
+                )}
                 {run && (
                   <div className="space-y-2 pt-1">
                     <div className="h-3 w-full overflow-hidden rounded-full bg-canvas-peach" aria-hidden="true">

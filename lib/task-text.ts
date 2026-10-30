@@ -3,6 +3,8 @@ import type { TeacherTask } from "@/lib/dashboard";
 /** One-line text and link for a dashboard task; shared by the dashboard cards and the topbar bell. */
 export function taskLine(task: TeacherTask): { text: string; href: string } {
   switch (task.kind) {
+    case "HELP":
+      return { text: `${task.title}: ${task.students} siswa minta bantuan`, href: `/teacher/quizzes/${task.quizId}#pemantauan` };
     case "RUNNING":
       return { text: `${task.title}: ${task.inProgress} siswa sedang mengerjakan`, href: `/teacher/quizzes/${task.quizId}#pemantauan` };
     case "GRADE":

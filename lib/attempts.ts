@@ -12,6 +12,8 @@ import { lockQuiz, type AnswerKeySnapshot, type QuestionSnapshot } from "@/lib/q
 import { attemptScore, retakeOpen, type ScoredAttempt } from "@/lib/scoring";
 import { uniqueViolation } from "@/lib/unique-violation";
 import { writeAudit } from "@/lib/audit";
+import { normalizeClassCode } from "@/lib/normalize";
+import { reserveAttempt, throttleKey } from "@/lib/auth/throttle";
 import { optional, parse, type Invalid, type NotFound } from "@/lib/validation";
 
 export const GRACE_MS = 60_000;
@@ -28,7 +30,8 @@ export type AttemptQuestion = {
 export type AttemptView =
   | { status: "IN_PROGRESS"; attemptId: string; quizId: string; quizTitle: string; deadlineAt: string; serverNow: string; questions: AttemptQuestion[] }
   | { status: "SUBMITTED"; attemptId: string; quizId: string; quizTitle: string };
-type StartError = "ATTEMPT_LIMIT" | "REMEDIAL_NOT_AVAILABLE" | "RESULTS_RELEASED";
+type StartError =
+  | "ATTEMPT_LIMIT" | "REMEDIAL_NOT_AVAILABLE" | "RESULTS_RELEASED" | "TOKEN_REQUIRED" | "TOKEN_INVALID" | "TOKEN_THROTTLED";
 
 /** Select + mapper for lib/scoring: manual points enter as hundredths. */
 export const SCORED_SELECT = {
@@ -64,7 +67,11 @@ export async function startAttempt(
   student: { id: string; classId: string | null },
   quizId: string,
   now: Date = new Date(),
+  token?: string,
 ): Promise<{ ok: true; attemptId: string } | NotFound | { ok: false; error: StartError }> {
+  const typed = token ? normalizeClassCode(token) : "";
+  // Charged before checking, so the 11th guess is refused even if it is right.
+  if (typed && !(await reserveAttempt([throttleKey.examToken(student.id, quizId)]))) return { ok: false, error: "TOKEN_THROTTLED" };
   await finalizeExpiredAttempts({ quizId, studentId: student.id }, now);
   const runningId = async () =>
     (await prisma.quizAttempt.findFirst({
@@ -73,7 +80,7 @@ export async function startAttempt(
     }))?.id;
   for (let retry = false; ; retry = true) {
     try {
-      const r = await prisma.$transaction((tx) => startInTx(tx, student, quizId, now));
+      const r = await prisma.$transaction((tx) => startInTx(tx, student, quizId, now, typed));
       if (r.ok || r.error === "NOT_FOUND") return r;
       // A concurrent start may have committed after our in-progress check: it now counts as "used".
       const id = await runningId();
@@ -93,13 +100,14 @@ async function startInTx(
   student: { id: string; classId: string | null },
   quizId: string,
   now: Date,
+  typedToken: string,
 ): Promise<{ ok: true; attemptId: string } | NotFound | { ok: false; error: StartError }> {
   if (!(await lockQuiz(tx, quizId, "SHARE"))) return NOT_FOUND;
   const quiz = await tx.quiz.findUniqueOrThrow({
     where: { id: quizId },
     select: {
       status: true, startsAt: true, endsAt: true, durationMinutes: true, maxAttempts: true,
-      shuffleQuestions: true, shuffleOptions: true, scoringPolicy: true, kkm: true, resultsReleasedAt: true,
+      shuffleQuestions: true, shuffleOptions: true, scoringPolicy: true, kkm: true, resultsReleasedAt: true, examToken: true,
       classes: { where: { classId: student.classId ?? "" }, select: { classId: true } },
       questions: { orderBy: { position: "asc" }, select: { id: true, points: true, questionSnapshot: true } },
     },
@@ -112,6 +120,10 @@ async function startInTx(
   const mine = { quizId, studentId: student.id };
   const running = await tx.quizAttempt.findFirst({ where: { ...mine, status: "IN_PROGRESS" }, select: { id: true } });
   if (running) return { ok: true, attemptId: running.id };
+  if (quiz.examToken) {
+    if (!typedToken) return { ok: false, error: "TOKEN_REQUIRED" };
+    if (typedToken !== quiz.examToken) return { ok: false, error: "TOKEN_INVALID" };
+  }
 
   const pending = await tx.quizAttempt.findFirst({
     where: { ...mine, replacementGrantedAt: { not: null }, replacedBy: { is: null } },
@@ -264,6 +276,34 @@ export async function saveAnswer(
   });
 }
 
+/** D6. Idempotent: the first press sets the time, later presses keep it. Same window as autosave (deadline + grace). */
+export async function requestHelp(
+  studentId: string,
+  attemptId: string,
+  now: Date = new Date(),
+): Promise<{ ok: true } | NotFound | { ok: false; error: "DEADLINE_PASSED" | "ATTEMPT_CLOSED" }> {
+  const attempt = await prisma.quizAttempt.findFirst({ where: { id: attemptId, studentId }, select: { status: true, deadlineAt: true } });
+  if (!attempt) return NOT_FOUND;
+  if (attempt.status !== "IN_PROGRESS") return { ok: false, error: "ATTEMPT_CLOSED" };
+  if (now.getTime() >= attempt.deadlineAt.getTime() + GRACE_MS) return { ok: false, error: "DEADLINE_PASSED" };
+  await prisma.quizAttempt.updateMany({
+    where: { id: attemptId, status: "IN_PROGRESS", helpRequestedAt: null, deadlineAt: { gt: new Date(now.getTime() - GRACE_MS) } },
+    data: { helpRequestedAt: now },
+  });
+  return { ok: true };
+}
+
+/** "Sudah dibantu". Only the teacher who owns the quiz. */
+export async function clearHelpRequest(teacherId: string, attemptId: string): Promise<{ ok: true } | NotFound> {
+  const r = await prisma.quizAttempt.updateMany({
+    where: { id: attemptId, quiz: { createdById: teacherId } },
+    data: { helpRequestedAt: null },
+  });
+  if (r.count === 0) return NOT_FOUND;
+  await writeAudit(prisma, { actorUserId: teacherId, action: "HELP_REQUEST_CLEARED", entityType: "QuizAttempt", entityId: attemptId, metadata: {} });
+  return { ok: true };
+}
+
 export async function submitAttempt(
   studentId: string,
   quizId: string,
@@ -346,6 +386,7 @@ async function gradeAttempt(tx: Prisma.TransactionClient, attemptId: string): Pr
 
 export type StudentQuizState = "AVAILABLE" | "SCHEDULED" | "IN_PROGRESS" | "REPLACEMENT" | "DONE" | "CLOSED";
 export type StudentQuizRow = {
+  needsToken: boolean; // only the fact, never the token
   quizId: string; title: string; instructions: string | null; subjectName: string; durationMinutes: number;
   questionCount: number; startsAt: Date | null; endsAt: Date | null; remainingAttempts: number;
   state: StudentQuizState; hasAttempts: boolean; resultsReleased: boolean; deadlineAt: Date | null;
@@ -363,6 +404,7 @@ export async function listStudentQuizzes(
     select: {
       id: true, title: true, instructions: true, durationMinutes: true, startsAt: true, endsAt: true,
       maxAttempts: true, scoringPolicy: true, kkm: true, resultsReleasedAt: true,
+      examToken: true,
       subject: { select: { name: true } },
       _count: { select: { questions: true } },
       attempts: {
@@ -385,7 +427,7 @@ export async function listStudentQuizzes(
     else if (remainingAttempts === 0 || locked) state = "DONE";
     else state = "AVAILABLE";
     return {
-      quizId: q.id, title: q.title, instructions: q.instructions, subjectName: q.subject.name,
+      quizId: q.id, title: q.title, instructions: q.instructions, subjectName: q.subject.name, needsToken: q.examToken !== null,
       durationMinutes: q.durationMinutes, questionCount: q._count.questions, startsAt: q.startsAt, endsAt: q.endsAt,
       remainingAttempts, state, hasAttempts: q.attempts.length > 0, resultsReleased: q.resultsReleasedAt !== null,
       deadlineAt: q.attempts.find((a) => a.status === "IN_PROGRESS")?.deadlineAt ?? null,

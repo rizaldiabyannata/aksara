@@ -10,6 +10,7 @@ import { swapOrder } from "@/lib/subjects";
 import { extractImageIds } from "@/lib/images";
 import { toPublicQuestion, type PublicQuestion, type QuestionContent } from "@/lib/questions";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { generateClassCode } from "@/lib/classes";
 
 export type QuizRow = {
   id: string;
@@ -56,6 +57,7 @@ export type QuizDetail = {
     status: QuestionStatus;
   }[];
   attemptCount: number;
+  examToken: string | null; // teacher-only shape: never add this to a student-facing type
 };
 export type PublishCheck = {
   questions: { status: QuestionStatus; points: number; type: QuestionType }[];
@@ -492,6 +494,24 @@ export async function unpublishQuiz(
   });
 }
 
+/** D5. On: a fresh 6-char token; off: none. Only the quiz's creator (the teacher) may change it. */
+export async function setExamTokenRequired(actorId: string, id: string, required: boolean): Promise<{ ok: true; token: string | null } | NotFound> {
+  const token = required ? generateClassCode() : null;
+  const r = await prisma.quiz.updateMany({ where: { id, createdById: actorId }, data: { examToken: token } });
+  if (r.count === 0) return NOT_FOUND;
+  await writeAudit(prisma, { actorUserId: actorId, action: "QUIZ_TOKEN_SET", entityType: "Quiz", entityId: id, metadata: { required } });
+  return { ok: true, token };
+}
+
+/** A new token for a quiz that already requires one; the old one stops working at once. */
+export async function rotateExamToken(actorId: string, id: string): Promise<{ ok: true; token: string } | NotFound> {
+  const token = generateClassCode();
+  const r = await prisma.quiz.updateMany({ where: { id, createdById: actorId, examToken: { not: null } }, data: { examToken: token } });
+  if (r.count === 0) return NOT_FOUND;
+  await writeAudit(prisma, { actorUserId: actorId, action: "QUIZ_TOKEN_ROTATED", entityType: "Quiz", entityId: id, metadata: {} });
+  return { ok: true, token };
+}
+
 export async function listQuizzes(): Promise<QuizRow[]> {
   const rows = await prisma.quiz.findMany({
     orderBy: { updatedAt: "desc" },
@@ -564,6 +584,7 @@ export async function getQuizForTeacher(id: string): Promise<QuizDetail | null> 
           question: { select: { type: true, prompt: true, status: true } },
         },
       },
+      examToken: true,
       _count: { select: { attempts: true } },
     },
   });
@@ -596,5 +617,6 @@ export async function getQuizForTeacher(id: string): Promise<QuizDetail | null> 
       status: q.question.status,
     })),
     attemptCount: r._count.attempts,
+    examToken: r.examToken,
   };
 }

@@ -4,11 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireTeacher } from "@/lib/auth/guard";
 import { field, type FormState } from "@/lib/form-state";
-import { gradeEssay, grantReplacement } from "@/lib/attempts";
+import { clearHelpRequest, gradeEssay, grantReplacement } from "@/lib/attempts";
 import { releaseResults, unreleaseResults } from "@/lib/results";
 import {
   addQuizQuestion, createQuiz, moveQuizQuestion, publishQuiz, removeQuizQuestion,
-  setQuizClasses, setQuizQuestionPoints, unpublishQuiz, updateQuiz,
+  rotateExamToken, setExamTokenRequired, setQuizClasses, setQuizQuestionPoints, unpublishQuiz, updateQuiz,
 } from "@/lib/quizzes";
 
 const UNEXPECTED = "Ada masalah. Coba lagi sebentar lagi.";
@@ -149,6 +149,21 @@ export async function grantReplacementAction(attemptId: string, _prev: FormState
   return run(() => grantReplacement(user.id, attemptId, reason), "Percobaan pengganti dibuka.", {
     values: { reason },
   });
+}
+
+export async function setExamTokenAction(id: string, required: boolean): Promise<FormState> {
+  const user = await requireTeacher();
+  return run(() => setExamTokenRequired(user.id, id, required), required ? "Token ujian dihidupkan." : "Token ujian dimatikan.", { flat: true });
+}
+
+export async function rotateExamTokenAction(id: string): Promise<FormState> {
+  const user = await requireTeacher();
+  return run(() => rotateExamToken(user.id, id), "Token diganti. Token lama tidak berlaku lagi.", { flat: true });
+}
+
+export async function clearHelpAction(attemptId: string): Promise<FormState> {
+  const user = await requireTeacher();
+  return run(() => clearHelpRequest(user.id, attemptId), "Ditandai sudah dibantu.", { flat: true });
 }
 
 export async function releaseResultsAction(id: string): Promise<FormState> {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert02Icon, ArrowLeft01Icon, ArrowRight01Icon, CheckmarkCircle02Icon, Clock01Icon, Flag02Icon, GridViewIcon, Calculator01Icon, AlarmClockIcon, Tick02Icon, CloudIcon } from "@hugeicons/core-free-icons";
+import { Alert02Icon, ArrowLeft01Icon, ArrowRight01Icon, CheckmarkCircle02Icon, Clock01Icon, Flag02Icon, GridViewIcon, InformationCircleIcon, Calculator01Icon, AlarmClockIcon, Tick02Icon, CloudIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -101,6 +101,20 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [helpMsg, setHelpMsg] = useState("");
+  const [helpBusy, setHelpBusy] = useState(false);
+  // D6: idempotent on the server, so pressing again is harmless.
+  async function askHelp() {
+    if (helpBusy) return;
+    setHelpBusy(true);
+    try {
+      const res = await fetch(`/api/quiz-attempts/${encodeURIComponent(attemptId)}/help`, { method: "POST", redirect: "manual" });
+      setHelpMsg(res.ok ? "Guru sudah diberi tahu. Tunggu sebentar, gurumu akan datang." : "Belum terkirim. Coba tekan lagi.");
+    } catch {
+      setHelpMsg("Belum terkirim karena tidak ada sambungan. Coba tekan lagi.");
+    }
+    setHelpBusy(false);
+  }
   // Doubt flags stay in this browser only; state is the source of truth, storage only persists it.
   const [flags, setFlags] = useState<Set<string>>(() => new Set());
   useEffect(() => {
@@ -558,6 +572,16 @@ export function AttemptClient({ attemptId, quizId, quizTitle, deadlineAt, server
                 <HugeiconsIcon icon={ArrowLeft01Icon} className="size-5" aria-hidden="true" />
                 Sebelumnya
               </button>
+              <button
+                type="button"
+                onClick={askHelp}
+                aria-disabled={helpBusy || undefined}
+                className="flex min-h-12 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-tone-info-bg px-3 font-label-md text-label-md text-tone-info transition-transform focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none active:scale-95"
+              >
+                <HugeiconsIcon icon={InformationCircleIcon} className="size-5" aria-hidden="true" />
+                Bantuan Guru / Kendala
+              </button>
+              <p role="status" className="basis-full font-label-md text-label-md text-tone-info">{helpMsg}</p>
               <button
                 type="button"
                 disabled={index === questions.length - 1}

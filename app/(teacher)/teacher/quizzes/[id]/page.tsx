@@ -22,6 +22,7 @@ import { listChapterOptions } from "@/lib/subjects";
 import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
 import { AutoRefresh } from "./auto-refresh";
 import { MonitorList } from "./monitor-list";
+import { TokenCard } from "./token-card";
 import { POLICY_LABEL, STATUS_LABEL } from "../labels";
 import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, ResultsControls, SettingsForm } from "../quiz-forms";
 
@@ -177,6 +178,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
         <>
           <Summary recap={recap} />
           <NextStep id={id} recap={recap} open={!quiz.endsAt || quiz.endsAt > new Date()} />
+          <TokenCard quizId={id} title={quiz.title} token={quiz.examToken} />
 
           <section aria-labelledby="pemantauan" data-slot="pemantauan" className="flex scroll-mt-4 flex-col gap-3">
             <h2 id="pemantauan" className="text-xl font-semibold">Pemantauan</h2>
@@ -203,6 +205,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
       ) : (
         <>
           {setelan}
+          <TokenCard quizId={id} title={quiz.title} token={quiz.examToken} />
           <section aria-labelledby="terbit" className="flex flex-col gap-3">
             <h2 id="terbit" className="text-xl font-semibold">Terbitkan</h2>
             <PublishControls id={id} published={false} />

@@ -177,3 +177,30 @@ describe("student flow", () => {
     expect(await getAttemptView(s.student.id, { attemptId: id })).toMatchObject({ status: "SUBMITTED" });
   });
 });
+
+describe("exam token and help routes", () => {
+  it("start reads the token from the JSON body; help is owner-only and origin-checked", async () => {
+    const s = await setup();
+    const { setExamTokenRequired } = await import("@/lib/quizzes");
+    const on = await setExamTokenRequired(s.teacher.id, s.quiz.id, true);
+    if (!on.ok || !on.token) throw new Error("token expected");
+    await signIn(s.student);
+    const none = await start(req("POST"), qp(s.quiz.id));
+    expect(none.status).toBe(409);
+    expect(await none.json()).toMatchObject({ error: "TOKEN_REQUIRED", message: "Masukkan token ujian dari gurumu." });
+    const bad = await start(req("POST", { token: "AAAAAA" }), qp(s.quiz.id));
+    expect(await bad.json()).toMatchObject({ error: "TOKEN_INVALID" });
+    const okRes = await start(req("POST", { token: on.token }), qp(s.quiz.id));
+    const { attemptId } = (await okRes.json()) as { attemptId: string };
+    expect(JSON.stringify(await (await view(req("GET", undefined, null), ap(attemptId))).json())).not.toContain(on.token);
+
+    const help = await import("./[attemptId]/help/route");
+    expect((await help.POST(req("POST", undefined, "https://evil.test"), ap(attemptId))).status).toBe(403);
+    expect((await help.POST(req("POST"), ap(attemptId))).status).toBe(200);
+    const other = await makeStudent(s.cls.id);
+    await signIn(other);
+    expect((await help.POST(req("POST"), ap(attemptId))).status).toBe(404);
+    await signIn(s.teacher);
+    await expectForbidden(help.POST(req("POST"), ap(attemptId)));
+  });
+});

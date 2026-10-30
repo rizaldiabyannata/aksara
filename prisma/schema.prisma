@@ -99,6 +99,8 @@ model User {
   replacementsGranted QuizAttempt[]   @relation("AttemptReplacementGrantedBy")
   answersGraded       AttemptAnswer[] @relation("AnswerGradedBy")
   resultsReleased     Quiz[]          @relation("QuizResultsReleasedBy")
+  avatarImageId       String?
+  avatarImage         Image?          @relation("UserAvatar", fields: [avatarImageId], references: [id], onDelete: SetNull)
 
   @@unique([classId, loginName])
   @@index([classId])
@@ -274,6 +276,7 @@ model Image {
   createdAt          DateTime            @default(now()) @db.Timestamptz(3)
   deletedAt          DateTime?           @db.Timestamptz(3)
   quizQuestionImages QuizQuestionImage[]
+  avatarOf           User[]              @relation("UserAvatar")
 
   @@index([materialId])
   @@index([questionId])
@@ -296,6 +299,7 @@ model Quiz {
   scoringPolicy            ScoringPolicy  @default(HIGHEST)
   kkm                      Int?
   status                   QuizStatus     @default(DRAFT)
+  examToken                String?
   resultsReleasedAt        DateTime?      @db.Timestamptz(3)
   resultsReleasedById      String?
   resultsReleasedBy        User?          @relation("QuizResultsReleasedBy", fields: [resultsReleasedById], references: [id], onDelete: Restrict)
@@ -367,6 +371,7 @@ model QuizAttempt {
   replacementGrantedById String?
   replacementGrantedBy   User?           @relation("AttemptReplacementGrantedBy", fields: [replacementGrantedById], references: [id], onDelete: Restrict)
   replacementReason      String?
+  helpRequestedAt        DateTime?       @db.Timestamptz(3)
   replacesAttemptId      String?         @unique
   replacesAttempt        QuizAttempt?    @relation("AttemptReplacement", fields: [replacesAttemptId], references: [id], onDelete: Restrict)
   replacedBy             QuizAttempt?    @relation("AttemptReplacement")

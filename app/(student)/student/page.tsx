@@ -53,7 +53,7 @@ function Row({ r }: { r: StudentQuizRow }) {
     text = r.state === "REPLACEMENT" ? "Gurumu membukakan kesempatan baru untukmu" : r.hasAttempts ? "Kamu bisa mencoba lagi" : "Siap dikerjakan";
     action = (
       <>
-        <StartButton quizId={r.quizId} title={r.title} label={r.hasAttempts ? "Ulangi" : "Mulai"} />
+        <StartButton quizId={r.quizId} title={r.title} label={r.hasAttempts ? "Ulangi" : "Mulai"} needsToken={r.needsToken} />
         {r.resultsReleased && r.hasAttempts ? (
           <Link href={`/student/quizzes/${r.quizId}/result`} className={buttonVariants({ size: "lg", variant: "outline" })} aria-label={`Lihat nilai ${r.title}`}>
             Lihat nilai

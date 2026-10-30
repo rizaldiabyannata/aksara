@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { useLayoutEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export function StartButton({ quizId, title, label }: { quizId: string; title: string; label: "Mulai" | "Lanjutkan" | "Ulangi" }) {
+export function StartButton({ quizId, title, label, needsToken = false }: { quizId: string; title: string; label: "Mulai" | "Lanjutkan" | "Ulangi"; needsToken?: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [token, setToken] = useState("");
   // cacheComponents keeps this state when the list is hidden; reset it when hidden so coming back isn't stuck on "Membuka…".
   useLayoutEffect(() => () => setBusy(false), []);
 
@@ -17,7 +18,10 @@ export function StartButton({ quizId, title, label }: { quizId: string; title: s
     setBusy(true);
     setMessage("");
     try {
-      const res = await fetch(`/api/quizzes/${encodeURIComponent(quizId)}/start`, { method: "POST", redirect: "manual" });
+      const res = await fetch(`/api/quizzes/${encodeURIComponent(quizId)}/start`, {
+        method: "POST", redirect: "manual",
+        ...(needsToken ? { headers: { "content-type": "application/json" }, body: JSON.stringify({ token }) } : {}),
+      });
       if (res.type === "opaqueredirect") {
         setMessage("Sesimu berakhir. Masuk lagi untuk melanjutkan.");
         setBusy(false);
@@ -37,6 +41,17 @@ export function StartButton({ quizId, title, label }: { quizId: string; title: s
 
   return (
     <div className="flex flex-col gap-2">
+      {needsToken && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor={`token-${quizId}`} className="font-label-md text-label-md">Token ujian</label>
+          <input
+            id={`token-${quizId}`} value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" autoCapitalize="characters"
+            spellCheck={false} maxLength={12} placeholder="Contoh: ABC DEF"
+            className="h-12 w-full rounded-xl border-2 border-input bg-card px-3 font-mono text-base uppercase tracking-widest outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring"
+          />
+          <p className="text-sm text-muted-foreground">Token ada di papan tulis. Tanya gurumu kalau belum ada.</p>
+        </div>
+      )}
       <Button className="h-11" onClick={start} aria-disabled={busy || undefined} aria-label={`${label} ${title}`}>
         {busy ? "Membuka…" : label}
       </Button>

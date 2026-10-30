@@ -7,6 +7,9 @@ const MSG: Record<string, string> = {
   DEADLINE_PASSED: "Waktu habis, jawabanmu sudah dikumpulkan.",
   ATTEMPT_CLOSED: "Jawabanmu sudah dikumpulkan.",
   INVALID: "Jawaban tidak valid.",
+  TOKEN_REQUIRED: "Masukkan token ujian dari gurumu.",
+  TOKEN_INVALID: "Token salah. Cek lagi tokennya di papan tulis.",
+  TOKEN_THROTTLED: "Terlalu banyak salah token. Tunggu 15 menit, lalu coba lagi.",
 };
 
 export const json = (body: Record<string, unknown>, status = 200) =>

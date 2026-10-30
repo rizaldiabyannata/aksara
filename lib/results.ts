@@ -69,7 +69,7 @@ export type RecapAttempt = {
 
 export type RecapRow = {
   state: RecapState;
-  running: { deadlineAt: Date; answered: number; total: number } | null;
+  running: { attemptId: string; deadlineAt: Date; answered: number; total: number; helpRequestedAt: Date | null } | null;
   attempts: RecapAttempt[];
   studentId: string; name: string; nis: string | null; className: string;
   attemptsUsed: number; recap: Recap; earnedPoints: number | null; maxPoints: number | null;
@@ -111,7 +111,7 @@ export async function getQuizRecap(quizId: string, now: Date = new Date()): Prom
         where: { quizId },
         orderBy: { attemptNumber: "asc" },
         select: {
-          ...SCORED_SELECT, id: true, attemptNumber: true, startedAt: true, deadlineAt: true, submittedAt: true, replacedBy: { select: { id: true } },
+          ...SCORED_SELECT, id: true, attemptNumber: true, helpRequestedAt: true, startedAt: true, deadlineAt: true, submittedAt: true, replacedBy: { select: { id: true } },
           _count: { select: { answers: { where: UNGRADED } } },
         },
       },
@@ -150,7 +150,7 @@ export async function getQuizRecap(quizId: string, now: Date = new Date()): Prom
         maxPoints: basis && basis.maxPoints,
         state,
         status: state === "NEEDS_GRADING" ? `${RECAP_STATE_LABEL[state]} – ${pending} uraian belum dinilai` : RECAP_STATE_LABEL[state],
-        running: run ? { deadlineAt: run.deadlineAt, answered: answeredBy.get(run.id) ?? 0, total: quiz._count.questions } : null,
+        running: run ? { attemptId: run.id, deadlineAt: run.deadlineAt, answered: answeredBy.get(run.id) ?? 0, total: quiz._count.questions, helpRequestedAt: run.helpRequestedAt } : null,
         attempts: as.map((a) => {
           const submitted = a.status === "SUBMITTED";
           const sc = toScored(a);

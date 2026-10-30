@@ -4,6 +4,7 @@ import { countMaterialsByStatus } from "@/lib/materials";
 import { countQuestionsByStatus } from "@/lib/questions";
 
 export type TeacherTask =
+  | { kind: "HELP"; quizId: string; title: string; students: number }
   | { kind: "RUNNING"; quizId: string; title: string; inProgress: number; started: number; assigned: number }
   | { kind: "GRADE"; quizId: string; title: string; essays: number }
   | { kind: "RELEASE"; quizId: string; title: string; students: number }
@@ -21,19 +22,21 @@ export async function getTeacherDashboard(now: Date = new Date()) {
       classes: { select: { classId: true } },
       attempts: {
         select: {
-          status: true, studentId: true, replacementGrantedAt: true, replacedBy: { select: { id: true } },
+          status: true, studentId: true, helpRequestedAt: true, replacementGrantedAt: true, replacedBy: { select: { id: true } },
           _count: { select: { answers: { where: UNGRADED } } },
         },
       },
     },
   });
 
-  const running: TeacherTask[] = [], grade: TeacherTask[] = [], release: TeacherTask[] = [];
+  const help: TeacherTask[] = [], running: TeacherTask[] = [], grade: TeacherTask[] = [], release: TeacherTask[] = [];
   for (const q of quizzes) {
     const inProgress = q.attempts.filter((a) => a.status === "IN_PROGRESS").length;
     const counted = q.attempts.filter((a) => a.status === "SUBMITTED" && !a.replacementGrantedAt);
     const essays = counted.reduce((n, a) => n + a._count.answers, 0);
     const pendingReplacement = q.attempts.some((a) => a.replacementGrantedAt && !a.replacedBy);
+    const asking = q.attempts.filter((a) => a.status === "IN_PROGRESS" && a.helpRequestedAt).length;
+    if (asking) help.push({ kind: "HELP", quizId: q.id, title: q.title, students: asking });
     if (inProgress) {
       const assigned = await prisma.user.count({
         where: { role: "STUDENT", isActive: true, classId: { in: q.classes.map((c) => c.classId) } },
@@ -69,7 +72,7 @@ export async function getTeacherDashboard(now: Date = new Date()) {
     prisma.user.count({ where: { role: "STUDENT", isActive: true } }),
   ]);
 
-  const tasks: TeacherTask[] = [...running, ...grade, ...release];
+  const tasks: TeacherTask[] = [...help, ...running, ...grade, ...release];
   if (otherDevice) tasks.push({ kind: "OTHER_DEVICE", students: otherDevice });
   if (materials.REVIEWED) tasks.push({ kind: "REVIEWED_MATERIALS", count: materials.REVIEWED });
   return {

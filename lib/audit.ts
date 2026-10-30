@@ -30,7 +30,10 @@ export type AuditAction =
   | "MANUAL_SCORE_SET"
   | "RESULTS_RELEASED"
   | "RESULTS_UNRELEASED"
-  | "EXPORT_DOWNLOADED";
+  | "EXPORT_DOWNLOADED"
+  | "QUIZ_TOKEN_SET"
+  | "QUIZ_TOKEN_ROTATED"
+  | "HELP_REQUEST_CLEARED";
 
 /** Thin insert. Callers must never put secrets (passwords, tokens, class codes) in metadata. */
 export async function writeAudit(

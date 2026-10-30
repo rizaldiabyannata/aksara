@@ -15,6 +15,11 @@ export const throttleKey = {
     key: sha256(`student:${code}:${identity}`),
     limit: 10,
   }),
+  // Wrong exam tokens: per student and quiz, so a guesser cannot walk the 31^6 space.
+  examToken: (studentId: string, quizId: string): ThrottleKey => ({
+    key: sha256(`examtoken:${studentId}:${quizId}`),
+    limit: 10,
+  }),
   ip: (ip: string): ThrottleKey => ({ key: sha256(`ip:${ip}`), limit: 100 }),
   // Separate bucket so students' typos on a shared school IP never lock out the teacher.
   teacherIp: (ip: string): ThrottleKey => ({

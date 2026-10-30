@@ -260,6 +260,12 @@ const CHIPS = {
 
 function describe(task: TeacherTask) {
   switch (task.kind) {
+    case "HELP":
+      return {
+        icon: InformationCircleIcon, chip: CHIPS.warning, label: "Minta bantuan",
+        action: "Pantau",
+        actionClass: PRIMARY_BTN, ActionIcon: ViewIcon, actionIcon: ArrowRight01Icon,
+      };
     case "RUNNING":
       return {
         icon: RadioIcon, chip: CHIPS.warning, label: "Sedang berlangsung",
