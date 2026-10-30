@@ -3,8 +3,8 @@ import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { copyObject, deleteImage, presignGet, putImage } from "@/lib/storage";
 
-// Runs only against a real R2 bucket (see README setup checklist).
-describe.skipIf(!process.env.R2_BUCKET)("R2 smoke", () => {
+// Runs only against a real bucket (see README setup checklist).
+describe.skipIf(!process.env.S3_BUCKET)("object storage smoke", () => {
   it("stores a private object, serves it via presigned GET, refuses unsigned GET, deletes", async () => {
     const key = `smoke/${randomUUID()}.jpg`;
     const body = await sharp({
@@ -20,7 +20,7 @@ describe.skipIf(!process.env.R2_BUCKET)("R2 smoke", () => {
       expect(signed.headers.get("content-type")).toBe("image/jpeg");
 
       const unsigned = await fetch(
-        `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${process.env.R2_BUCKET}/${key}`,
+        `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET}/${key}`,
       );
       expect(unsigned.status).toBeGreaterThanOrEqual(400);
       expect(unsigned.status).toBeLessThan(500);

@@ -8,28 +8,30 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-// The only module that talks to Cloudflare R2. The client is built on first use so builds and tests need no env.
+// The only module that talks to object storage (Neon, S3-compatible). The client is built on first use so builds and tests need no env.
 let cached: { client: S3Client; bucket: string } | undefined;
 
-function r2() {
+function s3() {
   if (cached) return cached;
-  const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET } =
+  const { S3_ENDPOINT, S3_REGION, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_BUCKET } =
     process.env;
-  if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET) {
+  if (!S3_ENDPOINT || !S3_REGION || !S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_BUCKET) {
     throw new Error(
-      "R2 is not configured: set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY and R2_BUCKET.",
+      "Object storage is not configured: set S3_ENDPOINT, S3_REGION, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY and S3_BUCKET.",
     );
   }
   cached = {
-    bucket: R2_BUCKET,
+    bucket: S3_BUCKET,
     client: new S3Client({
-      region: "auto",
-      endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      region: S3_REGION,
+      endpoint: S3_ENDPOINT,
+      // Custom endpoint: the bucket goes in the path, not a subdomain.
+      forcePathStyle: true,
       credentials: {
-        accessKeyId: R2_ACCESS_KEY_ID,
-        secretAccessKey: R2_SECRET_ACCESS_KEY,
+        accessKeyId: S3_ACCESS_KEY_ID,
+        secretAccessKey: S3_SECRET_ACCESS_KEY,
       },
-      // SDK v3 defaults send checksums that R2 does not accept.
+      // SDK v3 defaults send checksums that many S3-compatible stores do not accept.
       requestChecksumCalculation: "WHEN_REQUIRED",
       responseChecksumValidation: "WHEN_REQUIRED",
     }),
@@ -42,24 +44,24 @@ export async function putImage(
   body: Buffer,
   contentType: string,
 ): Promise<void> {
-  const { client, bucket } = r2();
+  const { client, bucket } = s3();
   await client.send(
     new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType }),
   );
 }
 
 export async function deleteImage(key: string): Promise<void> {
-  const { client, bucket } = r2();
+  const { client, bucket } = s3();
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
 }
 
 export async function copyObject(fromKey: string, toKey: string): Promise<void> {
-  const { client, bucket } = r2();
+  const { client, bucket } = s3();
   await client.send(new CopyObjectCommand({ Bucket: bucket, Key: toKey, CopySource: `${bucket}/${fromKey}` }));
 }
 
 export async function presignGet(key: string): Promise<string> {
-  const { client, bucket } = r2();
+  const { client, bucket } = s3();
   return getSignedUrl(
     client,
     new GetObjectCommand({

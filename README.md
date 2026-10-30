@@ -23,12 +23,11 @@ Tes (butuh Docker menyala):
 bun run test
 ```
 
-## Setup Cloudflare R2
+## Setup Neon Object Storage
 
-Gambar materi disimpan di bucket R2 yang privat. Ulangi langkah ini untuk setiap environment.
+Gambar materi disimpan di bucket Neon Object Storage (S3-compatible) yang privat. Ulangi untuk setiap environment.
 
-1. Cloudflare Dashboard → R2 Object Storage → Create bucket `aksara-dev`, lokasi Automatic.
-2. Bucket → Settings → Public access: pastikan **R2.dev subdomain Disabled** dan tidak ada Custom Domain.
-3. R2 → Manage API tokens → Create API token: permission **Object Read & Write**, "Apply to specific buckets only" → `aksara-dev`.
-4. Salin Account ID, Access Key ID, dan Secret ke `.env.local` (`R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET=aksara-dev`).
-5. Bukti: `bun run test lib/storage.r2.test.ts` lulus (tidak di-skip). Ulangi untuk `aksara-preview` dan `aksara-prod` saat deploy, lalu isi env di Vercel.
+1. Neon Console → project → Storage → buat bucket privat (dev: `aksara-upload`).
+2. Buat access key untuk bucket itu.
+3. Isi `.env` (`S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET`). Jangan pakai nama `AWS_*`: Vercel mencadangkannya.
+4. Bukti: `env $(grep '^S3_' .env | xargs) bun run test lib/storage.s3.test.ts` lulus (tidak di-skip; Vitest tidak membaca `.env`). Isi env yang sama di Vercel saat deploy.
