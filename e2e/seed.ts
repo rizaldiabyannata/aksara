@@ -31,6 +31,7 @@ for (const [displayName, nis] of [
   ["Siswa Dua", "100002"],
   ["Siswa Dengan Nama Yang Sangat Panjang Sekali", "100003"],
   ["Siswa Empat", "100004"],
+  ["Siswa Lima", "100005"],
 ] as const) {
   const r = await createStudent(teacher.id, { displayName, nis, classId: cls.id });
   if (!r.ok) throw new Error(`seed student ${displayName}: ${r.error}`);
@@ -57,6 +58,26 @@ async function publish(title: string, questions: { id: string; points: number }[
   return { quiz, qqs };
 }
 
+// Tryout TKA over two chapters, taken and released live by e2e/tahap10.spec.ts.
+const tkaBilangan = await makeChapter({ title: "Bilangan" });
+const tkaData = await prisma.chapter.create({
+  data: { subjectId: tkaBilangan.subjectId, order: 2, title: "Data", sourceBook: "Kisi-kisi TKA", sourceYearOrEdition: "2025" },
+});
+const tkaCategory = await makeQuestion(tkaData.id, teacher.id, {
+  status: "ACTIVE", type: "CATEGORY", prompt: "Tentukan fakta atau opini.", cognitiveLevel: "PENALARAN",
+  options: [{ id: "a", text: "Kompos dibuat dari sisa makhluk hidup." }, { id: "b", text: "Kompos itu menyenangkan." }],
+  answerKey: { values: { a: true, b: false } }, categoryLabels: ["Fakta", "Opini"],
+});
+const tkaChoice = await makeQuestion(tkaBilangan.id, teacher.id, {
+  status: "ACTIVE", prompt: "Hasil 6 × 7 adalah ....", cognitiveLevel: "PEMAHAMAN",
+  options: [{ id: "a", text: "42" }, { id: "b", text: "36" }], answerKey: { optionId: "a" },
+});
+const tryout = await makeQuiz(tkaBilangan.subjectId, teacher.id, { title: "Tryout E2E", kind: "TRYOUT_TKA", durationMinutes: 75 });
+await prisma.quizClass.create({ data: { quizId: tryout.id, classId: cls.id } });
+await makeQuizQuestion(tryout.id, tkaChoice.id, { position: 1, points: 1 });
+await makeQuizQuestion(tryout.id, tkaCategory.id, { position: 2, points: 1 });
+if (!(await publishQuiz(teacher.id, tryout.id, new Date())).ok) throw new Error("seed publish tryout");
+
 // Taken live by e2e/student.spec.ts.
 const forStudent = await publish("Ulangan Siswa", [{ id: choice.id, points: 2 }, { id: essay.id, points: 8 }]);
 // Exam token and help request flows (e2e/tahap8.spec.ts); the spec turns the token on itself.
@@ -80,6 +101,7 @@ writeFileSync(
     studentQuiz: { id: forStudent.quiz.id, title: forStudent.quiz.title },
     tokenQuiz: { id: forToken.quiz.id, title: forToken.quiz.title },
     teacherQuiz: { id: forTeacher.quiz.id, title: forTeacher.quiz.title },
+    tryoutQuiz: { id: tryout.id, title: tryout.title },
   }),
 );
 await prisma.$disconnect();

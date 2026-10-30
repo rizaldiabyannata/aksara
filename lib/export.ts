@@ -2,10 +2,11 @@
 import ExcelJS from "exceljs";
 import { monthRecap, STATUS_LETTER } from "@/lib/attendance";
 import { prisma } from "@/lib/db";
-import { TYPE_LABEL } from "@/app/(teacher)/teacher/questions/labels";
+import { LEVEL_LABEL, TYPE_LABEL } from "@/app/(teacher)/teacher/questions/labels";
+import { TKA_CATEGORY_LABEL } from "@/lib/evaluation";
 import { formatWita, toWitaInput } from "@/lib/format";
 import type { AnswerKeySnapshot, QuestionSnapshot } from "@/lib/quizzes";
-import { getQuizRecap } from "@/lib/results";
+import { getQuizEvaluation, getQuizRecap } from "@/lib/results";
 
 /** User text that a spreadsheet could read as a formula is forced to text (PRD §7.9). */
 export function safeText(s: string): string {
@@ -121,7 +122,32 @@ export async function buildQuizWorkbook(
     }
   }
 
-  for (const ws of [rekap, rincian]) ws.getRow(1).font = { bold: true };
+  // Tahap 10 D8: per-chapter/level results of final recaps and the item analysis, same numbers as the Evaluasi section.
+  const ev = (await getQuizEvaluation(quizId, now))!;
+  const tryout = ev.kind === "TRYOUT_TKA";
+  const groups = [
+    ...ev.chapters.map((g) => ({ key: g.key, head: `Bab: ${g.key} (%)`, of: "chapters" as const })),
+    ...ev.levels.map((g) => ({ key: g.key, head: `Level: ${LEVEL_LABEL[g.key as keyof typeof LEVEL_LABEL]} (%)`, of: "levels" as const })),
+  ];
+  const elemen = wb.addWorksheet("Rincian Elemen");
+  elemen.addRow(["Kelas", "Nama siswa", "Nilai rekap (0–100)", ...(tryout ? ["Kategori (perkiraan)"] : []), ...groups.map((g) => safeText(g.head))]);
+  for (const s of ev.students) {
+    const pctOf = (g: (typeof groups)[number]) => s[g.of].find((x) => x.key === g.key)?.pct ?? null;
+    elemen.addRow([
+      safeText(s.className), safeText(s.name), s.score, ...(tryout ? [s.category ? TKA_CATEGORY_LABEL[s.category] : ""] : []),
+      ...groups.map(pctOf),
+    ]);
+  }
+  const classPct = (g: (typeof groups)[number]) => ev[g.of].find((x) => x.key === g.key)?.pct ?? null;
+  if (ev.students.length) elemen.addRow(["", "Rata-rata kelas", null, ...(tryout ? [""] : []), ...groups.map(classPct)]);
+
+  const butir = wb.addWorksheet("Analisis Butir");
+  butir.addRow(["Nomor soal", "Bab", "Level kognitif", "Tipe soal", "Siswa benar", "Jumlah siswa", "Benar (%)"]);
+  for (const i of ev.items) {
+    butir.addRow([i.position, safeText(i.chapter ?? ""), i.level ? LEVEL_LABEL[i.level] : "", TYPE_LABEL[i.type], i.correct, i.total, i.pct]);
+  }
+
+  for (const ws of [rekap, rincian, elemen, butir]) ws.getRow(1).font = { bold: true };
   const slug = quiz.title.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50) || "ulangan";
   return {
     filename: `Nilai_${slug}_${toWitaInput(now).slice(0, 10)}.xlsx`,

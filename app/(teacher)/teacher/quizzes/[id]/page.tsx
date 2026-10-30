@@ -17,10 +17,11 @@ import type { Difficulty, QuestionType } from "@/lib/generated/prisma/enums";
 import { formatWita, toWitaInput } from "@/lib/format";
 import { listQuestions } from "@/lib/questions";
 import { getQuizForTeacher } from "@/lib/quizzes";
-import { getQuizRecap, type QuizRecap, type RecapState } from "@/lib/results";
+import { getQuizEvaluation, getQuizRecap, type QuizRecap, type RecapState } from "@/lib/results";
 import { listChapterOptions } from "@/lib/subjects";
 import { DIFFICULTY_LABEL, TYPE_LABEL } from "../../questions/labels";
 import { AutoRefresh } from "./auto-refresh";
+import { Evaluation } from "./evaluation";
 import { MonitorList } from "./monitor-list";
 import { TokenCard } from "./token-card";
 import { POLICY_LABEL, STATUS_LABEL } from "../labels";
@@ -58,6 +59,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
   const total = quiz.questions.reduce((s, x) => s + x.points, 0);
   const essays = quiz.questions.filter((x) => x.type === "ESSAY").length;
   const recap = published ? await getQuizRecap(id) : null;
+  const evaluation = published ? await getQuizEvaluation(id) : null;
   const setelan = (
     <>
       <section aria-labelledby="setelan" className="flex scroll-mt-4 flex-col gap-3">
@@ -191,6 +193,13 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
             <h2 id="hasil" className="text-xl font-semibold">Hasil</h2>
             <Results quizId={id} recap={recap} open={!quiz.endsAt || quiz.endsAt > new Date()} />
           </section>
+
+          {evaluation && (
+            <section aria-labelledby="evaluasi" className="flex scroll-mt-4 flex-col gap-3">
+              <h2 id="evaluasi" className="text-xl font-semibold">Evaluasi</h2>
+              <Evaluation e={evaluation} />
+            </section>
+          )}
 
           <details id="detail" className="scroll-mt-4 flex flex-col gap-8 rounded-2xl border bg-card p-4 shadow-card">
             <summary className="flex min-h-11 cursor-pointer items-center text-lg font-semibold">Lihat setelan ulangan</summary>

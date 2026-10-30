@@ -28,7 +28,7 @@ async function download(teacherId: string, quizId: string) {
   await wb.xlsx.load(await res.arrayBuffer());
   const rows = (name: string) =>
     (wb.getWorksheet(name)?.getSheetValues() ?? []).filter(Boolean).map((r) => (r as unknown[]).slice(1));
-  return { res, wb, rekap: rows("Rekap Nilai"), rincian: rows("Rincian Jawaban") };
+  return { res, wb, rekap: rows("Rekap Nilai"), rincian: rows("Rincian Jawaban"), elemen: rows("Rincian Elemen"), butir: rows("Analisis Butir") };
 }
 
 const essayId = (attemptId: string) =>
@@ -53,7 +53,7 @@ describe("GET /api/exports/[quizId]", () => {
     const { res, wb, rekap, rincian } = await download(s.teacher.id, s.quiz.id);
     expect(res.headers.get("Cache-Control")).toBe("no-store");
     expect(res.headers.get("Content-Disposition")).toMatch(/^attachment; filename="Nilai_ulangan-pecahan-desimal_\d{4}-\d{2}-\d{2}\.xlsx"$/);
-    expect(wb.worksheets.map((w) => w.name)).toEqual(["Rekap Nilai", "Rincian Jawaban"]);
+    expect(wb.worksheets.map((w) => w.name)).toEqual(["Rekap Nilai", "Rincian Jawaban", "Rincian Elemen", "Analisis Butir"]);
 
     const [head, student, idle] = rekap;
     expect(head[13]).toBe("Nilai rekap (0–100)");
@@ -82,6 +82,27 @@ describe("GET /api/exports/[quizId]", () => {
     const { rekap, rincian } = await download(s.teacher.id, s.quiz.id);
     expect(rekap[1].slice(6, 16)).toEqual([2, "Remedial", 75, 60, 90, 9, 10, 75, "Tuntas", "Final"]);
     expect(rincian.slice(1).map((r) => r[4])).toEqual(["1 (Utama)", "2 (Remedial 1)"]);
+  });
+
+  it("tryout: Rincian Elemen per chapter and level with the label; Analisis Butir per question; escaped names", async () => {
+    const s = await setup({ kind: "TRYOUT_TKA" }, [{ cognitiveLevel: "PEMAHAMAN" }, { type: "CATEGORY", cognitiveLevel: "PENALARAN" }]);
+    await prisma.user.update({ where: { id: s.student.id }, data: { displayName: "@Budi" } });
+    const id = await started(s);
+    await saveAnswer(s.student.id, id, { quizQuestionId: s.qqs[0].id, answer: { optionId: "a" } }, at(1));
+    await saveAnswer(s.student.id, id, { quizQuestionId: s.qqs[1].id, answer: { values: { a: true } } }, at(2));
+    await submitAttempt(s.student.id, s.quiz.id, id, at(3));
+    const { elemen, butir, rincian } = await download(s.teacher.id, s.quiz.id);
+    expect(elemen[0]).toEqual([
+      "Kelas", "Nama siswa", "Nilai rekap (0–100)", "Kategori (perkiraan)",
+      `Bab: ${s.chapter.title} (%)`, "Level: Pemahaman (%)", "Level: Penalaran (%)",
+    ]);
+    expect(elemen[1].slice(1)).toEqual(["'@Budi", 50, "Memadai", 50, 100, 0]);
+    expect(elemen[2].slice(1)).toEqual(["Rata-rata kelas", undefined, "", 50, 100, 0]);
+    expect(butir.slice(1)).toEqual([
+      [1, s.chapter.title, "Pemahaman", "Pilihan ganda", 1, 1, 100],
+      [2, s.chapter.title, "Penalaran", "Pilihan ganda kompleks (kategori)", 0, 1, 0],
+    ]);
+    expect(rincian[2][8]).toBe("P1: Fakta; P2: (kosong)");
   });
 
   it("unknown quiz → 404", async () => {

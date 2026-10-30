@@ -12,6 +12,7 @@ import { listStudentQuizzes } from "@/lib/attempts";
 import { requireStudent } from "@/lib/auth/guard";
 import { readable } from "@/lib/export";
 import { formatScore, formatWita } from "@/lib/format";
+import { TKA_CATEGORY_LABEL, TKA_CATEGORY_NOTE, TKA_CATEGORY_TONE } from "@/lib/evaluation";
 import { getStudentResult } from "@/lib/results";
 
 export const metadata: Metadata = { title: "Hasil ulangan" };
@@ -73,6 +74,30 @@ async function Result({ params }: { params: Promise<{ quizId: string }> }) {
           <Link href="/student" className={buttonVariants({ size: "lg" })}>
             Coba lagi dari beranda
           </Link>
+        )}
+        {r.category && (
+          <div className="flex flex-col gap-1">
+            <Status tone={TKA_CATEGORY_TONE[r.category]}>Kategori: {TKA_CATEGORY_LABEL[r.category]}</Status>
+            <p className="text-sm text-muted-foreground">{TKA_CATEGORY_NOTE}</p>
+          </div>
+        )}
+        {r.chapters && r.chapters.length > 1 && (
+          <section aria-labelledby="per-bab" className="flex w-full max-w-xl flex-col gap-2">
+            <h2 id="per-bab" className="text-lg font-bold">Hasilmu per bagian</h2>
+            <ul className="flex flex-col gap-2">
+              {r.chapters.map((c) => (
+                <li key={c.key} className="flex flex-col gap-1 rounded-xl border border-border bg-card p-3">
+                  <span className="flex justify-between gap-2 font-semibold">
+                    <span>{c.key}</span>
+                    <span className="tabular-nums">{c.earned} dari {c.max} benar</span>
+                  </span>
+                  <span aria-hidden="true" className="h-2.5 overflow-hidden rounded-full bg-muted">
+                    <span className="block h-full rounded-full bg-primary" style={{ width: `${c.pct}%` }} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
       </section>
       {r.attempts.map((a) => (

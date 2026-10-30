@@ -3,7 +3,8 @@ import { prisma } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
 import { finalizeExpiredAttempts, IMAGE_VIEW, SCORED_SELECT, toScored, UNGRADED } from "@/lib/attempts";
 import { Prisma } from "@/lib/generated/prisma/client";
-import type { AttemptStatus, ScoringPolicy } from "@/lib/generated/prisma/enums";
+import { breakdown, itemAnalysis, tkaCategory, type Group, type ItemResult, type ItemStat, type TkaCategory } from "@/lib/evaluation";
+import type { AttemptStatus, CognitiveLevel, QuizKind, ScoringPolicy } from "@/lib/generated/prisma/enums";
 import type { StoredAnswer } from "@/lib/grading";
 import type { ImageView } from "@/lib/materials";
 import { lockQuiz, type AnswerKeySnapshot, type QuestionSnapshot } from "@/lib/quizzes";
@@ -166,6 +167,74 @@ export async function getQuizRecap(quizId: string, now: Date = new Date()): Prom
   };
 }
 
+type EvalQuestion = { id: string; position: number; points: number; chapterSnapshot: string | null; levelSnapshot: CognitiveLevel | null; questionSnapshot: unknown };
+type EvalAnswer = { quizQuestionId: string; objectivePoints: number | null; manualPoints: Prisma.Decimal | null };
+
+// One counted attempt as per-question results. Called only for FINAL recaps, so every essay has its manual points.
+function itemsOf(questions: EvalQuestion[], answers: EvalAnswer[]): ItemResult[] {
+  const byQ = new Map(answers.map((a) => [a.quizQuestionId, a]));
+  return questions.map((q) => {
+    const a = byQ.get(q.id);
+    const type = (q.questionSnapshot as QuestionSnapshot).type;
+    return {
+      position: q.position, chapter: q.chapterSnapshot, level: q.levelSnapshot, type, points: q.points,
+      earned: type === "ESSAY" ? (a?.manualPoints?.toNumber() ?? 0) : (a?.objectivePoints ?? 0),
+    };
+  });
+}
+
+const EVAL_QUESTION = { id: true, position: true, points: true, chapterSnapshot: true, levelSnapshot: true, questionSnapshot: true } as const;
+const EVAL_ANSWERS = { select: { quizQuestionId: true, objectivePoints: true, manualPoints: true } } as const;
+
+export type EvaluationRow = {
+  studentId: string; name: string; className: string; score: number; category: TkaCategory | null;
+  chapters: Group[]; levels: Group[];
+};
+export type QuizEvaluation = {
+  kind: QuizKind; students: EvaluationRow[]; chapters: Group[]; levels: Group[]; items: ItemStat[];
+};
+
+/** Teacher-only (D8): per-chapter/level results of each student's recap attempt, the class total, and item analysis. Final recaps only. */
+export async function getQuizEvaluation(quizId: string, now: Date = new Date()): Promise<QuizEvaluation | null> {
+  await finalizeExpiredAttempts({ quizId }, now);
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+    select: {
+      kind: true, scoringPolicy: true, kkm: true, resultsReleasedAt: true,
+      questions: { orderBy: { position: "asc" }, select: EVAL_QUESTION },
+      attempts: {
+        orderBy: [{ studentId: "asc" }, { attemptNumber: "asc" }],
+        select: {
+          ...SCORED_SELECT, studentId: true, answers: EVAL_ANSWERS,
+          student: { select: { displayName: true, class: { select: { name: true } } } },
+        },
+      },
+    },
+  });
+  if (!quiz) return null;
+  const byStudent = Map.groupBy(quiz.attempts, (a) => a.studentId);
+  const students: EvaluationRow[] = [];
+  const itemSets: ItemResult[][] = [];
+  for (const [studentId, as] of byStudent) {
+    const scored = as.map(toScored);
+    const recap = computeRecap(scored, quiz);
+    if (!recap.final || !recap.basis || recap.recap === null || as.some((a) => a.status === "IN_PROGRESS")) continue;
+    const items = itemsOf(quiz.questions, as[scored.indexOf(recap.basis)].answers);
+    students.push({
+      studentId, name: as[0].student.displayName, className: as[0].student.class?.name ?? "",
+      score: recap.recap, category: quiz.kind === "TRYOUT_TKA" ? tkaCategory(recap.recap) : null,
+      chapters: breakdown(items, "chapter"), levels: breakdown(items, "level"),
+    });
+    itemSets.push(items);
+  }
+  students.sort((a, b) => a.className.localeCompare(b.className) || a.name.localeCompare(b.name));
+  const all = itemSets.flat();
+  return {
+    kind: quiz.kind, students,
+    chapters: breakdown(all, "chapter"), levels: breakdown(all, "level"), items: itemAnalysis(itemSets),
+  };
+}
+
 type KeyQuiz = ScoringQuiz & { maxAttempts: number; showFeedbackAfterRelease: boolean };
 type KeyAttempt = Parameters<typeof toScored>[0];
 
@@ -206,6 +275,8 @@ export type ResultAttempt = {
 export type StudentResult = {
   quizTitle: string; scoringPolicy: ScoringPolicy; kkm: number | null;
   recap: number | null; passed: boolean | null; showKey: boolean; attempts: ResultAttempt[];
+  // D9: the student's own per-chapter result of the recap attempt, and the approximate label on a tryout. Final only.
+  chapters: Group[] | null; category: TkaCategory | null;
 };
 
 /** The only result shape a student gets. null (→ 404) before release, for other students, or with nothing submitted. */
@@ -214,11 +285,11 @@ export async function getStudentResult(studentId: string, quizId: string, now: D
   const quiz = await prisma.quiz.findFirst({
     where: { id: quizId, status: "PUBLISHED", resultsReleasedAt: { not: null } },
     select: {
-      ...KEY_QUIZ, title: true,
+      ...KEY_QUIZ, title: true, kind: true,
       questions: {
         orderBy: { position: "asc" },
         select: {
-          id: true, points: true, questionSnapshot: true, answerKeySnapshot: true,
+          ...EVAL_QUESTION, answerKeySnapshot: true,
           images: { where: { visibility: "EXPLANATION" }, select: { image: { select: IMAGE_VIEW } } },
         },
       },
@@ -236,10 +307,14 @@ export async function getStudentResult(studentId: string, quizId: string, now: D
   const counted = quiz.attempts.filter((a) => a.status === "SUBMITTED" && !a.replacementGrantedAt);
   if (counted.length === 0) return null;
   const showKey = maySeeKey(quiz, quiz.attempts);
-  const recap = computeRecap(quiz.attempts.map(toScored), quiz);
+  const scored = quiz.attempts.map(toScored);
+  const recap = computeRecap(scored, quiz);
+  const done = recap.final && recap.basis && recap.recap !== null ? { basis: quiz.attempts[scored.indexOf(recap.basis)], score: recap.recap } : null;
   return {
     quizTitle: quiz.title, scoringPolicy: quiz.scoringPolicy, kkm: quiz.kkm,
     recap: recap.final ? recap.recap : null, passed: recap.final ? recap.passed : null, showKey,
+    chapters: done && breakdown(itemsOf(quiz.questions, done.basis.answers), "chapter"),
+    category: done && quiz.kind === "TRYOUT_TKA" ? tkaCategory(done.score) : null,
     attempts: counted.map((a) => {
       const sc = toScored(a);
       const final = a.gradingStatus === "FINAL";

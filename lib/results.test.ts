@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import { GRACE_MS, gradeEssay, grantReplacement, saveAnswer, submitAttempt } from "@/lib/attempts";
-import { getQuizRecap, getStudentResult, releaseResults, unreleaseResults } from "@/lib/results";
+import { getQuizEvaluation, getQuizRecap, getStudentResult, releaseResults, unreleaseResults } from "@/lib/results";
 import { makeStudent } from "../tests/factories";
 import { setStudentActive } from "@/lib/students";
 import { at, DUR, min, setup, started } from "../tests/quiz-setup";
@@ -170,5 +170,52 @@ describe("getQuizRecap monitoring fields", () => {
     expect(await first(40)).toMatchObject({ score: 50, pendingEssays: 0 });
     await grantReplacement(s.teacher.id, id, "Alasan sah", at(50));
     expect(await first(60)).toMatchObject({ replaced: true });
+  });
+});
+
+describe("getQuizEvaluation and the student breakdown (Tahap 10)", () => {
+  async function tryout(kind: "TRYOUT_TKA" | "REGULAR") {
+    const s = await setup({ kind }, [
+      { cognitiveLevel: "PEMAHAMAN" }, { type: "CATEGORY", cognitiveLevel: "APLIKASI" }, { type: "MULTIPLE_SELECT" },
+    ]);
+    const [q1, q2, q3] = s.qqs;
+    const a = await started(s);
+    await saveAnswer(s.student.id, a, { quizQuestionId: q1.id, answer: { optionId: "a" } }, at(1));
+    await saveAnswer(s.student.id, a, { quizQuestionId: q2.id, answer: { values: { a: true, b: false } } }, at(2));
+    await saveAnswer(s.student.id, a, { quizQuestionId: q3.id, answer: { optionIds: ["a"] } }, at(3));
+    await submitAttempt(s.student.id, s.quiz.id, a, at(4));
+    const b = await makeStudent(s.cls.id);
+    const bStu = { ...s, student: b, stu: { id: b.id, classId: s.cls.id } };
+    const ba = await started(bStu, at(5));
+    await submitAttempt(b.id, s.quiz.id, ba, at(6));
+    return s;
+  }
+
+  it("teacher view: final recaps only, per chapter and level for the class, item analysis, label on a tryout", async () => {
+    const s = await tryout("TRYOUT_TKA");
+    const c = await makeStudent(s.cls.id);
+    await started({ ...s, stu: { id: c.id, classId: s.cls.id } }, at(7));
+    const e = (await getQuizEvaluation(s.quiz.id, at(8)))!;
+    expect(e.kind).toBe("TRYOUT_TKA");
+    expect(e.students.map((r) => [r.studentId, r.score, r.category])).toEqual(
+      expect.arrayContaining([[s.student.id, 66.67, "BAIK"], [expect.any(String), 0, "KURANG"]]),
+    );
+    expect(e.students).toHaveLength(2);
+    expect(e.chapters).toEqual([{ key: s.chapter.title, earned: 2, max: 6, pct: 33 }]);
+    expect(e.levels).toEqual([{ key: "PEMAHAMAN", earned: 1, max: 2, pct: 50 }, { key: "APLIKASI", earned: 1, max: 2, pct: 50 }]);
+    expect(e.items.map((i) => [i.position, i.type, i.pct])).toEqual([[1, "SINGLE_CHOICE", 50], [2, "CATEGORY", 50], [3, "MULTIPLE_SELECT", 0]]);
+  });
+
+  it("student result after release: own chapters and the label; a regular quiz has no label", async () => {
+    const s = await tryout("TRYOUT_TKA");
+    expect(await releaseResults(s.teacher.id, s.quiz.id, at(10))).toEqual({ ok: true });
+    const r = (await getStudentResult(s.student.id, s.quiz.id, at(11)))!;
+    expect(r.chapters).toEqual([{ key: s.chapter.title, earned: 2, max: 3, pct: 67 }]);
+    expect(r.category).toBe("BAIK");
+    expect(JSON.stringify(r)).not.toContain('"levels"');
+
+    const reg = await tryout("REGULAR");
+    await releaseResults(reg.teacher.id, reg.quiz.id, at(10));
+    expect((await getStudentResult(reg.student.id, reg.quiz.id, at(11)))?.category).toBeNull();
   });
 });

@@ -8,6 +8,7 @@ type Seed = {
   studentQuiz: { id: string; title: string };
   tokenQuiz: { id: string; title: string };
   teacherQuiz: { id: string; title: string };
+  tryoutQuiz: { id: string; title: string };
 };
 
 // Written by e2e/seed.ts during global setup, so read lazily.
