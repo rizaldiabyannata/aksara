@@ -33,7 +33,7 @@ export function AttendanceForm({ classId, date, students }: { classId: string; d
   const blank = students.filter((s) => !marks[s.id]).length;
 
   return (
-    <form action={save} className="flex flex-col gap-4">
+    <form action={save} onReset={(event) => event.preventDefault()} className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="font-body-md text-sm text-text-muted" aria-live="polite">
           {blank ? `${blank} siswa belum diisi.` : "Semua siswa sudah diisi."}

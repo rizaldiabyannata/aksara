@@ -17,10 +17,22 @@ test("attendance: fill, mark one sick, save, reload, download the month", async 
   await page.getByRole("group", { name: "Kehadiran Siswa Dua" }).getByText("Sakit").click();
   await page.getByRole("button", { name: "Simpan absensi" }).click();
   await expect(page.getByRole("status").filter({ hasText: /Absensi \d+ siswa disimpan\./ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Simpan absensi" })).toBeEnabled();
+  const sick = page.getByRole("group", { name: "Kehadiran Siswa Dua" }).getByRole("radio", { name: "Sakit" });
+  await expect(sick).toBeChecked();
 
   await page.reload();
-  await expect(page.getByRole("group", { name: "Kehadiran Siswa Dua" }).getByRole("radio", { name: "Sakit" })).toBeChecked();
+  await expect(sick).toBeChecked();
   await expect(page.getByText("Semua siswa sudah diisi.")).toBeVisible();
+
+  const izin = page.getByRole("group", { name: "Kehadiran Siswa Dua" }).getByRole("radio", { name: "Izin" });
+  await page.getByRole("group", { name: "Kehadiran Siswa Dua" }).getByText("Izin", { exact: true }).click();
+  await page.getByRole("button", { name: "Simpan absensi" }).click();
+  await expect(page.getByRole("status").filter({ hasText: /Absensi \d+ siswa disimpan\./ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Simpan absensi" })).toBeEnabled();
+  await expect(izin).toBeChecked();
+  await page.reload();
+  await expect(izin).toBeChecked();
 
   const download = page.waitForEvent("download");
   await page.getByRole("link", { name: /Unduh rekap/ }).click();
