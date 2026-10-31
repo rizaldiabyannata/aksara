@@ -25,7 +25,7 @@ import { Evaluation } from "./evaluation";
 import { MonitorList } from "./monitor-list";
 import { TokenCard } from "./token-card";
 import { POLICY_LABEL, STATUS_LABEL } from "../labels";
-import { AddQuestionButton, ClassesForm, PublishControls, QuestionControls, ResultsControls, SettingsForm } from "../quiz-forms";
+import { BulkAddQuestionsForm, ClassesForm, PublishControls, QuestionControls, ResultsControls, SettingsForm } from "../quiz-forms";
 
 export const metadata: Metadata = { title: "Ulangan" };
 
@@ -218,6 +218,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
         </>
       ) : (
         <>
+          <p className="rounded-2xl bg-tone-info-bg p-4 text-text-primary">Siapkan ulangan dalam tiga langkah: <a href="#kelas" className="font-semibold underline">pilih kelas</a>, <a href="#soal" className="font-semibold underline">pilih soal</a>, lalu terbitkan. Setelan lain bisa diubah bila perlu.</p>
           {setelan}
           <TokenCard quizId={id} title={quiz.title} token={quiz.examToken} />
           <section aria-labelledby="terbit" className="flex flex-col gap-3">
@@ -358,21 +359,12 @@ async function AddPanel({
         <Button type="submit" className="h-11 text-base">Terapkan</Button>
       </form>
       {rows.length === 0 && <p className="text-muted-foreground">Tidak ada soal aktif yang cocok.</p>}
-      <ul className="flex flex-col gap-3">
-        {rows.map((r) => (
-          <li key={r.id} className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-            <p className="font-medium">{snippet(r.prompt) || TYPE_LABEL[r.type]}</p>
-            <p className="text-muted-foreground">
-              {TYPE_LABEL[r.type]} · {DIFFICULTY_LABEL[r.difficulty]} · {r.chapterTitle} · {r.defaultPoints} poin
-            </p>
-            {chosen.includes(r.id) ? (
-              <p>Sudah dipilih</p>
-            ) : (
-              <AddQuestionButton id={quizId} questionId={r.id} label={snippet(r.prompt) || TYPE_LABEL[r.type]} />
-            )}
-          </li>
-        ))}
-      </ul>
+        <BulkAddQuestionsForm id={quizId} rows={rows.map((r) => ({
+          id: r.id,
+          label: snippet(r.prompt) || TYPE_LABEL[r.type],
+          detail: `${TYPE_LABEL[r.type]} · ${DIFFICULTY_LABEL[r.difficulty]} · ${r.chapterTitle} · ${r.defaultPoints} poin`,
+          chosen: chosen.includes(r.id),
+        }))} />
       {(page > 1 || hasNext) && (
         <nav aria-label="Halaman" className="flex gap-4">
           {page > 1 && <Link href={pageHref(page - 1)} className="inline-flex min-h-11 items-center underline">Sebelumnya</Link>}

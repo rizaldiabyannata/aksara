@@ -1,7 +1,8 @@
 "use client";
 
-import { startTransition, useActionState } from "react";
+import { startTransition, useActionState, useRef, useState } from "react";
 import { ConfirmAction } from "@/components/confirm-action";
+import { PdfImport } from "@/components/pdf-import";
 import { Feedback } from "@/components/form-feedback";
 import { FormField } from "@/components/form-field";
 import { ArrowDown01Icon, ArrowUp01Icon, Book02Icon, File01Icon, Note01Icon, TaskEdit01Icon } from "@hugeicons/core-free-icons";
@@ -21,6 +22,9 @@ import {
 export type ChapterOption = {
   id: string;
   label: string;
+  title: string;
+  sourceBook: string;
+  sourceYearOrEdition: string;
   subchapters: { id: string; label: string }[];
 };
 type Defaults = {
@@ -66,26 +70,74 @@ function Err({ id, text }: { id: string; text?: string }) {
   ) : null;
 }
 
+export function NewMaterialForm({ chapters, chapterId }: { chapters: ChapterOption[]; chapterId?: string }) {
+  const chapter = chapters.find((c) => c.id === chapterId);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [importedPages, setImportedPages] = useState("");
+  const [importError, setImportError] = useState("");
+  const sourceReference = chapter ? `${chapter.sourceBook} (${chapter.sourceYearOrEdition})` : "";
+  const field = (name: string) => formRef.current?.elements.namedItem(name) as HTMLTextAreaElement | HTMLInputElement | null;
+  return (
+    <div className="flex flex-col gap-6">
+      <PdfImport onImport={(text, pages) => {
+        const content = field("content");
+        const summary = field("summary");
+        const sourcePages = field("sourcePages");
+        const combined = [content?.value.trim(), text].filter(Boolean).join("\n\n");
+        if (combined.length > 50000) { setImportError("Isi materi melebihi 50.000 huruf. Simpan bagian ini dulu, lalu buat materi berikutnya dari halaman lain."); return; }
+        if (content) content.value = combined;
+        if (summary && !summary.value.trim()) summary.value = text.replace(/\s+/g, " ").slice(0, 240);
+        if (sourcePages && !sourcePages.value.trim()) sourcePages.value = pages;
+        setImportError("");
+        setImportedPages(pages);
+      }} />
+      {importError && <p role="alert" className="text-destructive">{importError}</p>}
+      {importedPages && <p role="status" className="rounded-xl bg-tone-info-bg p-4">Teks halaman {importedPages} ditambahkan ke isi materi. Isian lain tetap tersimpan. Periksa dan tulis ulang seperlunya sebelum menyimpan draf.</p>}
+      <MaterialForm formRef={formRef} chapters={chapters} initial={{
+        chapterId: chapter?.id,
+        title: chapter?.title,
+        sourceReference,
+      }} />
+    </div>
+  );
+}
+
 export function MaterialForm({
   chapters,
   material,
+  initial,
+  formRef,
 }: {
   chapters: ChapterOption[];
   material?: Defaults;
+  initial?: Partial<Defaults>;
+  formRef?: React.Ref<HTMLFormElement>;
 }) {
   const [state, formAction, pending] = useActionState(
     material ? updateMaterialAction.bind(null, material.id) : createMaterialAction,
     undefined,
   );
-  const v = (name: keyof Defaults) => state?.values?.[name] ?? material?.[name] ?? "";
+  const v = (name: keyof Defaults) => state?.values?.[name] ?? material?.[name] ?? initial?.[name] ?? "";
   const e = state?.fieldErrors;
   const longText = [
     ["content", "Isi materi", true, 10],
     ["examples", "Contoh dan aktivitas (opsional)", false, 6],
     ["exercises", "Latihan (opsional)", false, 6],
   ] as const;
+  const longField = ([name, label, required, rows]: (typeof longText)[number]) => (
+    <div key={name} className="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm flex flex-col gap-3">
+      <SectionTitle icon={ICON[name]}>{label}</SectionTitle>
+      <Label htmlFor={name} className="sr-only">{label}</Label>
+      <textarea id={name} name={name} required={required} rows={rows}
+        className={`${controlClass} py-2 font-mono text-sm`} defaultValue={v(name)}
+        aria-invalid={e?.[name] ? true : undefined}
+        aria-describedby={`${name}-help${e?.[name] ? ` ${name}-error` : ""}`} />
+      <p id={`${name}-help`} className="text-sm text-muted-foreground">{HELP}</p>
+      <Err id={`${name}-error`} text={e?.[name]} />
+    </div>
+  );
   return (
-    <form action={formAction} className="flex w-full flex-col gap-6">
+    <form ref={formRef} action={formAction} className="flex w-full flex-col gap-6">
       <div className="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm flex flex-col gap-5">
       <SectionTitle icon={File01Icon}>Informasi dasar</SectionTitle>
       <FormField id="title" name="title" label="Judul" required autoComplete="off" defaultValue={v("title")} error={e?.title} />
@@ -147,30 +199,16 @@ export function MaterialForm({
         <Err id="subchapterId-error" text={e?.subchapterId} />
       </div>
       </div>
-      {longText.map(([name, label, required, rows]) => (
-        <div key={name} className="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm flex flex-col gap-3">
-          <SectionTitle icon={ICON[name]}>{label}</SectionTitle>
-          <Label htmlFor={name} className="sr-only">{label}</Label>
-          <textarea
-            id={name}
-            name={name}
-            required={required}
-            rows={rows}
-            className={`${controlClass} py-2 font-mono text-sm`}
-            defaultValue={v(name)}
-            aria-invalid={e?.[name] ? true : undefined}
-            aria-describedby={`${name}-help${e?.[name] ? ` ${name}-error` : ""}`}
-          />
-          <p id={`${name}-help`} className="text-sm text-muted-foreground">
-            {HELP}
-          </p>
-          <Err id={`${name}-error`} text={e?.[name]} />
-        </div>
-      ))}
+      {longField(longText[0])}
+      <details className="rounded-2xl border border-border-subtle bg-surface-card p-4" open={!!material?.examples || !!material?.exercises || !!e?.examples || !!e?.exercises}>
+        <summary className="min-h-11 cursor-pointer font-semibold">Contoh dan latihan tambahan (opsional)</summary>
+        <div className="mt-3 flex flex-col gap-4">{longText.slice(1).map(longField)}</div>
+      </details>
       <div className="bg-surface-card rounded-2xl p-6 border border-border-subtle shadow-sm flex flex-col gap-5">
       <SectionTitle icon={Book02Icon}>Sumber</SectionTitle>
       <FormField id="sourceReference" name="sourceReference" label="Sumber (nama buku)" required autoComplete="off" defaultValue={v("sourceReference")} error={e?.sourceReference} />
       <FormField id="sourcePages" name="sourcePages" label="Halaman sumber (opsional)" autoComplete="off" defaultValue={v("sourcePages")} error={e?.sourcePages} />
+      {!material && <p className="text-sm text-text-muted">Nomor awal mengikuti halaman PDF. Sesuaikan jika nomor cetak pada buku berbeda.</p>}
       </div>
       <Feedback state={state} />
       <Button type="submit" className="h-12 self-start px-6 text-base" disabled={pending} aria-busy={pending}>
@@ -190,7 +228,7 @@ const STATUS_BUTTONS: Record<
     REVIEWED: undefined,
     PUBLISHED: {
       label: "Terbitkan",
-      confirm: ["Terbitkan materi ini?", "Siswa akan bisa membaca materi ini."],
+      confirm: ["Terbitkan materi ini?", "Siswa akan bisa membaca materi ini. Pastikan isi dan hak penggunaan teks buku sudah diperiksa."],
     },
   },
   PUBLISHED: {

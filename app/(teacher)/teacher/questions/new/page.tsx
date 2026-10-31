@@ -5,7 +5,7 @@ import type { QuestionType } from "@/lib/generated/prisma/enums";
 import { listChapterOptions } from "@/lib/subjects";
 import { EditorHeader } from "../editor-header";
 import { TYPE_LABEL } from "../labels";
-import { QuestionForm } from "../question-form";
+import { NewQuestionForm } from "../question-form";
 import { TypeStrip } from "../type-strip";
 
 export const metadata: Metadata = { title: "Soal baru" };
@@ -26,20 +26,22 @@ export default function NewQuestionPage({ searchParams }: PageProps<"/teacher/qu
 
 async function NewForm({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireTeacher();
-  const { type } = await searchParams;
+  const { type, chapterId } = await searchParams;
+  const chapters = await listChapterOptions();
+  const selectedChapterId = typeof chapterId === "string" && chapters.some((c) => c.id === chapterId) ? chapterId : undefined;
   if (typeof type !== "string" || !Object.hasOwn(TYPE_LABEL, type)) {
     // Choosing a type reloads /teacher/questions/new?type=…, which renders the form.
     return (
       <>
         <h2 className="text-lg font-semibold mb-3">Pilih tipe soal</h2>
-        <TypeStrip links />
+        <TypeStrip links chapterId={selectedChapterId} />
       </>
     );
   }
   return (
     <>
-      <TypeStrip current={type as QuestionType} links />
-      <QuestionForm chapters={await listChapterOptions()} type={type as QuestionType} />
+      <TypeStrip current={type as QuestionType} links chapterId={selectedChapterId} />
+      <NewQuestionForm chapters={chapters} type={type as QuestionType} chapterId={selectedChapterId} />
     </>
   );
 }

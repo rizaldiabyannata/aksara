@@ -1,12 +1,13 @@
 "use client";
 
 import { GuidePanel } from "@/components/guide-panel";
-import { startTransition, useActionState } from "react";
+import { startTransition, useActionState, useRef, useState } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   CheckmarkCircle02Icon, Settings02Icon, UnfoldMoreIcon, ViewIcon, LockIcon,
 } from "@hugeicons/core-free-icons";
 import { ConfirmAction } from "@/components/confirm-action";
+import { PdfImport } from "@/components/pdf-import";
 import { Feedback } from "@/components/form-feedback";
 import { FormMessage } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -25,8 +26,41 @@ import type { Defaults } from "./question-defaults";
 export type ChapterOption = {
   id: string;
   label: string;
+  sourceBook: string;
+  sourceYearOrEdition: string;
   subchapters: { id: string; label: string }[];
 };
+
+export function NewQuestionForm({ chapters, type, chapterId }: { chapters: ChapterOption[]; type: QuestionType; chapterId?: string }) {
+  const chapter = chapters.find((c) => c.id === chapterId);
+  const [text, setText] = useState("");
+  const [message, setMessage] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  return (
+    <div className="flex flex-col gap-6">
+      <PdfImport purpose="soal" onImport={(value) => setText(value)} />
+      {text && (
+        <div className="flex flex-col gap-3 rounded-2xl border bg-surface-card p-5">
+          <label htmlFor="pdf-question-text" className="font-semibold">Pilih dan rapikan teks satu soal</label>
+          <textarea id="pdf-question-text" value={text} onChange={(event) => setText(event.target.value)} rows={6} className="w-full rounded-xl border p-3" />
+          <p className="text-text-muted">Hapus teks soal lain. Pilihan dan kunci jawaban tetap diisi sendiri.</p>
+          <Button type="button" disabled={!text.trim() || text.length > 5000} onClick={() => {
+            const prompt = formRef.current?.elements.namedItem("prompt") as HTMLTextAreaElement | null;
+            if (!prompt) return;
+            const combined = [prompt.value.trim(), text.trim()].filter(Boolean).join("\n\n");
+            if (combined.length > 5000) { setMessage("Teks soal melebihi 5.000 huruf. Hapus bagian yang tidak dipakai dulu."); return; }
+            prompt.value = combined;
+            setMessage("Teks PDF ditambahkan ke soal. Isian lain tetap tersimpan.");
+          }} className="self-start">Tambahkan ke teks soal</Button>
+          {text.length > 5000 && <p role="alert" className="text-destructive">Teks soal paling banyak 5.000 huruf. Hapus bagian yang tidak dipakai.</p>}
+          {message && <p role="status">{message}</p>}
+        </div>
+      )}
+      <QuestionForm formRef={formRef} chapters={chapters} type={type} initialChapterId={chapterId}
+        initialSourceReference={chapter ? `${chapter.sourceBook} (${chapter.sourceYearOrEdition})` : undefined} />
+    </div>
+  );
+}
 
 const ring = "focus-visible:ring-[3px] focus-visible:ring-ring";
 const fieldClass = `border border-border-subtle focus:border-border-active focus:bg-surface-card focus:outline-none aria-invalid:border-destructive ${ring}`;
@@ -260,16 +294,23 @@ export function QuestionForm({
   chapters,
   type,
   question,
+  initialChapterId,
+  initialSourceReference,
+  formRef,
 }: {
   chapters: ChapterOption[];
   type: QuestionType;
   question?: { id: string; defaults: Defaults };
+  initialChapterId?: string;
+  initialSourceReference?: string;
+  formRef?: React.Ref<HTMLFormElement>;
 }) {
   const [state, formAction, pending] = useActionState(
     question ? updateQuestionAction.bind(null, question.id) : createQuestionAction.bind(null, type),
     undefined,
   );
-  const v = (name: string) => state?.values?.[name] ?? question?.defaults[name] ?? "";
+  const initialValues: Record<string, string | undefined> = { chapterId: initialChapterId, sourceReference: initialSourceReference };
+  const v = (name: string) => state?.values?.[name] ?? question?.defaults[name] ?? initialValues[name] ?? "";
   const e = state?.fieldErrors;
   const sel = (name: string, label: string, children: React.ReactNode, required = true) => (
     <div className="flex flex-col gap-1.5">
@@ -292,7 +333,7 @@ export function QuestionForm({
     </div>
   );
   return (
-    <form action={formAction} className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start pb-space-lg">
+    <form ref={formRef} action={formAction} className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start pb-space-lg">
       <input type="hidden" name="type" value={type} />
       <div className="lg:col-span-8 flex min-w-0 flex-col gap-space-lg">
         <Sec n="01" title="Struktur Capaian & Kurikulum">

@@ -290,18 +290,21 @@ export async function deleteSubchapter(id: string): Promise<{ ok: true } | InUse
 
 // Flat list for pickers: one entry per chapter, in subject-name then chapter-order order.
 export async function listChapterOptions(): Promise<
-  { id: string; label: string; subchapters: { id: string; label: string }[] }[]
+  { id: string; label: string; subjectId: string; title: string; sourceBook: string; sourceYearOrEdition: string; subchapters: { id: string; label: string }[] }[]
 > {
   const subjects = await prisma.subject.findMany({
     orderBy: { name: "asc" },
     select: {
       name: true,
+      id: true,
       chapters: {
         orderBy: { order: "asc" },
         select: {
           id: true,
           title: true,
           order: true,
+          sourceBook: true,
+          sourceYearOrEdition: true,
           subchapters: {
             orderBy: { order: "asc" },
             select: { id: true, title: true },
@@ -314,6 +317,10 @@ export async function listChapterOptions(): Promise<
     s.chapters.map((c) => ({
       id: c.id,
       label: `${s.name} · Bab ${c.order} · ${c.title}`,
+      subjectId: s.id,
+      title: c.title,
+      sourceBook: c.sourceBook,
+      sourceYearOrEdition: c.sourceYearOrEdition,
       subchapters: c.subchapters.map((x) => ({ id: x.id, label: x.title })),
     })),
   );

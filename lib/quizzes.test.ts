@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/db";
 import {
   addQuizQuestion,
+  addQuizQuestions,
   countQuizzesByStatus,
   createQuiz,
   getQuizForTeacher,
@@ -246,6 +247,37 @@ describe("addQuizQuestion", () => {
     const quiz = await makeQuiz(subjectId, actor, { status: "PUBLISHED" });
     const q = await makeQuestion(chapter.id, actor, { status: "ACTIVE" });
     expect(fe(await addQuizQuestion(quiz.id, q.id))).toEqual({ form: FORM_LOCK });
+  });
+});
+
+describe("addQuizQuestions", () => {
+  it("adds selected active questions together in order", async () => {
+    const { actor, chapter, subjectId } = await setup();
+    const quiz = await makeQuiz(subjectId, actor);
+    const a = await makeQuestion(chapter.id, actor, { status: "ACTIVE", defaultPoints: 2 });
+    const b = await makeQuestion(chapter.id, actor, { status: "ACTIVE", defaultPoints: 3 });
+    expect(await addQuizQuestions(quiz.id, [b.id, a.id])).toEqual({ ok: true });
+    expect(await prisma.quizQuestion.findMany({ where: { quizId: quiz.id }, orderBy: { position: "asc" }, select: { questionId: true, points: true } }))
+      .toEqual([{ questionId: b.id, points: 3 }, { questionId: a.id, points: 2 }]);
+  });
+
+  it("rejects the whole selection if any question is invalid or already chosen", async () => {
+    const { actor, chapter, subjectId } = await setup();
+    const quiz = await makeQuiz(subjectId, actor);
+    const good = await makeQuestion(chapter.id, actor, { status: "ACTIVE" });
+    const draft = await makeQuestion(chapter.id, actor, { status: "DRAFT" });
+    expect(fe(await addQuizQuestions(quiz.id, [good.id, draft.id]))).toEqual({ questionId: NOT_ADDABLE });
+    expect(await prisma.quizQuestion.count({ where: { quizId: quiz.id } })).toBe(0);
+    expect(await addQuizQuestions(quiz.id, [good.id])).toEqual({ ok: true });
+    expect(fe(await addQuizQuestions(quiz.id, [good.id, draft.id]))).toEqual({ questionId: NOT_ADDABLE });
+    expect(await prisma.quizQuestion.count({ where: { quizId: quiz.id } })).toBe(1);
+  });
+
+  it("keeps a published quiz locked", async () => {
+    const { actor, chapter, subjectId } = await setup();
+    const quiz = await makeQuiz(subjectId, actor, { status: "PUBLISHED" });
+    const q = await makeQuestion(chapter.id, actor, { status: "ACTIVE" });
+    expect(fe(await addQuizQuestions(quiz.id, [q.id]))).toEqual({ form: FORM_LOCK });
   });
 });
 

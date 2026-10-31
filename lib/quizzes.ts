@@ -279,22 +279,35 @@ export async function setQuizClasses(id: string, classIds: string[]): Promise<Re
 
 /** Adds an ACTIVE question of the quiz's subject. Position = max + 1; points = the question's default. */
 export async function addQuizQuestion(id: string, questionId: string): Promise<Result> {
+  return addQuizQuestions(id, [questionId]);
+}
+
+/** Adds a selection atomically, keeping the order selected by the teacher. */
+export async function addQuizQuestions(id: string, questionIds: string[]): Promise<Result> {
   try {
     return await prisma.$transaction(async (tx): Promise<Result> => {
       if (!(await lockQuiz(tx, id, "UPDATE"))) return NOT_FOUND;
       const quiz = await tx.quiz.findUnique({ where: { id }, select: { status: true, subjectId: true } });
       if (!quiz) return NOT_FOUND;
       if (quiz.status === "PUBLISHED") return LOCKED_QUESTIONS;
-      const q = await tx.question.findUnique({
-        where: { id: questionId },
-        select: { status: true, defaultPoints: true, chapter: { select: { subjectId: true } } },
+      if (questionIds.length === 0 || questionIds.length > 100) return invalid("questionId", "Pilih 1 sampai 100 soal.");
+      if (new Set(questionIds).size !== questionIds.length) return invalid("questionId", DUP);
+      const questions = await tx.question.findMany({
+        where: { id: { in: questionIds } },
+        select: { id: true, status: true, defaultPoints: true, chapter: { select: { subjectId: true } } },
       });
-      if (!q || q.status !== "ACTIVE" || q.chapter.subjectId !== quiz.subjectId) {
+      if (questions.length !== questionIds.length || questions.some((q) => q.status !== "ACTIVE" || q.chapter.subjectId !== quiz.subjectId)) {
         return invalid("questionId", NOT_ADDABLE);
       }
+      const existing = await tx.quizQuestion.findMany({ where: { quizId: id, questionId: { in: questionIds } }, select: { questionId: true } });
+      if (existing.length) return invalid("questionId", DUP);
       const last = await tx.quizQuestion.aggregate({ where: { quizId: id }, _max: { position: true } });
-      await tx.quizQuestion.create({
-        data: { quizId: id, questionId, position: (last._max.position ?? 0) + 1, points: q.defaultPoints },
+      const byId = new Map(questions.map((q) => [q.id, q]));
+      await tx.quizQuestion.createMany({
+        data: questionIds.map((questionId, index) => ({
+          quizId: id, questionId, position: (last._max.position ?? 0) + index + 1,
+          points: byId.get(questionId)!.defaultPoints,
+        })),
       });
       return { ok: true };
     });

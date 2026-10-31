@@ -88,6 +88,8 @@ for (const width of [360, 1280]) {
     });
 
     test(`teacher pages at ${width} px`, async ({ page }) => {
+      // This sweep visits eleven pages and checks keyboard focus at each stop.
+      test.setTimeout(90_000);
       const s = seed();
       await check(page, "/teacher/login", { role: "button", name: "Masuk" });
       await loginTeacher(page);

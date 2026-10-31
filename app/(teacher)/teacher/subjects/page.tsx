@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import {
   Add01Icon,
@@ -197,6 +198,12 @@ async function SubjectTree() {
                         </details>
                         <DeleteChapterButton id={c.id} title={c.title} />
                       </div>
+                    </div>
+
+                    <div className="ml-2 flex flex-wrap gap-2 sm:ml-6">
+                      <Link href={`/teacher/materials/new?chapterId=${c.id}`} className="inline-flex min-h-11 items-center rounded-xl bg-primary-container px-4 font-semibold text-on-primary focus-visible:ring-[3px] focus-visible:ring-ring">Isi materi dari PDF</Link>
+                      <Link href={`/teacher/questions/new?chapterId=${c.id}`} className="inline-flex min-h-11 items-center rounded-xl bg-canvas-peach px-4 font-semibold text-primary-strong focus-visible:ring-[3px] focus-visible:ring-ring">Buat soal</Link>
+                      <Link href={`/teacher/quizzes/new?chapterId=${c.id}`} className="inline-flex min-h-11 items-center rounded-xl bg-canvas-peach px-4 font-semibold text-primary-strong focus-visible:ring-[3px] focus-visible:ring-ring">Buat ulangan</Link>
                     </div>
 
                     <div className="ml-2 sm:ml-6 pl-4 flex flex-col gap-2.5">

@@ -6,8 +6,9 @@ import { requireTeacher } from "@/lib/auth/guard";
 import { field, type FormState } from "@/lib/form-state";
 import { clearHelpRequest, gradeEssay, grantReplacement } from "@/lib/attempts";
 import { releaseResults, unreleaseResults } from "@/lib/results";
+import { listChapterOptions } from "@/lib/subjects";
 import {
-  addQuizQuestion, createQuiz, moveQuizQuestion, publishQuiz, removeQuizQuestion,
+  addQuizQuestion, addQuizQuestions, createQuiz, moveQuizQuestion, publishQuiz, removeQuizQuestion,
   rotateExamToken, setExamTokenRequired, setQuizClasses, setQuizQuestionPoints, unpublishQuiz, updateQuiz,
 } from "@/lib/quizzes";
 
@@ -86,7 +87,11 @@ export async function createQuizAction(_prev: FormState, fd: FormData): Promise<
     "Ulangan dibuat.",
     { values },
   );
-  if (id) redirect(`/teacher/quizzes/${id}`);
+  if (id) {
+    const chapterId = field(fd, "chapterId");
+    const validChapter = chapterId && (await listChapterOptions()).some((c) => c.id === chapterId && c.subjectId === values.subjectId);
+    redirect(`/teacher/quizzes/${id}${validChapter ? `?chapterId=${encodeURIComponent(chapterId)}#soal` : ""}`);
+  }
   return state;
 }
 
@@ -105,6 +110,12 @@ export async function setQuizClassesAction(id: string, _prev: FormState, fd: For
 export async function addQuizQuestionAction(id: string, questionId: string): Promise<FormState> {
   await requireTeacher();
   return run(() => addQuizQuestion(id, questionId), "Soal ditambahkan.", { flat: true });
+}
+
+export async function addQuizQuestionsAction(id: string, _prev: FormState, fd: FormData): Promise<FormState> {
+  await requireTeacher();
+  const ids = fd.getAll("questionId").filter((x): x is string => typeof x === "string");
+  return run(() => addQuizQuestions(id, ids), "Soal dipilih dan ditambahkan.", { flat: true });
 }
 
 export async function removeQuizQuestionAction(id: string, quizQuestionId: string): Promise<FormState> {

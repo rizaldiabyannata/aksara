@@ -7,21 +7,25 @@ import { CreateQuizForm } from "../quiz-forms";
 
 export const metadata: Metadata = { title: "Buat ulangan" };
 
-export default function NewQuizPage() {
+export default function NewQuizPage({ searchParams }: PageProps<"/teacher/quizzes/new">) {
   return (
     <section className="flex flex-col gap-space-lg px-space-lg py-space-md">
       <PageHeader title="Buat ulangan" description="Isi judul dan mata pelajaran. Soal dan kelas diatur setelah ulangan dibuat." />
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,28rem)]">
         <Suspense fallback={<p className="text-base">Memuat…</p>}>
-          <Form />
+          <Form searchParams={searchParams} />
         </Suspense>
       </div>
     </section>
   );
 }
 
-async function Form() {
+async function Form({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireTeacher();
-  const subjects = (await getSubjectTree()).map((s) => ({ id: s.id, name: s.name }));
-  return <CreateQuizForm subjects={subjects} />;
+  const tree = await getSubjectTree();
+  const { chapterId } = await searchParams;
+  const chapter = typeof chapterId === "string"
+    ? tree.flatMap((s) => s.chapters.map((c) => ({ ...c, subjectId: s.id }))).find((c) => c.id === chapterId)
+    : undefined;
+  return <CreateQuizForm subjects={tree.map((s) => ({ id: s.id, name: s.name }))} chapter={chapter ? { id: chapter.id, title: chapter.title, subjectId: chapter.subjectId } : undefined} />;
 }

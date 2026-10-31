@@ -15,7 +15,7 @@ const ITEMS: { type: QuestionType; icon: typeof RadioButtonIcon; sub: string }[]
 ];
 
 /** Stitch type tab strip. `links`: on /new each item picks the type; on edit the type is fixed. */
-export function TypeStrip({ current, links }: { current?: QuestionType; links: boolean }) {
+export function TypeStrip({ current, links, chapterId }: { current?: QuestionType; links: boolean; chapterId?: string }) {
   return (
     <div className="bg-surface-card border border-border-subtle rounded-2xl p-2.5 shadow-sm mb-space-lg">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
@@ -47,7 +47,7 @@ export function TypeStrip({ current, links }: { current?: QuestionType; links: b
             </>
           );
           return links ? (
-            <Link key={type} href={`/teacher/questions/new?type=${type}`} aria-current={on ? "true" : undefined} className={cls}>
+            <Link key={type} href={`/teacher/questions/new?type=${type}${chapterId ? `&chapterId=${encodeURIComponent(chapterId)}` : ""}`} aria-current={on ? "true" : undefined} className={cls}>
               {body}
             </Link>
           ) : (

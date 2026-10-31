@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import type { FormState } from "@/lib/form-state";
 import type { QuizDetail } from "@/lib/quizzes";
 import {
-  addQuizQuestionAction, createQuizAction, moveQuizQuestionAction, publishQuizAction,
+  addQuizQuestionAction, addQuizQuestionsAction, createQuizAction, moveQuizQuestionAction, publishQuizAction,
   releaseResultsAction, removeQuizQuestionAction, setQuizClassesAction, setQuizQuestionPointsAction,
   unpublishQuizAction, unreleaseResultsAction, updateQuizAction,
 } from "./actions";
@@ -20,7 +20,7 @@ import { KIND_LABEL, POLICY_LABEL } from "./labels";
 const controlClass =
   "h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-destructive disabled:opacity-50";
 
-export function CreateQuizForm({ subjects }: { subjects: { id: string; name: string }[] }) {
+export function CreateQuizForm({ subjects, chapter }: { subjects: { id: string; name: string }[]; chapter?: { id: string; title: string; subjectId: string } }) {
   const [state, action, pending] = useActionState(createQuizAction, undefined);
   const e = state?.fieldErrors;
   const field =
@@ -44,11 +44,13 @@ export function CreateQuizForm({ subjects }: { subjects: { id: string; name: str
           Isi judul dan mata pelajaran. Soal, kelas, dan setelan lain diatur setelah ulangan dibuat.
         </p>
         <form action={action} className="mt-2 flex flex-col gap-space-md">
+          {chapter && <input type="hidden" name="chapterId" value={chapter.id} />}
+          {chapter && <p className="rounded-xl bg-tone-info-bg p-3 text-sm">Bab dipilih: <strong>{chapter.title}</strong>. Setelah ulangan dibuat, pilih kelas dan soal dari bab ini.</p>}
           <div className="flex flex-col gap-1.5">
             <label className="font-label-sm text-label-sm text-text-primary" htmlFor="title">
               Judul Ulangan <span className="text-tone-danger">*</span>
             </label>
-            <input id="title" name="title" required maxLength={150} defaultValue={state?.values?.title ?? ""}
+              <input id="title" name="title" required maxLength={150} defaultValue={state?.values?.title ?? (chapter ? `Ulangan: ${chapter.title}` : "")}
               placeholder="Contoh: Ulangan Harian Bab 1: Pecahan..." className={`${field} placeholder:text-text-muted`}
               aria-invalid={e?.title ? true : undefined} aria-describedby={e?.title ? "title-error" : undefined} />
             {e?.title && <p id="title-error" className="text-base text-destructive">{e.title}</p>}
@@ -58,7 +60,7 @@ export function CreateQuizForm({ subjects }: { subjects: { id: string; name: str
               Mata Pelajaran <span className="text-tone-danger">*</span>
             </label>
             <div className="relative">
-              <select id="subjectId" name="subjectId" required defaultValue={state?.values?.subjectId ?? ""}
+              <select id="subjectId" name="subjectId" required defaultValue={state?.values?.subjectId ?? chapter?.subjectId ?? ""}
                 className={`${field} cursor-pointer appearance-none pr-10`} aria-invalid={e?.subjectId ? true : undefined}
                 aria-describedby={e?.subjectId ? "subjectId-error" : undefined}>
                 <option value="" disabled>Pilih mata pelajaran</option>
@@ -261,6 +263,27 @@ export function AddQuestionButton({ id, questionId, label }: { id: string; quest
       </Button>
       <Feedback state={state} />
     </div>
+  );
+}
+
+export function BulkAddQuestionsForm({ id, rows }: { id: string; rows: { id: string; label: string; detail: string; chosen: boolean }[] }) {
+  const [state, action, pending] = useActionState(addQuizQuestionsAction.bind(null, id), undefined);
+  return (
+    <form action={action} className="flex flex-col gap-3">
+      <p className="text-text-muted">Centang soal yang ingin dipakai, lalu tambahkan sekaligus.</p>
+      {rows.map((row) => (
+        <label key={row.id} className="flex min-h-14 items-start gap-3 rounded-xl border bg-card p-4">
+          <input type="checkbox" name="questionId" value={row.id} disabled={row.chosen} className="mt-1 size-5 shrink-0" />
+          <span className="flex flex-col gap-1">
+            <span className="font-medium">{row.label}</span>
+            <span className="text-sm text-text-muted">{row.detail}</span>
+            {row.chosen && <span className="text-sm text-tone-success">Sudah dipilih</span>}
+          </span>
+        </label>
+      ))}
+      <Feedback state={state} />
+      {rows.some((row) => !row.chosen) && <Button type="submit" disabled={pending} className="min-h-11 self-start">{pending ? "Menambahkan…" : "Tambahkan soal terpilih"}</Button>}
+    </form>
   );
 }
 
