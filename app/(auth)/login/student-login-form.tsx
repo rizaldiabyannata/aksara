@@ -19,6 +19,7 @@ export function StudentLoginForm() {
         icon={School01Icon}
         name="classCode"
         label="Kode kelas"
+        placeholder="Contoh: ABC DEF"
         autoComplete="off"
         autoCapitalize="characters"
         spellCheck={false}
@@ -30,6 +31,7 @@ export function StudentLoginForm() {
         icon={UserIcon}
         name="identity"
         label="NIS atau nama"
+        placeholder="Contoh: 123456"
         autoComplete="off"
         spellCheck={false}
         required

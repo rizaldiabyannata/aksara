@@ -5,7 +5,7 @@ import { ViewIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 
 const LOGIN_INPUT =
-  "w-full min-h-[52px] pl-12 pr-space-md py-3 rounded-xl bg-canvas-peach/40 text-text-primary font-body-lg text-body-lg focus:outline-none focus:bg-surface-card focus:shadow-[0_0_0_3px_rgba(255,112,52,0.2)] focus-visible:ring-[3px] focus-visible:ring-ring transition-all duration-200 aria-invalid:ring-2 aria-invalid:ring-tone-danger";
+  "w-full min-h-[52px] pl-12 pr-space-md py-3 rounded-xl border-2 border-input bg-canvas-peach/40 text-text-primary placeholder:text-text-muted caret-primary-strong hover:border-text-muted focus:border-border-active font-body-lg text-body-lg focus:outline-none focus:bg-surface-card focus:shadow-[0_0_0_3px_rgba(255,112,52,0.2)] focus-visible:ring-[3px] focus-visible:ring-ring transition-all duration-200 aria-invalid:ring-2 aria-invalid:ring-tone-danger";
 const FORM_INPUT =
   "w-full min-h-[48px] pl-12 pr-12 rounded-xl bg-surface-card text-text-primary font-body-md text-body-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-canvas-peach/30 transition-all placeholder:text-text-muted/60 aria-invalid:ring-2 aria-invalid:ring-tone-danger";
 
