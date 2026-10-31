@@ -13,6 +13,12 @@ for (const width of [360, 1280]) {
     await expect(page).toHaveURL(/q=100002/);
     await expect(page.getByRole("table").first()).toContainText("Siswa Dua");
     await expect(page.getByRole("table").first()).not.toContainText("Siswa Satu");
+    expect(await page.evaluate(() => [...document.querySelectorAll<HTMLElement>("a,button,input,select,textarea,summary")].filter((el) => {
+      if (!el.checkVisibility() || el.matches("input[type=hidden],p a")) return false;
+      const target = el.matches("input[type=checkbox],input[type=radio]") ? el.closest("label") ?? el : el;
+      const box = target.getBoundingClientRect();
+      return box.width > 1 && box.height > 1 && (box.width < 44 || box.height < 44);
+    }).map((el) => el.outerHTML.slice(0,120)))).toEqual([]);
     const detail = page.locator("summary").filter({ hasText: `Rincian Siswa Dua — ${seed().teacherQuiz.title}` });
     await detail.focus();
     await page.keyboard.press("Enter");
