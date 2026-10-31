@@ -57,6 +57,8 @@ export default function QuestionsPage({ searchParams }: PageProps<"/teacher/ques
               Kumpulan soal untuk latihan dan ulangan. Tersedia 6 tipe soal dengan kunci jawaban yang hanya terlihat oleh guru.
             </p>
           </div>
+          <div className="flex flex-wrap items-center gap-3">
+          <Link href="/teacher/quizzes/import" className="flex min-h-12 items-center rounded-xl border bg-card px-4 font-semibold focus-visible:ring-[3px] focus-visible:ring-ring">Impor dari Excel</Link>
           <details className="relative shrink-0 group">
             <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer min-h-12 px-space-lg py-3 rounded-xl bg-primary text-primary-foreground font-label-lg text-label-lg font-bold shadow-[0_6px_20px_rgba(255,112,52,0.28)] hover:brightness-105 active:scale-95 transition-all flex items-center gap-3 focus-visible:ring-[3px] focus-visible:ring-ring">
               <HugeiconsIcon icon={PlusSignCircleIcon} className="size-6" aria-hidden="true" />
@@ -78,6 +80,7 @@ export default function QuestionsPage({ searchParams }: PageProps<"/teacher/ques
               ))}
             </div>
           </details>
+          </div>
         </div>
       </div>
       <Suspense fallback={<p className="text-base">Memuat…</p>}>

@@ -27,7 +27,8 @@ export default function QuizzesPage() {
             Susun ulangan, terbitkan ke kelas, lalu lihat hasilnya. Zona waktu: WITA (GMT+8).
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-space-sm">
+        <div className="flex shrink-0 flex-wrap items-center gap-space-sm">
+          <Link href="/teacher/quizzes/import" className="flex min-h-12 items-center justify-center rounded-xl border bg-card px-4 font-semibold focus-visible:ring-[3px] focus-visible:ring-ring">Impor dari Excel</Link>
           <Link
             href="/teacher/quizzes/new"
             className="flex min-h-12 items-center justify-center gap-2.5 rounded-xl bg-primary-container px-space-lg font-label-lg text-label-lg text-on-primary shadow-md transition-all hover:opacity-95 lg:hidden"

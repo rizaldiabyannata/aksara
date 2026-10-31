@@ -146,7 +146,7 @@ const checkSettings = (
   }
 };
 const settingsSchema = z.object(settingsShape).superRefine(checkSettings);
-const createSchema = z
+export const createQuizSchema = z
   .object({
     subjectId: required(100, "Pilih mata pelajaran."),
     ...settingsShape,
@@ -180,19 +180,26 @@ export function validateForPublish(q: PublishCheck, now: Date): string[] {
 }
 
 export async function createQuiz(actorId: string, input: unknown): Promise<{ ok: true; id: string } | Invalid> {
-  const p = parse(createSchema, input);
+  const p = parse(createQuizSchema, input);
   if (!p.ok) return p;
-  const { subjectId, ...settings } = p.data;
-  return prisma.$transaction(async (tx) => {
-    if (!(await tx.subject.findUnique({ where: { id: subjectId }, select: { id: true } }))) {
-      return invalid("subjectId", "Pilih mata pelajaran.");
-    }
-    const q = await tx.quiz.create({
-      data: { ...settings, subjectId, createdById: actorId },
-      select: { id: true },
-    });
-    return { ok: true, id: q.id } as const;
+  return prisma.$transaction((tx) => createQuizInTransaction(tx, actorId, p.data));
+}
+
+/** Shared with imports so the quiz and its questions commit together. */
+export async function createQuizInTransaction(
+  tx: Prisma.TransactionClient,
+  actorId: string,
+  input: z.infer<typeof createQuizSchema>,
+): Promise<{ ok: true; id: string } | Invalid> {
+  const { subjectId, ...settings } = input;
+  if (!(await tx.subject.findUnique({ where: { id: subjectId }, select: { id: true } }))) {
+    return invalid("subjectId", "Pilih mata pelajaran.");
+  }
+  const q = await tx.quiz.create({
+    data: { ...settings, subjectId, createdById: actorId },
+    select: { id: true },
   });
+  return { ok: true, id: q.id };
 }
 
 export async function updateQuiz(actorId: string, id: string, input: unknown): Promise<Result> {

@@ -309,6 +309,8 @@ model Image {
 }
 
 model Quiz {
+  importKey                String?
+  importFingerprint        String?
   id                       String         @id @default(cuid())
   subjectId                String
   subject                  Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
@@ -337,6 +339,8 @@ model Quiz {
   classes                  QuizClass[]
   questions                QuizQuestion[]
   attempts                 QuizAttempt[]
+
+  @@unique([createdById, importKey])
 }
 
 model QuizClass {

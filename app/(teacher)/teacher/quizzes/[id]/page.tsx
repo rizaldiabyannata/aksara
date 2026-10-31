@@ -94,11 +94,15 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
         <p className="text-muted-foreground">
           {quiz.questions.length} soal · total {total} poin · {essays} uraian
         </p>
+        {!published && quiz.questions.some(x => x.status === "DRAFT") && (
+          <p role="note" className="rounded-xl border p-4">Masih ada soal draf. Buka “Periksa soal” untuk memeriksa kunci, menambahkan gambar, dan mengaktifkan setiap soal sebelum menerbitkan ulangan.</p>
+        )}
         <ol className="flex flex-col gap-3">
           {quiz.questions.map((x, i) => (
             <li key={x.id} className="flex flex-col gap-3 rounded-xl border bg-card p-4">
               <p className="font-medium">{i + 1}. {snippet(x.prompt) || TYPE_LABEL[x.type]}</p>
               <Badge variant="outline" className="self-start">{TYPE_LABEL[x.type]}</Badge>
+              {!published && <div className="flex flex-wrap items-center gap-3"><span>{x.status === "DRAFT" ? "Draf — perlu diperiksa" : "Aktif"}</span><Link href={`/teacher/questions/${x.questionId}`} className={buttonVariants({ variant: "outline", size: "sm" })}>Periksa soal {i + 1}</Link></div>}
               {published ? (
                 <p>{x.points} poin</p>
               ) : (
