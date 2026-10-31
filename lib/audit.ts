@@ -45,7 +45,7 @@ export async function writeAudit(
   e: {
     actorUserId: string;
     action: AuditAction;
-    entityType: "User" | "Class" | "Material" | "Image" | "Question" | "Quiz" | "QuizAttempt" | "Holiday";
+    entityType: "User" | "Class" | "Material" | "Image" | "Question" | "Quiz" | "QuizAttempt" | "Holiday" | "Gradebook";
     entityId: string;
     metadata?: Record<string, string | number | boolean | string[] | null>;
   },
