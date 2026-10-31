@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowRight01Icon, HelpCircleIcon, TaskDone01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, HelpCircleIcon } from "@hugeicons/core-free-icons";
 import { ClassroomIllustration } from "@/components/illustrations";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Status } from "@/components/status";
@@ -17,13 +18,8 @@ export default function StudentLoginPage({ searchParams }: PageProps<"/login">) 
       <div className="w-full max-w-5xl mx-auto flex flex-col items-center relative z-10">
       <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-space-md mb-space-xl pb-space-md">
         <div className="flex items-center gap-space-md">
-          <div className="w-12 h-12 rounded-2xl bg-primary-container text-on-primary flex items-center justify-center shadow-md shadow-primary-container/20">
-            <HugeiconsIcon icon={TaskDone01Icon} aria-hidden="true" className="size-7" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-headline-sm text-headline-sm text-text-primary tracking-tight">Aksara</span>
+            <Image src="/brand/aksara-logo.png" alt="Aksara" width={1448} height={1086} className="h-[84px] w-28 object-contain" />
             <p className="font-body-md text-body-md text-text-muted">Belajar dan ulangan untuk kelas VI</p>
-          </div>
         </div>
         <Link
           className="group flex items-center gap-space-sm px-space-md py-2.5 min-h-11 rounded-xl bg-surface-card hover:bg-canvas-peach-subtle transition-all duration-200 shadow-sm text-brand-blue font-label-md text-label-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring"

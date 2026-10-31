@@ -2,6 +2,7 @@
 
 import { BookOpen01Icon, Home01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/components/logout-button";
@@ -19,8 +20,9 @@ export function StudentNav({ pathname }: { pathname?: string }) {
       <nav aria-label="Menu siswa" className="mx-auto flex max-w-3xl items-center gap-1 px-4 py-2">
         <Link
           href="/student"
-          className="mr-auto inline-flex min-h-12 items-center whitespace-nowrap rounded-xl px-2 text-xl font-extrabold text-primary-strong focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none max-[420px]:hidden"
+          className="mr-auto inline-flex min-h-12 items-center gap-2 whitespace-nowrap rounded-xl px-2 text-xl font-extrabold text-primary-strong focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none max-[420px]:hidden"
         >
+          <Image src="/brand/aksara-mark.png" alt="" width={1254} height={1254} className="size-8 object-contain" />
           Aksara
         </Link>
         <Link

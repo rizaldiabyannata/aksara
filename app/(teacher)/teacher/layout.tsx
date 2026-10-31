@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Suspense } from "react";
 import { Calendar03Icon, Logout01Icon, Notification01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -12,12 +13,7 @@ import { BottomNav, BottomNavItems, NavItems, NavLinks } from "./nav-links";
 function Logo({ compact }: { compact?: boolean }) {
   return (
     <div className="flex min-w-0 items-center gap-space-sm">
-      <span
-        aria-hidden="true"
-        className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-container text-on-primary font-headline-md text-headline-md shadow-[0_2px_8px_rgba(255,112,52,0.25)]"
-      >
-        A
-      </span>
+      <Image src="/brand/aksara-mark.png" alt="" width={1254} height={1254} className="size-10 shrink-0 object-contain" />
       <div className="flex min-w-0 flex-col">
         <span className="font-headline-md text-headline-md text-primary-strong tracking-tight leading-none">Aksara</span>
         <span className="font-label-sm text-label-sm text-on-surface-variant">{compact ? "SD VI" : "SD/MI Kelas VI"}</span>
