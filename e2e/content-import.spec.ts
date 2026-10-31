@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { loginTeacher } from "./fixtures";
+import { expect } from "@playwright/test";
+import { test, loginTeacher } from "./fixtures";
 
 test("guru mengambil teks halaman PDF ke draf materi tanpa mengunggah PDF ke server", async ({ page }) => {
   await page.setContent("<h1>Bab Pecahan</h1><p>Satu per dua adalah setengah.</p><table><tr><th>Pecahan</th><th>Desimal</th></tr><tr><td>1/2</td><td>0,5</td></tr></table><p>1/2 + 1/2 = 1</p>");

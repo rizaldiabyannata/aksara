@@ -1,5 +1,5 @@
-// E2E fixture: wipes aksara_test and seeds one class, three students, and two published quizzes.
-// Run by e2e/global-setup.ts with `bun --conditions=react-server`; writes e2e/.auth.json for the specs.
+// E2E fixture: wipes aksara_test and creates isolated synthetic classroom data.
+// Run before each test with `bun --conditions=react-server`; writes e2e/.auth.json for the specs.
 import { randomBytes } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { saveAnswer, startAttempt, submitAttempt } from "@/lib/attempts";
@@ -92,6 +92,27 @@ await submitAttempt(dua.id, forTeacher.quiz.id, started.attemptId);
 // Window over, so the dashboard promotes release even if other students never start.
 await prisma.quiz.update({ where: { id: forTeacher.quiz.id }, data: { endsAt: new Date(Date.now() - 60_000) } });
 
+// An objective-only failed attempt for the browser remedial/replacement journeys.
+const remedial = await makeQuiz(chapter.subjectId, teacher.id, {
+  title: "Remedial E2E", maxAttempts: 2, scoringPolicy: "REMEDIAL", kkm: 75,
+  showFeedbackAfterRelease: true,
+});
+await prisma.quizClass.create({ data: { quizId: remedial.id, classId: cls.id } });
+await makeQuizQuestion(remedial.id, choice.id, { position: 1, points: 1 });
+if (!(await publishQuiz(teacher.id, remedial.id, new Date())).ok) throw new Error("seed remedial publish");
+const empat = { id: students["Siswa Empat"], classId: cls.id };
+const failed = await startAttempt(empat, remedial.id);
+if (!failed.ok) throw new Error("seed remedial start");
+await submitAttempt(empat.id, remedial.id, failed.attemptId);
+
+// An already expired attempt exercises server finalization without clock sleeps.
+const expired = await makeQuiz(chapter.subjectId, teacher.id, { title: "Waktu Habis E2E", durationMinutes: 1 });
+await prisma.quizClass.create({ data: { quizId: expired.id, classId: cls.id } });
+await makeQuizQuestion(expired.id, choice.id, { position: 1, points: 1 });
+if (!(await publishQuiz(teacher.id, expired.id, new Date())).ok) throw new Error("seed expired publish");
+if (!(await startAttempt({ id: students["Siswa Lima"], classId: cls.id }, expired.id, new Date(Date.now() - 300_000))).ok)
+  throw new Error("seed expired start");
+
 writeFileSync(
   "e2e/.auth.json",
   JSON.stringify({
@@ -101,6 +122,8 @@ writeFileSync(
     studentQuiz: { id: forStudent.quiz.id, title: forStudent.quiz.title },
     tokenQuiz: { id: forToken.quiz.id, title: forToken.quiz.title },
     teacherQuiz: { id: forTeacher.quiz.id, title: forTeacher.quiz.title },
+    expiredQuiz: { id: expired.id, title: expired.title },
+    remedialQuiz: { id: remedial.id, title: remedial.title },
     tryoutQuiz: { id: tryout.id, title: tryout.title },
   }),
 );

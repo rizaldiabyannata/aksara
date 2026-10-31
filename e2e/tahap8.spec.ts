@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { loginStudent, loginTeacher, seed } from "./fixtures";
+import { expect } from "@playwright/test";
+import { test, loginStudent, loginTeacher, seed } from "./fixtures";
 
 test("exam token gate, help request, and topbar search", async ({ page, browser }) => {
   const { id, title } = seed().tokenQuiz;

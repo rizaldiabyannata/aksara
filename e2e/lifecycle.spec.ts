@@ -1,0 +1,115 @@
+import { expect } from "@playwright/test";
+import sharp from "sharp";
+import { test, loginStudent, loginTeacher } from "./fixtures";
+
+test("materi: draf terlindungi → gambar → tinjau → terbit → baca → tarik", async ({ page, browser }) => {
+  test.setTimeout(90_000);
+  await loginTeacher(page);
+  await page.goto("/teacher/materials/new");
+  await page.getByLabel("Judul", { exact: true }).fill("Materi siklus E2E");
+  await page.getByLabel("Ringkasan", { exact: true }).fill("Ringkasan materi uji.");
+  await page.getByLabel("Isi materi", { exact: true }).fill("Isi khusus materi uji.");
+  await page.locator("#chapterId").selectOption({ index: 1 });
+  await page.locator("#sourceReference").fill("Sumber sintetis E2E");
+  await page.getByRole("button", { name: "Buat materi", exact: true }).click();
+  await expect(page).not.toHaveURL(/\/new$/);
+  await expect(page).toHaveURL(/\/teacher\/materials\/[a-z0-9]+$/);
+  const id = page.url().split("/").at(-1)!;
+  const student = await browser.newPage();
+  await loginStudent(student, "100001");
+  await student.goto(`/student/materials/${id}`);
+  await expect(student.getByText("Isi khusus materi uji.")).toHaveCount(0);
+
+  const buffer = await sharp({ create: { width: 16, height: 16, channels: 3, background: "#369" } }).png().toBuffer();
+  await page.getByLabel("File gambar", { exact: true }).setInputFiles({ name: "gambar.png", mimeType: "image/png", buffer });
+  await page.locator("#upload-altText").fill("Gambar uji materi");
+  await page.getByRole("button", { name: "Unggah gambar", exact: true }).click();
+  await expect(page.getByText("Gambar diunggah.", { exact: true })).toBeVisible();
+  const image = page.getByRole("img", { name: "Gambar uji materi", exact: true });
+  await expect(image).toBeVisible();
+  await expect.poll(() => image.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+  const imagePath = (await image.getAttribute("src"))!;
+  expect((await student.request.get(imagePath, { maxRedirects: 0 })).status()).toBe(404);
+  await page.getByLabel("Isi materi", { exact: true }).fill(`Isi khusus materi uji.\n\n![Gambar uji materi](aksara-image:${imagePath.split("/").at(-1)})`);
+  await page.getByRole("button", { name: "Simpan materi", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Simpan materi", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "Tandai sudah ditinjau", exact: true }).click();
+  await page.getByRole("button", { name: "Terbitkan", exact: true }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Terbitkan", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Tarik dari siswa", exact: true })).toBeVisible();
+  await student.goto(`/student/materials/${id}`);
+  await expect(student.getByText("Isi khusus materi uji.")).toBeVisible();
+  await expect.poll(() => student.getByRole("img", { name: "Gambar uji materi" }).evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+  await page.getByRole("button", { name: "Tarik dari siswa", exact: true }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Tarik dari siswa", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Tandai sudah ditinjau", exact: true })).toBeVisible();
+  await student.reload();
+  await expect(student.getByText("Isi khusus materi uji.")).toHaveCount(0);
+  expect((await student.request.get(imagePath, { maxRedirects: 0 })).status()).toBe(404);
+  await student.close();
+});
+
+test("foto guru: unggah, tampil, tolak siswa, hapus", async ({ page, browser }) => {
+  await loginTeacher(page);
+  await page.goto("/teacher/password");
+  await page.waitForLoadState("networkidle");
+  const buffer = await sharp({ create: { width: 16, height: 16, channels: 3, background: "#369" } }).png().toBuffer();
+  await page.locator("#photo").setInputFiles({ name: "foto.png", mimeType: "image/png", buffer });
+  await page.getByRole("button", { name: "Simpan foto", exact: true }).click();
+  await expect(page.getByText("Foto profil disimpan.", { exact: true })).toBeVisible();
+  const photo = page.getByRole("region", { name: "Foto profil", exact: true }).getByRole("img");
+  await expect(photo).toHaveAttribute("src", /^\/api\/images\//);
+  await expect.poll(() => photo.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+  const path = (await photo.getAttribute("src"))!;
+  const student = await browser.newPage();
+  await loginStudent(student, "100001");
+  expect((await student.request.get(path, { maxRedirects: 0 })).status()).toBe(404);
+  await page.getByRole("button", { name: "Hapus foto", exact: true }).click();
+  await expect(page.getByText("Foto profil dihapus.", { exact: true })).toBeVisible();
+  expect((await page.request.get(path, { maxRedirects: 0 })).status()).toBe(404);
+  await student.close();
+});
+
+test("kelas dan siswa: buat, login, nonaktifkan, sesi dicabut", async ({ page, browser }) => {
+  await loginTeacher(page);
+  await page.goto("/teacher/classes");
+  await page.getByLabel("Nama kelas baru").fill("VI-QA");
+  await page.getByRole("button", { name: "Buat Kelas Baru", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "VI-QA", exact: true })).toBeVisible();
+  await page.goto("/teacher/students");
+  await page.locator("#displayName").fill("Siswa QA");
+  await page.locator("#nis").fill("900001");
+  // Use the seeded class so the ordinary student login helper remains usable.
+  await page.locator('select[name="classId"]').last().selectOption({ label: "VI-E2E" });
+  await page.getByRole("button", { name: "Tambah siswa", exact: true }).click();
+  const row = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Siswa QA", exact: true }) });
+  await expect(row).toBeVisible();
+  const student = await browser.newPage();
+  await loginStudent(student, "900001");
+  await row.getByRole("button", { name: "Nonaktifkan", exact: true }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Ya, nonaktifkan", exact: true }).click();
+  await expect(row.getByRole("button", { name: "Aktifkan", exact: true })).toBeVisible();
+  await student.goto("/student");
+  await expect(student).toHaveURL(/\/login/);
+  await student.close();
+});
+
+test("struktur mapel: buat mapel, bab dan subbab melalui formulir", async ({ page }) => {
+  await loginTeacher(page);
+  await page.goto("/teacher/subjects");
+  const newSubject = page.locator("#tambah-mapel");
+  await newSubject.getByLabel("Nama mapel", { exact: true }).fill("Mapel QA");
+  await newSubject.getByRole("button", { name: "Tambah mapel", exact: true }).click();
+  const subject = page.getByRole("article").filter({ has: page.getByRole("heading", { name: "Mapel QA", exact: true }) });
+  await expect(subject).toBeVisible();
+  await subject.locator("summary").filter({ hasText: "Tambah bab" }).click();
+  await subject.getByLabel("Judul bab", { exact: true }).fill("Bab QA");
+  await subject.getByLabel("Nama buku sumber", { exact: true }).fill("Buku sintetis QA");
+  await subject.getByLabel("Tahun atau edisi", { exact: true }).fill("2026");
+  await subject.getByRole("button", { name: "Tambah bab", exact: true }).click();
+  await expect(subject.getByRole("heading", { name: /Bab QA/ })).toBeVisible();
+  await subject.locator("summary").filter({ hasText: "Tambah subbab" }).click();
+  await subject.getByLabel("Judul subbab", { exact: true }).fill("Subbab QA");
+  await subject.getByRole("button", { name: "Tambah subbab", exact: true }).click();
+  await expect(subject.getByText("Subbab QA", { exact: true })).toBeVisible();
+});

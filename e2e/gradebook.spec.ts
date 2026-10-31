@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { loginTeacher, seed } from "./fixtures";
+import { expect } from "@playwright/test";
+import { test, loginTeacher, seed } from "./fixtures";
 
 for (const width of [360, 1280]) {
   test(`buku nilai: filter, rincian, unduh dan keyboard pada ${width}px`, async ({ page }) => {

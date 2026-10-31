@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "lib/generated/**",
+    // Generated Playwright HTML/trace bundles are third-party output.
+    "playwright-report/**",
+    "test-results/**",
     // Nested git worktrees.
     ".claude/**",
   ]),

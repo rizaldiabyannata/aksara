@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { loginStudent, loginTeacher, seed } from "./fixtures";
+import { expect } from "@playwright/test";
+import { test, loginStudent, loginTeacher, seed } from "./fixtures";
 
 test("teacher grades the essay from the dashboard, releases, and the student sees the score", async ({ page, browser }) => {
   const { title } = seed().teacherQuiz;
@@ -49,6 +49,7 @@ test("class code dialog", async ({ page }) => {
   expect(codeFits, "class code is clipped").toBe(true);
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
+  await expect(page.getByRole("button", { name: "Tampilkan kode" }).first()).toBeFocused();
 });
 
 // Regression: the edit page once called a "use client" helper from the server and crashed.

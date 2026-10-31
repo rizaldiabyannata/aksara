@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { loginStudent, loginTeacher, seed } from "./fixtures";
+import { expect } from "@playwright/test";
+import { test, loginStudent, loginTeacher, seed } from "./fixtures";
 
 test("tryout: student answers a PGK Kategori item, teacher releases and sees Evaluasi, student sees the per-chapter result", async ({ page, browser }) => {
   const { id, title } = seed().tryoutQuiz;

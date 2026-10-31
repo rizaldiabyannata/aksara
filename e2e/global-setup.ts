@@ -5,6 +5,4 @@ export default function setup() {
   assertTestDatabaseUrl(TEST_DATABASE_URL);
   const env = { ...process.env, DATABASE_URL: TEST_DATABASE_URL, DIRECT_URL: TEST_DATABASE_URL };
   execFileSync("bunx", ["prisma", "migrate", "deploy"], { env, stdio: "inherit" });
-  // react-server: lib/* imports "server-only", which throws under any other condition.
-  execFileSync("bun", ["--conditions=react-server", "e2e/seed.ts"], { env, stdio: "inherit" });
 }

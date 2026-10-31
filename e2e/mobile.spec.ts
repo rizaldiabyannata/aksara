@@ -1,5 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { loginStudent, loginTeacher, seed } from "./fixtures";
+import { expect, type Page } from "@playwright/test";
+import { test, loginStudent, loginTeacher, seed } from "./fixtures";
 
 // Ruling R2: checkboxes/radios are measured by their <label>; links inside running text (p a) are exempt (WCAG 2.5.8).
 async function smallTargets(page: Page) {
@@ -70,20 +70,22 @@ for (const width of [360, 1280]) {
       const s = seed();
       await check(page, "/login", { role: "button", name: "Masuk" });
       await loginStudent(page, "Siswa Dengan Nama Yang Sangat Panjang Sekali");
-      // The 360 run starts the quiz below, so the 1280 run's first card is the "Lanjutkan" link.
-      await check(page, "/student", width === 360 ? { role: "button", name: `Mulai ${s.studentQuiz.title}` } : "main");
+      // Both viewports start with independent fixtures.
+      await check(page, "/student", { role: "button", name: `Mulai ${s.studentQuiz.title}` });
       await check(page, "/student/materials", { role: "link", name: "Beranda" });
       await check(page, `/student/quizzes/${s.teacherQuiz.id}/result`, { role: "link", name: /Kembali ke beranda|Lihat nilai|Beranda/ });
-      if (width === 360) {
+      {
         await page.goto("/student");
         await page.getByRole("button", { name: `Mulai ${s.studentQuiz.title}` }).click();
         await page.waitForURL("**/attempt");
         await check(page, page.url().replace(/^https?:\/\/[^/]+/, ""), { role: "button", name: "Berikutnya" });
-        // The fixed bottom bar must not cover the last row (the "Ragu-ragu" flag).
-        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-        const flag = (await page.getByText("Ragu-ragu dengan nomor ini?").boundingBox())!;
-        const bar = (await page.getByRole("button", { name: "Kumpulkan jawaban" }).boundingBox())!;
-        expect(flag.y + flag.height, "flag row hidden by bottom bar").toBeLessThanOrEqual(bar.y);
+        // The fixed bottom bar exists only on phones.
+        if (width === 360) {
+          await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+          const flag = (await page.getByText("Ragu-ragu dengan nomor ini?").boundingBox())!;
+          const bar = (await page.getByRole("button", { name: "Kumpulkan jawaban" }).boundingBox())!;
+          expect(flag.y + flag.height, "flag row hidden by bottom bar").toBeLessThanOrEqual(bar.y);
+        }
       }
     });
 

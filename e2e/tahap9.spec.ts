@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import ExcelJS from "exceljs";
-import { loginTeacher } from "./fixtures";
+import { test, loginTeacher } from "./fixtures";
 
 // Latest past school day in WITA (skip Sunday), so the form is always open whatever day the suite runs.
 function pastSchoolDay(): string {
@@ -62,4 +62,17 @@ test("import students from an Excel roster read in the browser", async ({ page }
   await expect(dialog.getByText("2 siswa ditambahkan.")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByText("No. Induk: 7702")).toBeVisible();
+});
+
+test("hari libur menutup absensi dan pembatalan membuka kembali", async ({ page }) => {
+  await loginTeacher(page);
+  await page.goto(`/teacher/attendance?date=${pastSchoolDay()}`);
+  await page.getByText("Tanggal ini hari libur?", { exact: true }).click();
+  await page.getByLabel("Keterangan libur", { exact: true }).fill("Libur sintetis E2E");
+  await page.getByRole("button", { name: "Jadikan hari libur", exact: true }).click();
+  await expect(page.getByText("Libur sintetis E2E", { exact: false }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Simpan absensi", exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: /Batalkan libur|Hapus libur/ }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Ya, batalkan libur", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Simpan absensi", exact: true })).toBeVisible();
 });

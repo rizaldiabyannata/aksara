@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import ExcelJS from "exceljs";
 import { IMPORT_SHEETS } from "../lib/question-import-format";
-import { loginStudent, loginTeacher } from "./fixtures";
+import { test, loginStudent, loginTeacher } from "./fixtures";
 
 const examples: Record<string, string>[] = [
   { Urutan: "1", Soal: "Excel: hasil 2 + 2?", "Opsi A": "4", "Opsi B": "5", Kunci: "A", Pembahasan: "PEMBAHASAN-EXCEL-RAHASIA" },
@@ -95,5 +95,20 @@ test("template Excel → enam tipe → retry aman → draf → aktif → siswa",
   await student.getByRole("radio", { name: "4", exact: true }).check();
   await student.getByRole("button", { name: "Berikutnya", exact: true }).click();
   await expect(student.getByText("Excel: 8 bilangan genap.", { exact: true })).toBeVisible();
+  await student.getByRole("radio", { name: "Benar", exact: true }).check();
+  await student.getByRole("button", { name: "Berikutnya", exact: true }).click();
+  await student.getByRole("checkbox", { name: "2", exact: true }).check();
+  await student.getByRole("checkbox", { name: "4", exact: true }).check();
+  await student.getByRole("button", { name: "Berikutnya", exact: true }).click();
+  await student.getByLabel("Jawaban soal 4", { exact: true }).fill("Denpasar");
+  await student.getByRole("button", { name: "Berikutnya", exact: true }).click();
+  await student.getByLabel("Jawaban soal 5", { exact: true }).fill("Menutup keran setelah dipakai.");
+  await student.getByRole("button", { name: "Berikutnya", exact: true }).click();
+  await expect(student.getByText("Excel: kelompokkan.", { exact: true })).toBeVisible();
+  await student.getByRole("radio").nth(0).check();
+  await student.getByRole("radio").nth(3).check();
+  await student.getByRole("button", { name: "Kumpulkan jawaban", exact: true }).click();
+  await student.getByRole("alertdialog").getByRole("button", { name: "Kumpulkan", exact: true }).click();
+  await expect(student.getByText("Jawabanmu sudah dikumpulkan.").first()).toBeVisible();
   await student.close();
 });

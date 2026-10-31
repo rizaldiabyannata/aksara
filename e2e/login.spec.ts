@@ -1,5 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { seed } from "./fixtures";
+import { expect, type Page } from "@playwright/test";
+import { test, seed } from "./fixtures";
 
 async function teacherLogin(page: Page, username: string, password: string) {
   // The previous submit must finish first: React resets the form when it does, wiping what we type.
