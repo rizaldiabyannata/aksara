@@ -12,10 +12,12 @@ import {
 import { requireTeacher } from "@/lib/auth/guard";
 import { formatWita } from "@/lib/format";
 import type { Difficulty, QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
-import { categoryLabelsOf, countQuestionsByStatus, countQuestionsByType, listQuestions, type QuestionRow } from "@/lib/questions";
+import { categoryLabelsOf, countFilteredQuestions, countQuestionsByStatus, countQuestionsByType, listQuestions, type QuestionRow } from "@/lib/questions";
 import { getSubjectTree, listChapterOptions } from "@/lib/subjects";
 import { cn } from "@/lib/utils";
 import { DIFFICULTY_LABEL, STATUS_LABEL, TYPE_LABEL } from "./labels";
+
+import { BulkQuestionProvider, QuestionSelectionCheckbox } from "./bulk-selection";
 
 export const metadata: Metadata = { title: "Bank soal" };
 
@@ -110,12 +112,14 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
   const status = known<QuestionStatus>(STATUS_LABEL, one(sp.status));
   const q = one(sp.q);
   const page = Math.max(1, Math.trunc(Number(one(sp.page))) || 1);
-  const [{ rows, hasNext }, subjects, chapters, byStatus, byType] = await Promise.all([
-    listQuestions({ subjectId, chapterId, subchapterId, type, difficulty, status, q, page }),
+  const filter = { subjectId, chapterId, subchapterId, type, difficulty, status, q: q?.trim() || undefined };
+  const [{ rows, hasNext }, subjects, chapters, byStatus, byType, matchingTotal] = await Promise.all([
+    listQuestions({ ...filter, page }),
     getSubjectTree(),
     listChapterOptions(),
     countQuestionsByStatus(),
     countQuestionsByType(),
+    countFilteredQuestions(filter),
   ]);
   const total = byStatus.ACTIVE + byStatus.DRAFT;
   const pct = total ? Math.round((byStatus.ACTIVE / total) * 100) : 0;
@@ -151,7 +155,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
   const tray = "min-h-12 px-3 py-2 rounded-xl bg-surface-container-lowest hover:bg-canvas-peach font-label-sm text-label-sm flex items-center gap-1.5 transition-all focus-visible:ring-[3px] focus-visible:ring-ring";
   const stat = "bg-surface-container-lowest p-space-lg rounded-2xl shadow-[0_2px_12px_rgba(230,115,60,0.04)] flex items-center gap-4";
   return (
-    <>
+    <BulkQuestionProvider key={JSON.stringify(filter)} filter={filter} total={matchingTotal} pageIds={rows.map(row => row.id)} header={<>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
         <div className={stat}>
           <div className="w-14 h-14 rounded-2xl bg-canvas-peach flex items-center justify-center text-primary-strong shrink-0">
@@ -212,6 +216,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
             <HugeiconsIcon icon={Search01Icon} className="absolute left-3.5 size-5 text-text-muted" aria-hidden="true" />
             <input
               name="q"
+              maxLength={500}
               defaultValue={q ?? ""}
               autoComplete="off"
               aria-label="Kata kunci"
@@ -251,6 +256,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
           </div>
         </div>
       </form>
+      </>}>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
         <div className="lg:col-span-8 flex flex-col gap-space-md">
@@ -264,6 +270,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
             const draft = r.status === "DRAFT";
             return (
               <article key={r.id} className={cn("bg-surface-container-lowest rounded-2xl p-space-lg shadow-[0_3px_16px_rgba(230,115,60,0.05)] hover:shadow-[0_8px_24px_rgba(230,115,60,0.09)] transition-all", draft && "border-l-4 border-primary-container")}>
+                <QuestionSelectionCheckbox id={r.id} name={name} />
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={cn("px-3 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1.5", ts.chip)}>
@@ -363,7 +370,7 @@ async function List({ searchParams }: { searchParams: Promise<Record<string, str
           />
         </aside>
       </div>
-    </>
+    </BulkQuestionProvider>
   );
 }
 
@@ -405,7 +412,7 @@ function KeyPreview({ r }: { r: QuestionRow }) {
   }
   if (r.type === "TRUE_FALSE") {
     return (
-      <div className="flex items-center gap-3 mb-space-md">
+      <div className="mb-space-md flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         {[[true, "BENAR", CheckmarkCircle02Icon], [false, "SALAH", CancelCircleIcon]].map(([v, l, icon]) =>
           k.value === v ? (
             <div key={String(v)} className="flex-1 p-3.5 rounded-xl bg-tone-success-bg flex items-center justify-between gap-2">

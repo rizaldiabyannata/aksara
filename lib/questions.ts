@@ -1,3 +1,4 @@
+import { questionWhere, type QuestionScopeFilter } from "./question-filter";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { parse, type Invalid, type NotFound } from "@/lib/validation";
@@ -59,16 +60,7 @@ export type QuestionRow = {
   subjectName: string;
   updatedAt: Date;
 };
-export type QuestionFilter = {
-  subjectId?: string;
-  chapterId?: string;
-  subchapterId?: string;
-  type?: QuestionType;
-  difficulty?: Difficulty;
-  status?: QuestionStatus;
-  q?: string;
-  page?: number;
-};
+export type QuestionFilter = QuestionScopeFilter & { page?: number };
 
 const PAGE_SIZE = 50;
 const FOREIGN_IMAGE = "Ada kode gambar yang bukan milik soal ini. Pakai tombol Salin kode sisip.";
@@ -324,21 +316,16 @@ export async function duplicateQuestion(actorId: string, id: string): Promise<{ 
   }
 }
 
+export async function countFilteredQuestions(filter: QuestionScopeFilter): Promise<number> {
+  return prisma.question.count({ where: questionWhere(filter) });
+}
+
 export async function listQuestions(
   f: QuestionFilter,
 ): Promise<{ rows: QuestionRow[]; hasNext: boolean }> {
   const page = Number.isInteger(f.page) && f.page! >= 1 ? f.page! : 1;
-  const q = f.q?.trim();
   const rows = await prisma.question.findMany({
-    where: {
-      chapterId: f.chapterId,
-      subchapterId: f.subchapterId,
-      type: f.type,
-      difficulty: f.difficulty,
-      status: f.status,
-      ...(f.subjectId && { chapter: { subjectId: f.subjectId } }),
-      ...(q && { prompt: { contains: q, mode: "insensitive" as const } }),
-    },
+    where: questionWhere(f),
     orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
     skip: (page - 1) * PAGE_SIZE,
     take: PAGE_SIZE + 1,

@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Impor soal dari Excel" };
 export default function ImportQuestionsPage() {
   return (
     <section className="flex min-w-0 flex-col gap-6 px-space-lg py-space-lg">
-      <PageHeader title="Impor soal dari Excel" description="Isi template, periksa soal, lalu simpan ke bank soal dan draf ulangan." actions={<Link href="/teacher/quizzes" className={buttonVariants({ variant: "outline" })}>Kembali ke ulangan</Link>} />
+      <PageHeader title="Impor soal dari Excel" description="Pilih ulangan biasa atau TKA, siapkan soal dengan template dan prompt ChatGPT, lalu periksa hasil impor." actions={<Link href="/teacher/quizzes" className={buttonVariants({ variant: "outline" })}>Kembali ke ulangan</Link>} />
       <Suspense fallback={<p>Memuat…</p>}><Form /></Suspense>
     </section>
   );
@@ -20,5 +20,5 @@ export default function ImportQuestionsPage() {
 async function Form() {
   await requireTeacher();
   const [tree, classes] = await Promise.all([getSubjectTree(), listClasses()]);
-  return <QuestionImportForm subjects={tree.map(s => ({ id: s.id, name: s.name, chapters: s.chapters.map(c => ({ id: c.id, title: c.title })) }))} classes={classes.filter(c => c.isActive).map(c => ({ id: c.id, name: c.name }))} />;
+  return <QuestionImportForm subjects={tree.map(s => ({ id: s.id, name: s.name, chapters: s.chapters.map(c => ({ id: c.id, title: c.title, subchapters: c.subchapters.map(sc => sc.title) })) }))} classes={classes.filter(c => c.isActive).map(c => ({ id: c.id, name: c.name }))} />;
 }

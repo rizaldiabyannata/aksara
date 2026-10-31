@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireTeacher } from "@/lib/auth/guard";
+import { bulkSetQuestionStatus } from "@/lib/question-bulk";
 import { field, type FormState } from "@/lib/form-state";
 import type { QuestionStatus, QuestionType } from "@/lib/generated/prisma/enums";
 import {
@@ -137,6 +138,20 @@ export async function updateQuestionAction(
 export async function setQuestionStatusAction(id: string, to: QuestionStatus): Promise<FormState> {
   const user = await requireTeacher();
   return run(() => setQuestionStatus(user.id, id, to), "Status soal diubah.");
+}
+
+export async function bulkQuestionStatusAction(input: unknown) {
+  const user = await requireTeacher();
+  let result;
+  try {
+    result = await bulkSetQuestionStatus(user.id, input);
+  } catch {
+    return { ok: false, message: UNEXPECTED } as const;
+  }
+  if (!result.ok) return { ok: false, message: result.error === "INVALID" ? result.fieldErrors.form : ERRORS.NOT_FOUND } as const;
+  revalidatePath("/teacher/questions", "layout");
+  revalidatePath("/teacher/quizzes", "layout");
+  return result;
 }
 
 export async function duplicateQuestionAction(id: string): Promise<FormState> {

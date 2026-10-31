@@ -60,6 +60,12 @@ async function publish(title: string, questions: { id: string; points: number }[
 
 // Tryout TKA over two chapters, taken and released live by e2e/tahap10.spec.ts.
 const tkaBilangan = await makeChapter({ title: "Bilangan" });
+await prisma.subject.update({ where: { id: tkaBilangan.subjectId }, data: { name: "TKA Matematika" } });
+await prisma.subchapter.create({ data: { chapterId: tkaBilangan.id, title: "Pecahan senilai", order: 1 } });
+await prisma.subject.create({ data: {
+  name: "TKA Bahasa Indonesia",
+  chapters: { create: { title: "Evaluasi dan Apresiasi", order: 1, sourceBook: "Kisi-kisi TKA", sourceYearOrEdition: "2025" } },
+} });
 const tkaData = await prisma.chapter.create({
   data: { subjectId: tkaBilangan.subjectId, order: 2, title: "Data", sourceBook: "Kisi-kisi TKA", sourceYearOrEdition: "2025" },
 });

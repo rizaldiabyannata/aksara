@@ -11,6 +11,7 @@ import {
 } from "../../../../tests/next-mocks";
 import { objects } from "../../../../tests/storage-fake";
 import {
+  bulkQuestionStatusAction,
   createQuestionAction,
   deleteQuestionAction,
   duplicateQuestionAction,
@@ -57,6 +58,7 @@ const valid = (chapterId: string) => ({
 });
 
 const calls: [string, (id: string, chapterId: string) => Promise<unknown>][] = [
+  ["bulkQuestionStatusAction", id => bulkQuestionStatusAction({ to: "ACTIVE", selection: { mode: "ids", ids: [id] } })],
   ["createQuestionAction", (_id, c) => createQuestionAction("SINGLE_CHOICE", undefined, form(valid(c)))],
   ["updateQuestionAction", (id, c) => updateQuestionAction(id, undefined, form(valid(c)))],
   ["setQuestionStatusAction", (id) => setQuestionStatusAction(id, "ACTIVE")],
@@ -88,6 +90,15 @@ describe.each(calls)("%s authz", (_name, call) => {
 });
 
 describe("question actions", () => {
+  it("bulk status returns actual counts and revalidates affected teacher views", async () => {
+    const { user } = await makeTeacher();
+    await signIn(user);
+    const q = await makeQuestion((await makeChapter()).id, user.id);
+    expect(await bulkQuestionStatusAction({ to: "ACTIVE", selection: { mode: "ids", ids: [q.id] } })).toEqual({ ok: true, matched: 1, changed: 1, unchanged: 0 });
+    const { revalidatePath } = await import("next/cache");
+    expect(revalidatePath).toHaveBeenCalledWith("/teacher/questions", "layout");
+    expect(revalidatePath).toHaveBeenCalledWith("/teacher/quizzes", "layout");
+  });
   it("createQuestionAction keeps values on error", async () => {
     const { user } = await makeTeacher();
     await signIn(user);

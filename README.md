@@ -23,6 +23,20 @@ Tes (butuh Docker menyala):
 bun run test
 ```
 
+## Membuat soal ulangan atau TKA dengan ChatGPT
+
+Buka **Ulangan → Impor dari Excel**. Pilih jenis ulangan, mapel, dan bab; atur komposisi tipe soal, kesulitan, level berpikir, jumlah, dan bobot. Unduh template Excel serta prompt `.txt` (atau salin prompt), lalu unggah keduanya ke ChatGPT dan minta hasil `.xlsx`. Unggah hasilnya kembali ke Aksara, periksa pratinjau dan kunci, lalu simpan sebagai draf. Pengisian Excel manual tetap tersedia tanpa mengatur prompt.
+
+Ulangan biasa mendukung enam tipe soal. Prompt Tryout TKA mendukung mapel **TKA Matematika** dan **TKA Bahasa Indonesia**, dengan tipe PG, PG kompleks, dan Kategori. Pada Bahasa Indonesia TKA, kompetensi mengikuti bab dan kolom Level Kognitif dibiarkan kosong. Jika mapel TKA belum tersedia, pengisian seed TKA dilakukan terpisah sesuai prosedur database; fitur prompt tidak menjalankan seed.
+
+Kesulitan berbeda dari HOTS. Prompt meminta komposisi yang tepat dan pemeriksaan mandiri, tetapi hasil AI tetap harus lolos validator impor serta ditinjau guru. Semua hasil impor masih draf; tidak otomatis aktif atau terbit. Tidak ada koneksi API ChatGPT atau pengiriman materi otomatis dari Aksara.
+
+## Bulk status Bank Soal
+
+Di **Bank Soal**, centang soal tertentu atau pilih semua soal pada halaman. **Pilih semua N hasil filter** mencakup halaman lain; hilangkan centang soal yang ingin dikecualikan. Pilihan bertahan saat berganti halaman dan dihapus ketika filter berubah. Pilih **Aktifkan** atau **Jadikan draf**, lalu periksa konfirmasi sebelum menjalankan.
+
+Perubahan status dan audit disimpan dalam satu transaksi. Soal yang sudah berstatus sama tidak diubah ulang. Ulangan terbit mempertahankan salinan soalnya; ulangan draf tetap membutuhkan soal aktif sebelum diterbitkan. Maksimal 1.000 pilihan manual atau pengecualian; gunakan filter untuk mempersempit cakupan bila diperlukan.
+
 ## Setup Neon Object Storage
 
 Gambar materi disimpan di bucket Neon Object Storage (S3-compatible) yang privat. Ulangi untuk setiap environment.

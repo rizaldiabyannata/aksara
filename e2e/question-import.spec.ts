@@ -29,6 +29,8 @@ test("template Excel → enam tipe → retry aman → draf → aktif → siswa",
   await page.getByLabel("Mata pelajaran", { exact: true }).selectOption({ index: 1 });
   await page.getByLabel("Bab", { exact: true }).selectOption({ index: 1 });
   await page.getByLabel("VI-E2E", { exact: true }).check();
+  // Invalid optional prompt settings must not block importing a manually filled workbook.
+  await page.getByLabel("Jumlah soal 1", { exact: true }).fill("");
   const pg = book.getWorksheet("Pilihan Ganda")!;
   const keyColumn = IMPORT_SHEETS[0].headers.indexOf("Kunci") + 1;
   pg.getCell(2, keyColumn).value = "Z";
@@ -111,4 +113,71 @@ test("template Excel → enam tipe → retry aman → draf → aktif → siswa",
   await student.getByRole("alertdialog").getByRole("button", { name: "Kumpulkan", exact: true }).click();
   await expect(student.getByText("Jawabanmu sudah dikumpulkan.").first()).toBeVisible();
   await student.close();
+});
+
+test("prompt dinamis membedakan ulangan dan TKA, unduh, clipboard, dan mobile", async ({ page, context }) => {
+  await loginTeacher(page);
+  await page.goto("/teacher/quizzes/import");
+  const downloadButton = page.getByRole("button", { name: "Unduh prompt .txt" });
+  await expect(downloadButton).toBeDisabled();
+  await page.getByLabel("Mata pelajaran", { exact: true }).selectOption({ index: 1 });
+  await page.getByLabel("Bab", { exact: true }).selectOption({ index: 1 });
+  const preview = page.getByLabel("Pratinjau prompt", { exact: true });
+  await expect(preview).toHaveValue(/Total tepat 10 soal/);
+  await expect(preview).toHaveValue(/Ulangan biasa/);
+  await page.getByLabel("Konteks tambahan (opsional)").fill("Gunakan situasi pasar tradisional.");
+  await page.getByRole("button", { name: "Tambah komposisi", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await page.getByLabel("Tipe soal 2", { exact: true }).selectOption("ESSAY");
+  await page.getByLabel("Level berpikir 2", { exact: true }).selectOption("Penalaran");
+  await page.getByLabel("Bobot 2", { exact: true }).fill("3");
+  await expect(preview).toHaveValue(/1 soal; Uraian; Sedang; Penalaran\/HOTS; bobot 3/);
+  const downloadEvent = page.waitForEvent("download");
+  await downloadButton.click();
+  const download = await downloadEvent;
+  expect(download.suggestedFilename()).toBe("prompt-ulangan-aksara.txt");
+  expect(await readFile((await download.path())!, "utf8")).toBe(await preview.inputValue());
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.getByRole("button", { name: "Salin prompt", exact: true }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Prompt disalin" })).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(await preview.inputValue());
+  await page.evaluate(() => { Object.defineProperty(navigator.clipboard, "writeText", { configurable: true, value: async () => { throw new Error("clipboard denied"); } }); });
+  await page.getByRole("button", { name: "Salin prompt", exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Prompt belum dapat disalin" })).toContainText("salin manual");
+
+  await page.getByLabel("Jenis ulangan").selectOption("TRYOUT_TKA");
+  await expect(page.getByLabel("Durasi (menit)")).toHaveValue("75");
+  await expect(downloadButton).toBeDisabled();
+  await expect(page.getByLabel("Tipe soal 2", { exact: true })).toHaveValue("ESSAY");
+  await expect(page.getByRole("list", { name: "Perlu dilengkapi untuk prompt" })).toContainText("Perbaiki komposisi TKA");
+  await page.getByLabel("Mata pelajaran", { exact: true }).selectOption({ label: "TKA Matematika" });
+  await page.getByLabel("Bab", { exact: true }).selectOption({ label: "Bilangan" });
+  await page.getByLabel("Tipe soal 2", { exact: true }).selectOption("CATEGORY");
+  await expect(preview).toHaveValue(/Tryout TKA/);
+  await expect(preview).toHaveValue(/Pecahan senilai/);
+  const tkaDownloadEvent = page.waitForEvent("download");
+  await downloadButton.click();
+  expect((await tkaDownloadEvent).suggestedFilename()).toBe("prompt-tka-aksara.txt");
+  await page.getByLabel("Bab", { exact: true }).selectOption({ label: "Data" });
+  await expect(preview).toHaveValue(/Bab: Data/);
+  await expect(preview).not.toHaveValue(/Pecahan senilai/);
+  await page.getByLabel("Mata pelajaran", { exact: true }).selectOption({ label: "TKA Bahasa Indonesia" });
+  await expect(downloadButton).toBeDisabled(); // chapter must be selected again
+  await page.getByLabel("Bab", { exact: true }).selectOption({ index: 1 });
+  await expect(preview).toHaveValue(/Level Kognitif harus kosong/);
+  await expect(preview).toHaveValue(/Gunakan situasi pasar tradisional/);
+  await page.getByLabel("Jumlah soal 1", { exact: true }).fill("100");
+  await expect(downloadButton).toBeDisabled();
+  await page.getByRole("button", { name: "Hapus komposisi 2", exact: true }).click();
+  await expect(downloadButton).toBeEnabled();
+  for (const width of [360, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    for (const control of [downloadButton, page.getByRole("button", { name: "Salin prompt", exact: true }), page.getByLabel("Tipe soal 1", { exact: true })]) {
+      expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    }
+  }
+  await page.screenshot({ path: "test-results/question-prompt-1280.png", fullPage: true });
+  await page.setViewportSize({ width: 360, height: 900 });
+  await page.screenshot({ path: "test-results/question-prompt-360.png", fullPage: true });
 });

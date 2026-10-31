@@ -3,21 +3,23 @@
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { FormField, FormMessage } from "@/components/form-field";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { IMPORT_BODY_MAX, IMPORT_FILE_MAX, validateImportRows, type ImportPreview } from "@/lib/question-import-format";
 
+import { PromptBuilder } from "./prompt-builder";
+
 const SELECT = "min-h-12 w-full min-w-0 rounded-xl border-2 border-input bg-card px-3 text-base focus-visible:ring-[3px] focus-visible:ring-ring";
-type Subject = { id: string; name: string; chapters: { id: string; title: string }[] };
+type Subject = { id: string; name: string; chapters: { id: string; title: string; subchapters: string[] }[] };
 
 export function QuestionImportForm({ subjects, classes }: { subjects: Subject[]; classes: { id: string; name: string }[] }) {
   const router = useRouter();
   const [subjectId, setSubjectId] = useState("");
   const [chapterId, setChapterId] = useState("");
-  const [kind, setKind] = useState("REGULAR");
+  const [kind, setKind] = useState<"REGULAR" | "TRYOUT_TKA">("REGULAR");
   const [duration, setDuration] = useState("30");
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [filename, setFilename] = useState("");
@@ -88,18 +90,11 @@ export function QuestionImportForm({ subjects, classes }: { subjects: Subject[];
   return (
     <form onSubmit={submit} className="flex min-w-0 flex-col gap-6">
       <Card>
-        <CardHeader><CardTitle>1. Unduh dan isi template</CardTitle><CardDescription>Pilih lembar sesuai tipe soal. Ada petunjuk dan contoh untuk keenam tipe. Maksimal 100 soal; satu mata pelajaran dan satu bab.</CardDescription></CardHeader>
-        <CardContent className="flex flex-col items-start gap-3">
-          <a href="/api/question-import/template" download className={buttonVariants({ variant: "outline" })}>Unduh template Excel</a>
-          <p className="text-sm text-muted-foreground">Isi baris 2 dan seterusnya. Lembar Contoh tidak diimpor. Gambar ditambahkan di editor setelah impor.</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader><CardTitle>2. Tentukan ulangan</CardTitle><CardDescription>Soal disimpan sebagai draf. Jadwal dan pengaturan lanjutan dapat diatur setelah impor.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>1. Pilih konteks dan jenis ulangan</CardTitle><CardDescription>Soal disimpan sebagai draf. Jadwal dan pengaturan lanjutan dapat diatur setelah impor.</CardDescription></CardHeader>
         <CardContent>
           <fieldset disabled={locked} className="grid min-w-0 gap-4 md:grid-cols-2">
             <FormField name="title" label="Judul ulangan" required maxLength={150} autoComplete="off" />
-            <div className="flex min-w-0 flex-col gap-2"><Label htmlFor="import-kind">Jenis ulangan</Label><select id="import-kind" className={SELECT} value={kind} onChange={e => { setKind(e.target.value); setDuration(e.target.value === "TRYOUT_TKA" ? "75" : "30"); }}><option value="REGULAR">Ulangan biasa</option><option value="TRYOUT_TKA">Tryout TKA</option></select></div>
+            <div className="flex min-w-0 flex-col gap-2"><Label htmlFor="import-kind">Jenis ulangan</Label><select id="import-kind" className={SELECT} value={kind} onChange={e => { setKind(e.target.value as "REGULAR" | "TRYOUT_TKA"); setDuration(e.target.value === "TRYOUT_TKA" ? "75" : "30"); }}><option value="REGULAR">Ulangan biasa</option><option value="TRYOUT_TKA">Tryout TKA</option></select></div>
             <div className="flex min-w-0 flex-col gap-2"><Label htmlFor="import-subject">Mata pelajaran</Label><select id="import-subject" className={SELECT} required value={subjectId} onChange={e => { setSubjectId(e.target.value); setChapterId(""); }}><option value="">Pilih mata pelajaran</option>{subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
             <div className="flex min-w-0 flex-col gap-2"><Label htmlFor="import-chapter">Bab</Label><select id="import-chapter" className={SELECT} required disabled={!subjectId || locked} value={chapterId} onChange={e => setChapterId(e.target.value)}><option value="">Pilih bab</option>{chapters.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}</select></div>
             <FormField name="durationMinutes" label="Durasi (menit)" type="number" min={1} max={300} required value={duration} onChange={e => setDuration(e.target.value)} />
@@ -107,6 +102,12 @@ export function QuestionImportForm({ subjects, classes }: { subjects: Subject[];
           </fieldset>
         </CardContent>
       </Card>
+      <PromptBuilder
+        subject={subjects.find(s => s.id === subjectId)?.name ?? ""}
+        chapter={chapters.find(c => c.id === chapterId)?.title ?? ""}
+        subchapters={chapters.find(c => c.id === chapterId)?.subchapters ?? []}
+        kind={kind} disabled={locked}
+      />
       <Card>
         <CardHeader><CardTitle>3. Unggah dan periksa soal</CardTitle><CardDescription>File .xlsx maksimal 5 MB dibaca di perangkat ini. Semua baris harus benar sebelum disimpan.</CardDescription></CardHeader>
         <CardContent className="flex min-w-0 flex-col gap-4">
