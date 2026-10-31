@@ -22,7 +22,11 @@ async function attempt(login: () => Promise<LoginResult>, invalid: string) {
     return result.ok
       ? result
       : { message: result.error === "THROTTLED" ? THROTTLED : invalid };
-  } catch {
+  } catch (error) {
+    console.error(
+      "Login action failed:",
+      error instanceof Error ? `${error.name}: ${error.message}` : "Unknown error",
+    );
     return { message: UNEXPECTED };
   }
 }

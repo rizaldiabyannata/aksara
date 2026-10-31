@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { writeAudit } from "@/lib/audit";
-import type { AttendanceStatus } from "@/lib/generated/prisma/client";
+import { Prisma, type AttendanceStatus } from "@/lib/generated/prisma/client";
 import { parse, type Invalid } from "@/lib/validation";
 
 const WITA_MS = 8 * 3600_000;
@@ -90,15 +91,18 @@ export async function saveAttendance(
   if (members !== ids.length || ids.length !== marks.length) {
     return { ok: false, error: "INVALID", fieldErrors: { form: "Daftar siswa berubah. Muat ulang halaman." } };
   }
-  await prisma.$transaction(
-    marks.map((m) =>
-      prisma.attendance.upsert({
-        where: { studentId_date: { studentId: m.studentId, date: asDate(d) } },
-        create: { studentId: m.studentId, date: asDate(d), status: m.status, recordedById: actorId },
-        update: { status: m.status, recordedById: actorId },
-      }),
-    ),
-  );
+  const date = asDate(d);
+  const updatedAt = new Date();
+  await prisma.$executeRaw(Prisma.sql`
+    INSERT INTO "Attendance" ("id", "studentId", "date", "status", "recordedById", "updatedAt")
+    VALUES ${Prisma.join(marks.map((m) => Prisma.sql`
+      (${randomUUID()}, ${m.studentId}, ${date}, ${m.status}::"AttendanceStatus", ${actorId}, ${updatedAt})
+    `))}
+    ON CONFLICT ("studentId", "date") DO UPDATE SET
+      "status" = EXCLUDED."status",
+      "recordedById" = EXCLUDED."recordedById",
+      "updatedAt" = EXCLUDED."updatedAt"
+  `);
   return { ok: true, saved: marks.length };
 }
 
