@@ -27,6 +27,7 @@ const NAV: { href: string; label: string; icon: IconSvgElement }[] = [
   { href: "/teacher/materials", label: "Materi", icon: File01Icon },
   { href: "/teacher/questions", label: "Bank Soal", icon: NoteEditIcon },
   { href: "/teacher/quizzes", label: "Ulangan", icon: TaskDone01Icon },
+  { href: "/teacher/grades", label: "Buku Nilai", icon: BookOpen01Icon },
 ];
 
 const BOTTOM = [{ href: "/teacher/password", label: "Ganti Sandi", icon: Key01Icon }];
@@ -66,7 +67,7 @@ const isActive = (pathname: string, href: string) =>
 
 // Phones: the four daily destinations, the rest behind "Lainnya".
 const TABS = [NAV[0], NAV[1], NAV[6], NAV[7]];
-const MORE = [NAV[2], NAV[3], NAV[4], NAV[5], ...BOTTOM];
+const MORE = [NAV[2], NAV[3], NAV[4], NAV[5], NAV[8], ...BOTTOM];
 
 const tab = "flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[48px] py-1 transition-colors rounded-xl focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none";
 
